@@ -1,7 +1,7 @@
 {
   "name": "Gamatutor ID",
   "short_name": "Gamatutor",
-  "description": "Enhanced Kanban PWA for Self-Regulated Learning using SDT Framework",
+  "description": "Generative AI Metacognitive Tutor.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
