@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -12,6 +12,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#2563eb",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export const metadata: Metadata = {
   title: "Gamatutor ID",
   description: "Enhanced Kanban PWA for Self-Regulated Learning",
@@ -21,7 +29,6 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "Gamatutor ID",
   },
-  themeColor: "#2563eb",
 };
 
 export default function RootLayout({
