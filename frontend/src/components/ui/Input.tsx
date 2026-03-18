@@ -24,7 +24,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             ref={ref}
             className={cn(
-              "w-full px-4 py-3.5 bg-neutral-50 border rounded-xl text-neutral-800 placeholder-neutral-400 text-base transition-all duration-200 outline-none focus:bg-white focus:ring-4",
+              "w-full px-4 py-3.5 bg-neutral-50 border rounded-lg text-neutral-800 placeholder-neutral-400 text-base transition-all duration-200 outline-none focus:bg-white focus:ring-4",
               error
                 ? "border-error focus:border-error focus:ring-error/10"
                 : "border-neutral-200 focus:border-primary focus:ring-primary/10",
