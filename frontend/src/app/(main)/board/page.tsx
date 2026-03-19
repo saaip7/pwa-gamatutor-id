@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Plus } from "lucide-react";
+import Link from "next/link";
 import { BoardHeader } from "@/components/feature/board/BoardHeader";
 import { FilterBar } from "@/components/feature/board/FilterBar";
 import { BoardColumn } from "@/components/feature/board/BoardColumn";
@@ -200,12 +201,13 @@ export default function KanbanBoardPage() {
       </div>
 
       {/* Floating Action Button */}
-      <button 
+      <Link 
+        href="/task/new"
         className="fixed right-5 bottom-24 w-14 h-14 bg-primary text-white rounded-full shadow-[0_4px_16px_rgba(59,130,246,0.5)] flex items-center justify-center hover:bg-primary-hover active:scale-95 transition-all z-30"
         aria-label="Add new task"
       >
         <Plus className="w-6 h-6" />
-      </button>
+      </Link>
     </>
   );
 }
