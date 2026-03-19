@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gamatutor - Streak Freeze Aktif</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#2563EB',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            overflow: hidden; /* Prevent scroll on celebration screen */
+        }
+
+        /* Micro-animations */
+        @keyframes slideUpFade {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-up {
+            animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes floatPulse {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+                filter: drop-shadow(0 0 25px rgba(96, 165, 250, 0.5));
+            }
+            50% {
+                transform: translateY(-8px) scale(1.05);
+                filter: drop-shadow(0 0 45px rgba(96, 165, 250, 0.8));
+            }
+        }
+        .animate-badge {
+            animation: floatPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes ambientGlow {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+        .animate-glow {
+            animation: ambientGlow 4s ease-in-out infinite;
+        }
+
+        /* Improved Organic Particle System */
+        @keyframes fall {
+            0% { top: -10%; opacity: 0; }
+            10% { opacity: var(--max-opacity, 0.8); }
+            80% { opacity: var(--max-opacity, 0.8); }
+            100% { top: 110%; opacity: 0; }
+        }
+        @keyframes sway {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            50% { transform: translateX(var(--sway-amt, 20px)) rotate(var(--rot-amt, 180deg)); }
+        }
+        
+        .particle-container {
+            position: absolute;
+            top: -10%;
+            pointer-events: none;
+            z-index: 0;
+            animation: fall linear infinite;
+        }
+        .particle-inner {
+            animation: sway ease-in-out infinite alternate;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .particle-icon {
+            color: #93C5FD;
+            display: block;
+        }
+        
+        .particle-blur {
+            background: #60A5FA;
+            border-radius: 50%;
+            box-shadow: 0 0 12px 2px rgba(96,165,250,0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="w-full h-screen flex flex-col relative">
+        
+        <!-- Particle System Container -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none" id="particle-container">
+            <!-- Particles will be generated here by JS -->
+        </div>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col items-center justify-center relative z-10 px-6">
+            
+            <!-- Header Text -->
+            <div class="text-center mb-10 animate-slide-up" style="animation-delay: 0.2s;">
+                <h1 class="text-[28px] font-bold text-white mb-3 tracking-tight">Streak Freeze Aktif!</h1>
+                <p class="text-[#A1A1AA] text-[15px]">Streak kamu aman. Nikmati waktu istirahatmu hari ini.</p>
+            </div>
+
+            <!-- Badge Display -->
+            <div class="relative w-full max-w-[280px] aspect-square flex items-center justify-center animate-slide-up" style="animation-delay: 0.4s;">
+                <!-- Glowing background -->
+                <div class="absolute inset-0 bg-blue-500 rounded-full blur-[80px] opacity-30 animate-glow pointer-events-none"></div>
+                
+                <!-- 3D SVG Badge -->
+                <div class="relative z-10 animate-badge">
+                    <img src="https://vgbujcuwptvheqijyjbe.supabase.co/storage/v1/object/public/hmac-uploads/uploads/d61bc790-15b7-431b-b892-02c8516dee0c/1773629419028-ce8c4b13/snow_remixed2.svg" 
+                         alt="Streak Freeze Badge" 
+                         class="w-[200px] h-[200px] object-contain" />
+                </div>
+            </div>
+        </main>
+
+        <!-- Motivational Text & Bottom Actions -->
+        <footer class="shrink-0 w-full px-6 pb-[34px] pt-4 z-20 animate-slide-up flex flex-col items-center" style="animation-delay: 0.6s;">
+            <div class="text-center px-2 mb-8 max-w-sm">
+                <p class="text-[14px] text-[#A1A1AA] italic leading-relaxed">
+                    "Istirahat adalah bagian dari perjalanan belajar. Ambil waktu yang kamu butuhkan, tubuh dan pikiranmu akan berterima kasih."
+                </p>
+            </div>
+            
+            <div class="w-full max-w-md mx-auto">
+                <a href="#home" id="btn-home" class="w-full py-[16px] rounded-2xl bg-[#1E93FE] text-white font-bold text-[16px] hover:bg-[#1A82E2] transition-all shadow-[0_0_24px_rgba(30,147,254,0.3)] hover:shadow-[0_0_32px_rgba(30,147,254,0.5)] active:scale-[0.98] flex items-center justify-center">
+                    Kembali ke Beranda
+                </a>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Improved Organic Particle Generator -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('particle-container');
+            const icons = ['lucide:snowflake', 'mingcute:snowflake-fill', 'lucide:sparkles'];
+            
+            // Create ~20 organic particles (less cluttered, more beautiful)
+            for (let i = 0; i < 20; i++) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'particle-container';
+                
+                const inner = document.createElement('div');
+                inner.className = 'particle-inner';
+                
+                // Mix of icons and glowing dots
+                const isIcon = Math.random() > 0.35;
+                
+                if (isIcon) {
+                    const icon = document.createElement('iconify-icon');
+                    icon.className = 'particle-icon';
+                    icon.setAttribute('icon', icons[Math.floor(Math.random() * icons.length)]);
+                    // Varied sizes
+                    icon.style.fontSize = `${10 + Math.random() * 14}px`;
+                    inner.appendChild(icon);
+                } else {
+                    const blur = document.createElement('div');
+                    blur.className = 'particle-blur';
+                    // Varied tiny sizes for background dust
+                    const size = 3 + Math.random() * 5;
+                    blur.style.width = `${size}px`;
+                    blur.style.height = `${size}px`;
+                    inner.appendChild(blur);
+                }
+
+                // Natural Physics Variables
+                const fallDuration = 4 + Math.random() * 6; // 4s to 10s fall (slower, floating)
+                const fallDelay = -(Math.random() * 10); // Pre-populate screen
+                
+                const swayDuration = 2 + Math.random() * 4; // Organic swaying
+                const swayAmount = -40 + Math.random() * 80; // Drift left/right
+                const rotAmount = -180 + Math.random() * 360; // Natural spin
+                
+                const maxOp = 0.2 + Math.random() * 0.6; // Soft, varied opacity
+
+                // Apply styles
+                wrapper.style.left = `${Math.random() * 100}%`;
+                wrapper.style.animationDuration = `${fallDuration}s`;
+                wrapper.style.animationDelay = `${fallDelay}s`;
+                wrapper.style.setProperty('--max-opacity', maxOp);
+                
+                inner.style.animationDuration = `${swayDuration}s`;
+                inner.style.setProperty('--sway-amt', `${swayAmount}px`);
+                inner.style.setProperty('--rot-amt', `${rotAmount}deg`);
+                
+                wrapper.appendChild(inner);
+                container.appendChild(wrapper);
+            }
+        });
+    </script>
+</body>
+</html>

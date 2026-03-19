@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Focus Mode - Deep Work</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              DEFAULT: '#3B82F6',
+              hover: '#2563EB',
+            }
+          },
+          animation: {
+            'fade-in-up': 'fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both',
+            'soft-pulse': 'softPulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            fadeInUp: {
+              '0%': { opacity: '0', transform: 'translateY(16px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            softPulse: {
+              '0%, 100%': { opacity: '1' },
+              '50%': { opacity: '0.7' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-white antialiased text-gray-900">
+  <!-- Root Container (Screen) -->
+  <div class="w-full h-screen flex flex-col bg-white overflow-hidden">
+    
+    <!-- Header (Animates first) -->
+    <header class="shrink-0 pt-14 pb-3 px-5 border-b border-gray-100 flex items-center justify-between bg-white z-50 animate-fade-in-up" style="animation-delay: 0ms;">
+      <button class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 border border-gray-100 text-gray-600 active:scale-95 transition-all">
+        <iconify-icon icon="lucide:minimize-2" class="text-lg"></iconify-icon>
+      </button>
+      
+      <div class="flex-1 px-4 text-center">
+        <h1 class="text-sm font-semibold text-gray-900 truncate">
+          Review Materi Sorting
+        </h1>
+      </div>
+
+      <button class="h-10 px-3.5 flex items-center gap-1.5 rounded-xl bg-red-50 text-red-600 font-bold text-[11px] uppercase tracking-wide active:scale-95 transition-all">
+        <iconify-icon icon="lucide:square" class="text-sm"></iconify-icon>
+        Akhiri
+      </button>
+    </header>
+
+    <!-- Main Scrollable Content -->
+    <main class="flex-1 overflow-y-auto scrollbar-hide px-6 py-8 space-y-10">
+      
+      <!-- Strategy Section -->
+      <section class="flex flex-col items-center text-center animate-fade-in-up" style="animation-delay: 100ms;">
+        <div class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-50 text-blue-700 rounded-full">
+          <iconify-icon icon="lucide:video" class="text-sm"></iconify-icon>
+          <span class="text-[11px] font-bold uppercase tracking-wider">Strategi: Video Tutorial</span>
+        </div>
+        <p class="mt-2 text-xs italic text-gray-500">
+          💡 Tip: Catat poin penting & putar ulang bagian yang sulit.
+        </p>
+      </section>
+
+      <!-- Centerpiece: Timer -->
+      <section class="flex flex-col items-center justify-center py-2 animate-fade-in-up" style="animation-delay: 200ms;">
+        <div class="relative flex items-center justify-center w-[260px] h-[260px]">
+          <!-- Background SVG Ring -->
+          <svg class="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="47" fill="transparent" stroke="#F3F4F6" stroke-width="2.5" />
+            <!-- Progress Ring (example set to ~75%) -->
+            <circle cx="50" cy="50" r="47" fill="transparent" stroke="#3B82F6" stroke-width="3" stroke-dasharray="295.3" stroke-dashoffset="73.8" stroke-linecap="round" class="transition-all duration-1000" />
+          </svg>
+          <div class="text-[52px] font-black text-gray-900 tracking-tighter tabular-nums leading-none z-10">
+            00:45:12
+          </div>
+        </div>
+        <div class="mt-4 flex items-center gap-1.5 px-3.5 py-1.5 bg-gray-50 border border-gray-100 rounded-lg">
+          <iconify-icon icon="lucide:trophy" class="text-amber-500 text-sm"></iconify-icon>
+          <span class="text-[11px] font-bold text-gray-600 uppercase tracking-wider">
+            Personal Best: 2j 15m
+          </span>
+        </div>
+
+        <a href="https://p.superdesign.dev/draft/cd62e9f8-d6fe-4d37-8577-0a8481ec17fb" id="nav-jeda-sesuaikan" class="mt-6 flex items-center justify-center gap-2 w-[260px] min-h-[44px] py-3 px-4 bg-transparent border border-gray-200 rounded-xl text-[15px] font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 active:scale-95 transition-all">
+          <iconify-icon icon="lucide:settings-2" class="text-lg"></iconify-icon>
+          Jeda & Sesuaikan
+        </a>
+      </section>
+
+      <!-- Subtasks Section -->
+      <section class="space-y-3 animate-fade-in-up" style="animation-delay: 300ms;">
+        <h3 class="text-[11px] font-bold text-gray-400 tracking-wider uppercase mb-1">
+          Langkah-Langkah
+        </h3>
+        
+        <div class="group/list space-y-2.5">
+          <!-- Task 1 (Checked) -->
+          <label class="group relative flex items-start gap-3.5 p-4 bg-white border border-gray-200 rounded-2xl cursor-pointer hover:border-gray-300 transition-colors has-[:checked]:bg-emerald-50 has-[:checked]:border-emerald-300 has-[:checked]:ring-1 has-[:checked]:ring-emerald-300">
+            <input type="checkbox" class="peer sr-only" checked />
+            <div class="mt-0.5 w-[22px] h-[22px] shrink-0 rounded-full border-2 border-gray-300 flex items-center justify-center transition-all duration-300 peer-checked:border-emerald-500 peer-checked:bg-emerald-500 group-active:scale-95">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-white scale-50 opacity-0 peer-checked:scale-100 peer-checked:opacity-100 transition-all duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <span class="flex-1 text-[15px] font-semibold text-gray-800 peer-checked:text-emerald-900/60 peer-checked:line-through transition-all duration-300">
+              Tonton video penjelasan sorting
+            </span>
+          </label>
+
+          <!-- Task 2 (Unchecked) -->
+          <label class="group relative flex items-start gap-3.5 p-4 bg-white border border-gray-200 rounded-2xl cursor-pointer hover:border-gray-300 transition-colors has-[:checked]:bg-emerald-50 has-[:checked]:border-emerald-300 has-[:checked]:ring-1 has-[:checked]:ring-emerald-300">
+            <input type="checkbox" class="peer sr-only" />
+            <div class="mt-0.5 w-[22px] h-[22px] shrink-0 rounded-full border-2 border-gray-300 flex items-center justify-center transition-all duration-300 peer-checked:border-emerald-500 peer-checked:bg-emerald-500 group-active:scale-95">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-white scale-50 opacity-0 peer-checked:scale-100 peer-checked:opacity-100 transition-all duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <span class="flex-1 text-[15px] font-semibold text-gray-800 peer-checked:text-emerald-900/60 peer-checked:line-through transition-all duration-300">
+              Catat poin penting iterasi
+            </span>
+          </label>
+
+          <!-- Task 3 (Unchecked) -->
+          <label class="group relative flex items-start gap-3.5 p-4 bg-white border border-gray-200 rounded-2xl cursor-pointer hover:border-gray-300 transition-colors has-[:checked]:bg-emerald-50 has-[:checked]:border-emerald-300 has-[:checked]:ring-1 has-[:checked]:ring-emerald-300">
+            <input type="checkbox" class="peer sr-only" />
+            <div class="mt-0.5 w-[22px] h-[22px] shrink-0 rounded-full border-2 border-gray-300 flex items-center justify-center transition-all duration-300 peer-checked:border-emerald-500 peer-checked:bg-emerald-500 group-active:scale-95">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-white scale-50 opacity-0 peer-checked:scale-100 peer-checked:opacity-100 transition-all duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <span class="flex-1 text-[15px] font-semibold text-gray-800 peer-checked:text-emerald-900/60 peer-checked:line-through transition-all duration-300">
+              Latihan implementasi Bubble Sort
+            </span>
+          </label>
+
+          <!-- Completion Message (Only shows when all inputs in the list are checked) -->
+          <div class="flex group-has-[input:not(:checked)]/list:hidden mt-3 p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-700 text-[14px] font-semibold items-center justify-center gap-2 animate-fade-in-up">
+            Great job! All steps done ✨
+          </div>
+        </div>
+      </section>
+
+      <!-- Quick Notes Section -->
+      <section class="space-y-3 animate-fade-in-up" style="animation-delay: 400ms;">
+        <h3 class="text-[11px] font-bold text-gray-400 tracking-wider uppercase mb-1 flex items-center gap-1.5">
+          📝 Parkir Pikiran (Quick Notes)
+        </h3>
+        <textarea 
+          class="w-full h-24 p-4 bg-gray-50 border border-gray-200 rounded-2xl text-[15px] text-gray-900 placeholder-gray-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all resize-none"
+          placeholder="Ada distraksi? Tulis di sini agar otakmu tetap tenang dan fokus..."
+        ></textarea>
+      </section>
+
+    </main>
+
+    <!-- Footer CTA -->
+    <footer class="shrink-0 pb-[34px] pt-4 px-6 bg-white border-t border-gray-100 z-50 animate-fade-in-up" style="animation-delay: 500ms;">
+      <button class="w-full h-[56px] bg-primary hover:bg-primary-hover text-white rounded-2xl font-bold text-[15px] flex items-center justify-center gap-2.5 shadow-[0_8px_16px_-6px_rgba(59,130,246,0.3)] active:scale-[0.98] transition-all animate-soft-pulse">
+        <iconify-icon icon="lucide:square-check-big" class="text-[20px]"></iconify-icon>
+        Selesai & Beri Refleksi
+      </button>
+    </footer>
+
+  </div>
+</body>
+</html>

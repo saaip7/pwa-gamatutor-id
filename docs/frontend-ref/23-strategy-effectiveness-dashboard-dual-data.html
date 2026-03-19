@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Strategy Effectiveness Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        gamablue: {
+                            50: '#EFF6FF',
+                            100: '#DBEAFE',
+                            500: '#3B82F6',
+                            600: '#2563EB',
+                            700: '#1D4ED8',
+                            800: '#1E40AF',
+                            900: '#1E3A8A',
+                        },
+                        gamapurple: {
+                            50: '#F5F3FF',
+                            100: '#EDE9FE',
+                            500: '#8B5CF6',
+                            600: '#7C3AED',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            background-color: #F9FAFB;
+        }
+        
+        /* Hide scrollbar for a cleaner app feel */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        * {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="w-full h-screen flex flex-col bg-gray-50 text-gray-900">
+
+    <!-- Header -->
+    <header class="shrink-0 pt-14 pb-4 px-5 bg-white border-b border-gray-100 flex items-center justify-between sticky top-0 z-20">
+        <button class="w-10 h-10 flex items-center justify-center -ml-2 text-gray-600 active:bg-gray-50 rounded-full transition-colors">
+            <iconify-icon icon="lucide:arrow-left" class="text-xl"></iconify-icon>
+        </button>
+        <h1 class="font-bold text-[17px] tracking-tight text-gray-900">Efektivitas Strategi</h1>
+        <button class="w-10 h-10 flex items-center justify-center -mr-2 text-gray-400 active:bg-gray-50 rounded-full transition-colors">
+            <iconify-icon icon="lucide:info" class="text-xl"></iconify-icon>
+        </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto px-5 pt-6 pb-[34px] space-y-8">
+
+        <!-- Actionable Advice Section (Top position per Progress Analytics reference) -->
+        <section class="animate-fade-in">
+            <div class="bg-gamablue-50 rounded-[20px] p-5 border border-gamablue-100 shadow-sm relative overflow-hidden">
+                <!-- Decorative background icon -->
+                <div class="absolute -right-4 -top-4 opacity-[0.07] rotate-12">
+                    <iconify-icon icon="lucide:lightbulb" class="text-8xl text-gamablue-600"></iconify-icon>
+                </div>
+                
+                <div class="relative z-10">
+                    <div class="flex items-center gap-2.5 mb-3">
+                        <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
+                            <span class="text-sm">💡</span>
+                        </div>
+                        <h2 class="font-bold text-gamablue-900 text-[15px] tracking-tight">Insight Khusus Untukmu</h2>
+                    </div>
+                    <p class="text-gamablue-800 text-[14px] leading-relaxed pr-2">
+                        Strategi <strong class="font-bold text-gamablue-900">Latihan Soal</strong> terbukti meningkatkan keyakinan dirimu hingga <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-white font-bold text-gamablue-700 shadow-sm mx-0.5">40%</span>. Gunakan lebih sering untuk tugas yang sulit!
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Strategy Showcase -->
+        <section>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-bold text-lg text-gray-900 tracking-tight">Kinerja Strategi</h2>
+                <span class="text-xs font-medium text-gray-500 bg-gray-200/50 px-2.5 py-1 rounded-full">Bulan Ini</span>
+            </div>
+
+            <div class="space-y-4">
+                
+                <!-- Card 1: Latihan Soal (Highest Impact - Reordered for logic based on insight) -->
+                <div class="bg-white rounded-[24px] border border-gray-100 shadow-sm p-5">
+                    <!-- Header -->
+                    <div class="flex items-start justify-between mb-5">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-[52px] h-[52px] rounded-[14px] bg-gamapurple-50 text-gamapurple-600 flex items-center justify-center shrink-0 border border-gamapurple-100">
+                                <iconify-icon icon="lucide:pen-tool" class="text-2xl"></iconify-icon>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-900 text-[16px]">Latihan Soal</h3>
+                                <p class="text-[13px] text-gray-500 font-medium mt-0.5">Pembelajaran Aktif</p>
+                            </div>
+                        </div>
+                        <div class="bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-lg text-[11px] font-bold border border-emerald-100 flex items-center gap-1">
+                            <iconify-icon icon="lucide:trending-up" class="text-[10px]"></iconify-icon>
+                            Top
+                        </div>
+                    </div>
+
+                    <!-- Dual-Data Panels -->
+                    <div class="space-y-3">
+                        <!-- Panel A: Subjective -->
+                        <div class="bg-gray-50/80 rounded-[16px] p-4 border border-gray-100/80">
+                            <div class="flex justify-between items-center mb-3">
+                                <p class="text-[12px] text-gray-500 font-medium">Rating Kamu <span class="text-gray-400">(Berdasarkan 25 tugas)</span></p>
+                                <span class="text-[16px] font-bold text-gray-900 flex items-center gap-1">🤩 4.8<span class="text-[12px] text-gray-400 font-medium">/5</span></span>
+                            </div>
+                            <div class="w-full bg-gray-200/80 h-2 rounded-full overflow-hidden mb-1.5">
+                                <div class="bg-gamapurple-500 h-full rounded-full" style="width: 96%"></div>
+                            </div>
+                            <p class="text-[11px] text-gray-500 font-medium text-right">96% rating positif</p>
+                        </div>
+
+                        <!-- Panel B: Objective -->
+                        <div class="bg-gamablue-50/50 rounded-[16px] p-4 border border-gamablue-100/50">
+                            <p class="text-[12px] text-gray-500 font-medium mb-3">Peningkatan Nilai <span class="text-gray-400">(Berdasarkan 25 tugas)</span></p>
+                            <div class="flex items-center gap-3.5">
+                                <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 shadow-sm border border-emerald-200/50">
+                                    <iconify-icon icon="lucide:trending-up" class="text-xl"></iconify-icon>
+                                </div>
+                                <div>
+                                    <div class="flex items-end gap-1.5 mb-0.5">
+                                        <span class="text-[20px] font-bold text-gray-900 leading-none">+40%</span>
+                                    </div>
+                                    <p class="text-[12px] text-emerald-600 font-medium">Peningkatan signifikan</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Video Tutorial -->
+                <div class="bg-white rounded-[24px] border border-gray-100 shadow-sm p-5">
+                    <!-- Header -->
+                    <div class="flex items-center gap-3.5 mb-5">
+                        <div class="w-[52px] h-[52px] rounded-[14px] bg-gamapurple-50 text-gamapurple-600 flex items-center justify-center shrink-0 border border-gamapurple-100">
+                            <iconify-icon icon="lucide:video" class="text-2xl"></iconify-icon>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900 text-[16px]">Video Tutorial</h3>
+                            <p class="text-[13px] text-gray-500 font-medium mt-0.5">Pembelajaran Visual</p>
+                        </div>
+                    </div>
+
+                    <!-- Dual-Data Panels -->
+                    <div class="space-y-3">
+                        <!-- Panel A: Subjective -->
+                        <div class="bg-gray-50/80 rounded-[16px] p-4 border border-gray-100/80">
+                            <div class="flex justify-between items-center mb-3">
+                                <p class="text-[12px] text-gray-500 font-medium">Rating Kamu <span class="text-gray-400">(Berdasarkan 12 tugas)</span></p>
+                                <span class="text-[16px] font-bold text-gray-900 flex items-center gap-1">😊 4.2<span class="text-[12px] text-gray-400 font-medium">/5</span></span>
+                            </div>
+                            <div class="w-full bg-gray-200/80 h-2 rounded-full overflow-hidden mb-1.5">
+                                <div class="bg-gamapurple-400 h-full rounded-full" style="width: 84%"></div>
+                            </div>
+                            <p class="text-[11px] text-gray-500 font-medium text-right">84% rating positif</p>
+                        </div>
+
+                        <!-- Panel B: Objective -->
+                        <div class="bg-gamablue-50/50 rounded-[16px] p-4 border border-gamablue-100/50">
+                            <p class="text-[12px] text-gray-500 font-medium mb-3">Peningkatan Nilai <span class="text-gray-400">(Berdasarkan 12 tugas)</span></p>
+                            <div class="flex items-center gap-3.5">
+                                <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0 border border-emerald-100">
+                                    <iconify-icon icon="lucide:trending-up" class="text-xl"></iconify-icon>
+                                </div>
+                                <div>
+                                    <div class="flex items-end gap-1.5 mb-0.5">
+                                        <span class="text-[20px] font-bold text-gray-900 leading-none">+15%</span>
+                                    </div>
+                                    <p class="text-[12px] text-emerald-600 font-medium">Peningkatan stabil</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Membaca Materi -->
+                <div class="bg-white rounded-[24px] border border-gray-100 shadow-sm p-5">
+                    <!-- Header -->
+                    <div class="flex items-center gap-3.5 mb-5">
+                        <div class="w-[52px] h-[52px] rounded-[14px] bg-gamapurple-50 text-gamapurple-600 flex items-center justify-center shrink-0 border border-gamapurple-100">
+                            <iconify-icon icon="lucide:book-open" class="text-2xl"></iconify-icon>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900 text-[16px]">Membaca Materi</h3>
+                            <p class="text-[13px] text-gray-500 font-medium mt-0.5">Pembelajaran Tekstual</p>
+                        </div>
+                    </div>
+
+                    <!-- Dual-Data Panels -->
+                    <div class="space-y-3">
+                        <!-- Panel A: Subjective -->
+                        <div class="bg-gray-50/80 rounded-[16px] p-4 border border-gray-100/80">
+                            <div class="flex justify-between items-center mb-3">
+                                <p class="text-[12px] text-gray-500 font-medium">Rating Kamu <span class="text-gray-400">(Berdasarkan 8 tugas)</span></p>
+                                <span class="text-[16px] font-bold text-gray-900 flex items-center gap-1">🤔 3.5<span class="text-[12px] text-gray-400 font-medium">/5</span></span>
+                            </div>
+                            <div class="w-full bg-gray-200/80 h-2 rounded-full overflow-hidden mb-1.5">
+                                <div class="bg-gamapurple-300 h-full rounded-full" style="width: 70%"></div>
+                            </div>
+                            <p class="text-[11px] text-gray-500 font-medium text-right">70% rating positif</p>
+                        </div>
+
+                        <!-- Panel B: Objective (Scarce Data) -->
+                        <div class="bg-amber-50/40 rounded-[16px] p-4 border border-amber-100/60">
+                            <p class="text-[12px] text-gray-500 font-medium mb-3">Peningkatan Nilai <span class="text-gray-400">(Berdasarkan 2 tugas)</span></p>
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-full bg-amber-100/80 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
+                                    <iconify-icon icon="lucide:alert-triangle" class="text-lg"></iconify-icon>
+                                </div>
+                                <div>
+                                    <span class="text-[14px] font-bold text-amber-800">⚠️ Data Kurang</span>
+                                    <p class="text-[12px] text-amber-700/80 font-medium mt-0.5 leading-snug">Aktifkan tracking nilai pada tugas untuk melihat insight objektif.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Diskusi Kelompok (Empty State) -->
+                <div class="rounded-[24px] border-2 border-dashed border-gray-200 bg-white/60 p-5 opacity-70 relative overflow-hidden">
+                    <!-- Header -->
+                    <div class="flex items-center gap-3.5 mb-2">
+                        <div class="w-[52px] h-[52px] rounded-[14px] bg-gray-100 text-gray-400 flex items-center justify-center shrink-0 grayscale">
+                            <iconify-icon icon="lucide:message-circle" class="text-2xl"></iconify-icon>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-600 text-[16px]">Diskusi Kelompok</h3>
+                            <p class="text-[13px] text-gray-400 font-medium mt-0.5">Pembelajaran Sosial</p>
+                        </div>
+                    </div>
+
+                    <!-- Empty State Content -->
+                    <div class="flex flex-col items-center justify-center py-6 px-4 text-center mt-2">
+                        <div class="w-12 h-12 bg-gray-100/80 rounded-full flex items-center justify-center mb-3">
+                            <iconify-icon icon="lucide:bar-chart-2" class="text-gray-400 text-xl"></iconify-icon>
+                        </div>
+                        <p class="text-[15px] font-bold text-gray-700 mb-1.5">Belum ada data</p>
+                        <p class="text-[13px] text-gray-500 leading-relaxed max-w-[240px]">
+                            Strategi ini belum pernah digunakan. Coba strategi ini di tugas berikutnya! ✨
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+        
+    </main>
+
+</body>
+</html>

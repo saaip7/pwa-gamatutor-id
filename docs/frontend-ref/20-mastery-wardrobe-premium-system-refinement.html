@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mastery Wardrobe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#3B82F6',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        .stage-bg {
+            background: radial-gradient(circle at 50% 100%, #f3f4f6 0%, #ffffff 50%);
+        }
+    </style>
+</head>
+<body class="bg-black flex justify-center items-center min-h-screen">
+
+    <!-- Mobile Canvas (375x812) -->
+    <div class="w-[375px] h-[812px] bg-white flex flex-col relative overflow-hidden font-sans shadow-2xl ring-1 ring-gray-900/10">
+        
+        <!-- 1. HEADER (Fixed at top) -->
+        <header class="shrink-0 pt-12 px-5 pb-4 bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100 flex items-center justify-between">
+            <button class="w-8 h-8 flex items-center justify-start rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors" aria-label="Kembali">
+                <iconify-icon icon="lucide:arrow-left" class="text-[24px] text-gray-600"></iconify-icon>
+            </button>
+            
+            <h1 class="text-lg font-bold text-gray-900 tracking-tight">
+                Sesuaikan Karakter
+            </h1>
+            
+            <button class="px-4 py-2.5 bg-primary hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-sm active:scale-95 transition-all">
+                Simpan
+            </button>
+        </header>
+
+        <!-- 2. MAIN SCROLLABLE AREA -->
+        <main class="flex-1 overflow-y-auto relative bg-white">
+            
+            <!-- HERO SECTION (Character Showcase) -->
+            <section class="relative w-full h-[320px] flex flex-col items-center justify-start pt-8 overflow-hidden stage-bg">
+                
+                <!-- Character & Pedestal Wrapper -->
+                <div class="relative z-10 flex flex-col items-center">
+                    
+                    <!-- Character Vector Illustration -->
+                    <div class="relative w-[160px] h-[220px] drop-shadow-lg">
+                        <svg viewBox="0 0 200 300" class="w-full h-full">
+                            <defs>
+                                <linearGradient id="skin" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#ffe4e1" />
+                                    <stop offset="100%" stop-color="#f5c5c0" />
+                                </linearGradient>
+                                <linearGradient id="hoodie" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#3b82f6" />
+                                    <stop offset="100%" stop-color="#1d4ed8" />
+                                </linearGradient>
+                                <linearGradient id="pants" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#334155" />
+                                    <stop offset="100%" stop-color="#0f172a" />
+                                </linearGradient>
+                            </defs>
+
+                            <!-- Legs/Pants -->
+                            <rect x="75" y="190" width="22" height="75" rx="11" fill="url(#pants)"/>
+                            <rect x="103" y="190" width="22" height="75" rx="11" fill="url(#pants)"/>
+                            
+                            <!-- Shoes (White Sneakers) -->
+                            <path d="M68 255 h30 v12 a8 8 0 0 1 -8 8 h-14 a8 8 0 0 1 -8 -8 z" fill="#ffffff" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.1))"/>
+                            <path d="M102 255 h30 v12 a8 8 0 0 1 -8 8 h-14 a8 8 0 0 1 -8 -8 z" fill="#ffffff" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.1))"/>
+                            <line x1="72" y1="262" x2="85" y2="262" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round"/>
+                            <line x1="115" y1="262" x2="128" y2="262" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round"/>
+
+                            <!-- Body/Hoodie -->
+                            <rect x="65" y="110" width="70" height="95" rx="24" fill="url(#hoodie)"/>
+                            <path d="M75 160 q 25 10 50 0 v 25 a 15 15 0 0 1 -15 15 h -20 a 15 15 0 0 1 -15 -15 z" fill="#2563eb" opacity="0.6"/>
+                            <path d="M90 115 q -5 15 -2 30" stroke="#ffffff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.8"/>
+                            <path d="M110 115 q 5 15 2 30" stroke="#ffffff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.8"/>
+
+                            <!-- Arms -->
+                            <rect x="45" y="120" width="24" height="75" rx="12" transform="rotate(12 57 120)" fill="url(#hoodie)"/>
+                            <rect x="131" y="120" width="24" height="75" rx="12" transform="rotate(-12 143 120)" fill="url(#hoodie)"/>
+
+                            <!-- Hands -->
+                            <circle cx="42" cy="188" r="12" fill="url(#skin)"/>
+                            <circle cx="158" cy="188" r="12" fill="url(#skin)"/>
+
+                            <!-- Neck -->
+                            <rect x="90" y="90" width="20" height="30" rx="10" fill="url(#skin)"/>
+                            <path d="M75 110 q 25 15 50 0" stroke="#1e3a8a" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.3"/>
+
+                            <!-- Head -->
+                            <rect x="65" y="35" width="70" height="65" rx="28" fill="url(#skin)"/>
+                            
+                            <!-- Face Features -->
+                            <circle cx="85" cy="75" r="4.5" fill="#1e293b"/>
+                            <circle cx="115" cy="75" r="4.5" fill="#1e293b"/>
+                            <circle cx="83" cy="73" r="1.5" fill="#ffffff"/>
+                            <circle cx="113" cy="73" r="1.5" fill="#ffffff"/>
+                            <circle cx="75" cy="82" r="5" fill="#fb7185" opacity="0.4"/>
+                            <circle cx="125" cy="82" r="5" fill="#fb7185" opacity="0.4"/>
+                            <path d="M92 88 q 8 6 16 0" stroke="#1e293b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+                            <!-- Hair (Classic Black) -->
+                            <path d="M60 45 c0 -35 80 -35 80 0 c0 -5 5 15 0 25 c -5 -15 -10 -20 -20 -20 c -20 -5 -30 10 -40 25 c -5 -10 -15 -20 -20 -30 z" fill="#1e293b"/>
+                            <path d="M75 25 q 15 -8 30 0" stroke="#334155" stroke-width="3" fill="none" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    
+                    <!-- Clean 3D Pedestal Platform -->
+                    <div class="w-[150px] h-[14px] bg-gradient-to-b from-white to-gray-200 border border-gray-200 rounded-lg shadow-md mt-1 relative">
+                        <div class="absolute top-0 left-0 right-0 h-[1px] bg-white rounded-t-lg"></div>
+                    </div>
+                </div>
+
+                <!-- User Info Badge -->
+                <div class="absolute bottom-6 flex flex-col items-center z-20">
+                    <h2 class="text-xl font-bold text-gray-900 tracking-tight">Alex</h2>
+                    <div class="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full mt-1.5 border border-gray-200 shadow-sm">
+                        <iconify-icon icon="lucide:shield-check" class="text-[14px] text-primary"></iconify-icon>
+                        <span class="text-sm font-semibold text-primary">The Strategist</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. CATEGORY TABS -->
+            <div class="sticky top-0 z-40 bg-white border-b border-gray-100 flex hide-scrollbar">
+                <!-- Active Tab -->
+                <div class="flex-1 flex flex-col items-center justify-center gap-1 py-3 relative cursor-pointer bg-white">
+                    <iconify-icon icon="lucide:user" class="text-[20px] text-primary"></iconify-icon>
+                    <span class="text-[11px] font-bold text-primary uppercase tracking-wide">Kepala</span>
+                    <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-t-full"></div>
+                </div>
+
+                <!-- Inactive Tab -->
+                <div class="flex-1 flex flex-col items-center justify-center gap-1 py-3 relative cursor-pointer hover:bg-gray-50/50 transition-colors">
+                    <iconify-icon icon="lucide:shirt" class="text-[20px] text-gray-400"></iconify-icon>
+                    <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Baju</span>
+                </div>
+
+                <!-- Inactive Tab -->
+                <div class="flex-1 flex flex-col items-center justify-center gap-1 py-3 relative cursor-pointer hover:bg-gray-50/50 transition-colors">
+                    <iconify-icon icon="lucide:footprints" class="text-[20px] text-gray-400"></iconify-icon>
+                    <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Kaki</span>
+                </div>
+
+                <!-- Inactive Tab -->
+                <div class="flex-1 flex flex-col items-center justify-center gap-1 py-3 relative cursor-pointer hover:bg-gray-50/50 transition-colors">
+                    <iconify-icon icon="lucide:sparkles" class="text-[20px] text-gray-400"></iconify-icon>
+                    <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Spesial</span>
+                </div>
+            </div>
+
+            <!-- 4. ITEM SELECTION GRID -->
+            <div class="px-5 py-6 bg-gray-50 min-h-screen">
+                <div class="grid grid-cols-3 gap-3 gap-y-5 place-items-start w-full">
+                    
+                    <!-- ITEM 1: EQUIPPED (Classic Black) -->
+                    <div class="relative flex flex-col items-center group w-full cursor-pointer">
+                        <div class="w-full aspect-square rounded-2xl bg-white border-2 border-primary shadow-sm flex items-center justify-center relative z-10 transition-shadow">
+                            <svg viewBox="0 0 100 100" class="w-16 h-16 translate-y-2">
+                                <rect x="15" y="20" width="70" height="65" rx="28" fill="#ffe4e1" opacity="0.5"/>
+                                <path d="M10 30 c0 -35 80 -35 80 0 c0 -5 5 15 0 25 c -5 -15 -10 -20 -20 -20 c -20 -5 -30 10 -40 25 c -5 -10 -15 -20 -20 -30 z" fill="#1e293b"/>
+                            </svg>
+                            <!-- Checkmark Badge -->
+                            <div class="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full border-2 border-white flex items-center justify-center z-20 shadow-md">
+                                <iconify-icon icon="lucide:check" class="text-white text-[14px]"></iconify-icon>
+                            </div>
+                        </div>
+                        <span class="text-sm font-semibold text-gray-900 mt-2 text-center w-full truncate">Classic Black</span>
+                    </div>
+
+                    <!-- ITEM 2: UNLOCKED (Blonde Spike) -->
+                    <div class="relative flex flex-col items-center group cursor-pointer w-full">
+                        <div class="w-full aspect-square rounded-2xl bg-white border border-gray-200 shadow-sm flex items-center justify-center relative overflow-hidden z-10 group-hover:shadow-md group-hover:border-blue-300 group-active:scale-95 group-active:border-primary transition-all duration-200">
+                            <svg viewBox="0 0 100 100" class="w-16 h-16 translate-y-2">
+                                <rect x="15" y="20" width="70" height="65" rx="28" fill="#ffe4e1" opacity="0.5"/>
+                                <path d="M15 40 q 15 -40 35 -30 q 15 -20 35 10 q 5 20 -10 10 q -5 20 -20 -5 q -15 20 -25 -10 q -10 15 -15 -10 z" fill="#fbbf24"/>
+                            </svg>
+                        </div>
+                        <span class="text-sm font-medium text-gray-700 mt-2 text-center w-full truncate group-active:text-primary transition-colors">Blonde Spike</span>
+                    </div>
+
+                    <!-- ITEM 3: UNLOCKED (Chestnut) -->
+                    <div class="relative flex flex-col items-center group cursor-pointer w-full">
+                        <div class="w-full aspect-square rounded-2xl bg-white border border-gray-200 shadow-sm flex items-center justify-center relative overflow-hidden z-10 group-hover:shadow-md group-hover:border-blue-300 group-active:scale-95 group-active:border-primary transition-all duration-200">
+                            <svg viewBox="0 0 100 100" class="w-16 h-16 translate-y-2">
+                                <rect x="15" y="20" width="70" height="65" rx="28" fill="#ffe4e1" opacity="0.5"/>
+                                <path d="M10 35 q 20 -30 40 -20 q 20 -10 40 20 c 0 10 -10 20 -20 10 c -10 10 -20 0 -30 15 c -10 -5 -20 0 -30 -25 z" fill="#78350f"/>
+                            </svg>
+                        </div>
+                        <span class="text-sm font-medium text-gray-700 mt-2 text-center w-full truncate group-active:text-primary transition-colors">Chestnut</span>
+                    </div>
+
+                    <!-- ITEM 4: LOCKED (Crimson Wave) -->
+                    <div class="relative flex flex-col items-center w-full">
+                        <div class="w-full aspect-square rounded-2xl bg-gray-100 border border-gray-300 flex items-center justify-center relative overflow-hidden z-10">
+                            <div class="grayscale opacity-50 mix-blend-multiply w-full h-full flex items-center justify-center">
+                                <svg viewBox="0 0 100 100" class="w-16 h-16 translate-y-2">
+                                    <rect x="15" y="20" width="70" height="65" rx="28" fill="#ffe4e1"/>
+                                    <path d="M20 25 c 0 -30 60 -30 60 0 c 10 30 -10 50 -20 40 c 0 10 -20 20 -30 0 c -10 10 -20 -10 -10 -40 z" fill="#ef4444"/>
+                                </svg>
+                            </div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm shadow-sm flex items-center justify-center">
+                                    <iconify-icon icon="lucide:lock" class="text-[18px] text-gray-500"></iconify-icon>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="text-sm font-medium text-gray-500 mt-2 text-center w-full truncate">Crimson Wave</span>
+                    </div>
+
+                    <!-- ITEM 5: LOCKED (Neon Visor) -->
+                    <div class="relative flex flex-col items-center w-full">
+                        <div class="w-full aspect-square rounded-2xl bg-gray-100 border border-gray-300 flex items-center justify-center relative overflow-hidden z-10">
+                            <div class="grayscale opacity-50 mix-blend-multiply w-full h-full flex items-center justify-center">
+                                <svg viewBox="0 0 100 100" class="w-16 h-16">
+                                    <rect x="15" y="40" width="30" height="20" rx="4" fill="#10b981"/>
+                                    <rect x="55" y="40" width="30" height="20" rx="4" fill="#10b981"/>
+                                    <line x1="45" y1="50" x2="55" y2="50" stroke="#1e293b" stroke-width="4"/>
+                                </svg>
+                            </div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm shadow-sm flex items-center justify-center">
+                                    <iconify-icon icon="lucide:lock" class="text-[18px] text-gray-500"></iconify-icon>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="text-sm font-medium text-gray-500 mt-2 text-center w-full truncate">Neon Visor</span>
+                    </div>
+
+                    <!-- ITEM 6: LOCKED (Gold Crown) -->
+                    <div class="relative flex flex-col items-center w-full">
+                        <div class="w-full aspect-square rounded-2xl bg-gray-100 border border-gray-300 flex items-center justify-center relative overflow-hidden z-10">
+                            <div class="grayscale opacity-50 mix-blend-multiply w-full h-full flex items-center justify-center">
+                                <svg viewBox="0 0 100 100" class="w-16 h-16 translate-y-2">
+                                    <path d="M20 70 L20 40 L35 55 L50 30 L65 55 L80 40 L80 70 Z" fill="#eab308"/>
+                                    <circle cx="20" cy="35" r="4" fill="#ef4444"/>
+                                    <circle cx="50" cy="25" r="4" fill="#3b82f6"/>
+                                    <circle cx="80" cy="35" r="4" fill="#ef4444"/>
+                                </svg>
+                            </div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm shadow-sm flex items-center justify-center">
+                                    <iconify-icon icon="lucide:lock" class="text-[18px] text-gray-500"></iconify-icon>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="text-sm font-medium text-gray-500 mt-2 text-center w-full truncate">Gold Crown</span>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+</body>
+</html>

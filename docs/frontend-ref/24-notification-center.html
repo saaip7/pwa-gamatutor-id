@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="view-transition" content="same-origin">
+    <title>Gamatutor - Notifikasi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            DEFAULT: '#3B82F6',
+                            hover: '#2563EB',
+                            light: '#DBEAFE',
+                        },
+                        gray: {
+                            50: '#F9FAFB',
+                            100: '#F3F4F6',
+                            200: '#E5E7EB',
+                            300: '#D1D5DB',
+                            400: '#9CA3AF',
+                            500: '#6B7280',
+                            600: '#4B5563',
+                            700: '#374151',
+                            800: '#1F2937',
+                            900: '#111827',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Micro-animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        .delay-100 { animation-delay: 50ms; }
+        .delay-200 { animation-delay: 100ms; }
+        
+        /* View Transitions API */
+        html {
+            background-color: #F9FAFB;
+        }
+        @view-transition {
+            navigation: auto;
+        }
+        ::view-transition {
+            background-color: #F9FAFB;
+        }
+    </style>
+</head>
+<body>
+    <div class="w-full h-screen bg-gray-50 flex flex-col font-sans text-gray-800 overflow-hidden relative">
+        
+        <!-- Header (Sticky) -->
+        <header class="shrink-0 pt-14 pb-4 px-4 flex items-center justify-between bg-white border-b border-gray-100 z-20 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+            <a href="#back" id="btn-back" class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-900 transition-colors rounded-full active:bg-gray-50">
+                <iconify-icon icon="lucide:arrow-left" class="text-[22px]"></iconify-icon>
+            </a>
+            
+            <h1 class="text-[16px] font-bold text-gray-900 tracking-tight">Notifikasi</h1>
+            
+            <a href="#settings" id="btn-settings" class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-primary transition-colors rounded-full active:bg-blue-50">
+                <iconify-icon icon="lucide:settings-2" class="text-[22px]"></iconify-icon>
+            </a>
+        </header>
+
+        <!-- Main Scrollable Content -->
+        <main class="flex-1 overflow-y-auto px-5 pt-6 pb-[34px] space-y-6" style="view-transition-name: main-content">
+            
+            <!-- SECTION 1: TERBARU -->
+            <section class="animate-fade-in-up delay-100">
+                <div class="flex items-center justify-between px-2 mb-3">
+                    <h3 class="text-[12px] font-bold text-gray-500 tracking-wider">TERBARU</h3>
+                    <button id="btn-mark-read" class="text-[11px] font-semibold text-primary hover:text-primary-hover transition-colors">Tandai dibaca</button>
+                </div>
+                
+                <div class="bg-white rounded-[24px] border border-gray-100 shadow-sm overflow-hidden">
+                    
+                    <!-- Item 1: Celebratory (Unread) -->
+                    <a href="#badge" id="notif-1" class="block flex items-start gap-3.5 p-4 border-b border-gray-100 bg-blue-50/40 hover:bg-blue-50/60 transition-colors relative group">
+                        <div class="w-11 h-11 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                            <iconify-icon icon="lucide:award" class="text-[22px]"></iconify-icon>
+                        </div>
+                        <div class="flex-1 min-w-0 pr-5">
+                            <div class="flex items-start justify-between gap-2 mb-0.5">
+                                <h4 class="text-[14px] font-semibold text-gray-900 leading-tight truncate">Badge Baru Terbuka!</h4>
+                                <span class="text-[10px] font-medium text-blue-500 whitespace-nowrap mt-0.5">15m lalu</span>
+                            </div>
+                            <p class="text-[12px] text-gray-600 leading-snug">Kamu meraih 'The Strategist'. Lihat koleksimu!</p>
+                        </div>
+                        <!-- Unread Indicator -->
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-primary shadow-[0_0_0_4px_rgba(59,130,246,0.15)]"></div>
+                    </a>
+
+                    <!-- Item 2: Social (Unread) -->
+                    <a href="#social" id="notif-2" class="block flex items-start gap-3.5 p-4 bg-blue-50/40 hover:bg-blue-50/60 transition-colors relative group">
+                        <div class="w-11 h-11 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                            <iconify-icon icon="lucide:users" class="text-[20px]"></iconify-icon>
+                        </div>
+                        <div class="flex-1 min-w-0 pr-5">
+                            <div class="flex items-start justify-between gap-2 mb-0.5">
+                                <h4 class="text-[14px] font-semibold text-gray-900 leading-tight truncate">Teman Belajar</h4>
+                                <span class="text-[10px] font-medium text-blue-500 whitespace-nowrap mt-0.5">1j lalu</span>
+                            </div>
+                            <p class="text-[12px] text-gray-600 leading-snug">5 temanmu sedang aktif belajar sekarang. Yuk mulai sesi fokus!</p>
+                        </div>
+                        <!-- Unread Indicator -->
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-primary shadow-[0_0_0_4px_rgba(59,130,246,0.15)]"></div>
+                    </a>
+
+                </div>
+            </section>
+
+            <!-- SECTION 2: SEBELUMNYA -->
+            <section class="animate-fade-in-up delay-200">
+                <h3 class="text-[12px] font-bold text-gray-500 tracking-wider mb-3 px-2">SEBELUMNYA</h3>
+                
+                <div class="bg-white rounded-[24px] border border-gray-100 shadow-sm overflow-hidden">
+                    
+                    <!-- Item 3: Reminder -->
+                    <a href="#task" id="notif-3" class="block flex items-start gap-3.5 p-4 border-b border-gray-100 hover:bg-gray-50/80 transition-colors group">
+                        <div class="w-11 h-11 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                            <iconify-icon icon="lucide:calendar-clock" class="text-[20px]"></iconify-icon>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-start justify-between gap-2 mb-0.5">
+                                <h4 class="text-[14px] font-semibold text-gray-900 leading-tight truncate">Deadline Mendatang</h4>
+                                <span class="text-[10px] font-medium text-gray-400 whitespace-nowrap mt-0.5">3j lalu</span>
+                            </div>
+                            <p class="text-[12px] text-gray-600 leading-snug">Tugas 'UTS Algoritma' harus selesai besok jam 14:00.</p>
+                        </div>
+                    </a>
+
+                    <!-- Item 4: Insight -->
+                    <a href="#insight" id="notif-4" class="block flex items-start gap-3.5 p-4 hover:bg-gray-50/80 transition-colors group">
+                        <div class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                            <iconify-icon icon="lucide:lightbulb" class="text-[20px]"></iconify-icon>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-start justify-between gap-2 mb-0.5">
+                                <h4 class="text-[14px] font-semibold text-gray-900 leading-tight truncate">Insight Produktif</h4>
+                                <span class="text-[10px] font-medium text-gray-400 whitespace-nowrap mt-0.5">Kemarin</span>
+                            </div>
+                            <p class="text-[12px] text-gray-600 leading-snug">Kamu paling produktif di malam hari. Waktunya menyusun rencana besok?</p>
+                        </div>
+                    </a>
+
+                </div>
+            </section>
+            
+            <!-- Spacer for bottom scroll -->
+            <div class="h-4"></div>
+
+        </main>
+    </div>
+</body>
+</html>

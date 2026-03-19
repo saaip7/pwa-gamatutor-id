@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Task Done Celebration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#3B82F6',
+                        primaryHover: '#2563EB',
+                    },
+                    keyframes: {
+                        modalBounce: {
+                            '0%': { transform: 'scale(0.85)', opacity: '0' },
+                            '60%': { transform: 'scale(1.03)', opacity: '1' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        },
+                        pop: {
+                            '0%': { transform: 'scale(0.5)', opacity: '0' },
+                            '70%': { transform: 'scale(1.15)', opacity: '1' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        },
+                        fadeInUp: {
+                            '0%': { transform: 'translateY(15px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { transform: 'scale(1)', boxShadow: '0 8px 16px -6px rgba(59,130,246,0.4)' },
+                            '50%': { transform: 'scale(1.02)', boxShadow: '0 12px 24px -6px rgba(59,130,246,0.6)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { -webkit-tap-highlight-color: transparent; }
+        /* Keep modal stable during pulse animation */
+        .btn-primary-pulse {
+            animation: fadeInUp 0.5s ease-out 0.6s forwards, pulseGlow 2.5s infinite 1.2s;
+        }
+        
+        /* Dynamic Confetti System */
+        @keyframes confettiBurst {
+            0% { transform: translate(0, 0) rotate(0deg) scale(0.2); opacity: 1; }
+            15% { transform: translate(calc(var(--tx) * 0.5), calc(var(--ty) * -0.2)) rotate(calc(var(--rot) * 0.3)) scale(var(--s)); opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(var(--s)); opacity: 0; }
+        }
+        .confetti-particle {
+            animation: confettiBurst var(--dur) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        /* Continuous Micro-animations for Checkmark */
+        @keyframes checkMicro {
+            0%, 100% { 
+                transform: translateY(0) scale(1); 
+                filter: drop-shadow(0 0 4px rgba(16,185,129,0.3)); 
+            }
+            33% { 
+                transform: translateY(-3px) scale(1.06); 
+                filter: drop-shadow(0 0 12px rgba(16,185,129,0.7)); 
+            }
+            66% { 
+                transform: translateY(2px) scale(0.98); 
+                filter: drop-shadow(0 0 6px rgba(16,185,129,0.4)); 
+            }
+        }
+        .animate-check-micro {
+            animation: checkMicro 3.5s ease-in-out infinite;
+            animation-delay: 0.6s; /* Starts smoothly after initial pop */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 antialiased text-gray-900 overflow-hidden">
+
+    <!-- Dummy Background Elements to show off Backdrop Blur -->
+    <div class="fixed inset-0 p-5 flex flex-col gap-4 opacity-40 pointer-events-none z-0">
+        <div class="w-full flex justify-between items-center mb-4">
+            <div class="w-32 h-8 bg-gray-200 rounded-lg"></div>
+            <div class="w-10 h-10 bg-gray-200 rounded-full"></div>
+        </div>
+        <div class="w-full h-32 bg-gray-200 rounded-2xl"></div>
+        <div class="w-full h-24 bg-gray-200 rounded-2xl"></div>
+        <div class="w-full h-48 bg-gray-200 rounded-2xl"></div>
+    </div>
+
+    <!-- Dimmed Overlay & Modal Container -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-[6px] px-6">
+
+        <!-- Confetti Particle System (Pointer events none) -->
+        <div class="absolute inset-0 pointer-events-none z-50 overflow-hidden">
+            <!-- Left Emitter (14 particles, natural shapes) -->
+            <div class="absolute left-[-5%] top-[40%]">
+                <div class="absolute w-[12px] h-[3px] bg-yellow-300 confetti-particle" style="--tx: 45vw; --ty: 100vh; --rot: 360deg; --s: 1.2; --dur: 3.6s;"></div>
+                <div class="absolute w-[4px] h-[10px] bg-blue-400 confetti-particle" style="--tx: 75vw; --ty: 80vh; --rot: 540deg; --s: 1; --dur: 4.2s;"></div>
+                <div class="absolute w-[6px] h-[6px] bg-rose-400 confetti-particle" style="--tx: 30vw; --ty: 110vh; --rot: 720deg; --s: 1.4; --dur: 2.8s;"></div>
+                <div class="absolute w-[10px] h-[4px] bg-emerald-400 confetti-particle" style="--tx: 90vw; --ty: 40vh; --rot: 180deg; --s: 0.9; --dur: 3.3s;"></div>
+                <div class="absolute w-[3px] h-[12px] bg-purple-400 confetti-particle" style="--tx: 60vw; --ty: 90vh; --rot: 650deg; --s: 1.1; --dur: 4.5s;"></div>
+                <div class="absolute w-[8px] h-[2px] bg-cyan-400 confetti-particle" style="--tx: 110vw; --ty: 50vh; --rot: 450deg; --s: 1.3; --dur: 3.0s;"></div>
+                <div class="absolute w-[4px] h-[4px] bg-amber-300 confetti-particle" style="--tx: 55vw; --ty: 120vh; --rot: 300deg; --s: 0.8; --dur: 3.9s;"></div>
+                <div class="absolute w-[12px] h-[3px] bg-green-500 confetti-particle" style="--tx: 85vw; --ty: 70vh; --rot: 900deg; --s: 1.5; --dur: 2.5s;"></div>
+                <div class="absolute w-[6px] h-[6px] bg-indigo-400 confetti-particle" style="--tx: 40vw; --ty: 85vh; --rot: 600deg; --s: 1; --dur: 4.0s;"></div>
+                <div class="absolute w-[4px] h-[10px] bg-yellow-300 confetti-particle" style="--tx: 100vw; --ty: -10vh; --rot: 400deg; --s: 1.2; --dur: 3.6s;"></div>
+                <div class="absolute w-[10px] h-[4px] bg-rose-400 confetti-particle" style="--tx: 70vw; --ty: 105vh; --rot: 250deg; --s: 0.9; --dur: 4.3s;"></div>
+                <div class="absolute w-[3px] h-[12px] bg-blue-400 confetti-particle" style="--tx: 50vw; --ty: 45vh; --rot: 800deg; --s: 1.1; --dur: 3.1s;"></div>
+                <div class="absolute w-[8px] h-[2px] bg-emerald-400 confetti-particle" style="--tx: 95vw; --ty: 95vh; --rot: 150deg; --s: 1.4; --dur: 3.8s;"></div>
+                <div class="absolute w-[6px] h-[6px] bg-cyan-400 confetti-particle" style="--tx: 120vw; --ty: 30vh; --rot: 550deg; --s: 1; --dur: 4.1s;"></div>
+            </div>
+
+            <!-- Right Emitter (14 particles, natural shapes) -->
+            <div class="absolute right-[-5%] top-[40%]">
+                <div class="absolute w-[10px] h-[4px] bg-emerald-400 confetti-particle" style="--tx: -55vw; --ty: 90vh; --rot: -360deg; --s: 1.1; --dur: 3.3s;"></div>
+                <div class="absolute w-[4px] h-[12px] bg-rose-400 confetti-particle" style="--tx: -85vw; --ty: 75vh; --rot: -540deg; --s: 1.3; --dur: 4.0s;"></div>
+                <div class="absolute w-[6px] h-[6px] bg-yellow-300 confetti-particle" style="--tx: -40vw; --ty: 110vh; --rot: -720deg; --s: 0.9; --dur: 2.8s;"></div>
+                <div class="absolute w-[12px] h-[3px] bg-blue-400 confetti-particle" style="--tx: -95vw; --ty: 50vh; --rot: -180deg; --s: 1.2; --dur: 3.5s;"></div>
+                <div class="absolute w-[3px] h-[10px] bg-cyan-400 confetti-particle" style="--tx: -65vw; --ty: 100vh; --rot: -650deg; --s: 1; --dur: 4.2s;"></div>
+                <div class="absolute w-[8px] h-[2px] bg-purple-400 confetti-particle" style="--tx: -115vw; --ty: 60vh; --rot: -450deg; --s: 1.4; --dur: 3.1s;"></div>
+                <div class="absolute w-[4px] h-[4px] bg-green-500 confetti-particle" style="--tx: -50vw; --ty: 115vh; --rot: -300deg; --s: 0.8; --dur: 4.5s;"></div>
+                <div class="absolute w-[10px] h-[4px] bg-amber-300 confetti-particle" style="--tx: -80vw; --ty: 80vh; --rot: -900deg; --s: 1.5; --dur: 2.5s;"></div>
+                <div class="absolute w-[6px] h-[6px] bg-indigo-400 confetti-particle" style="--tx: -45vw; --ty: 95vh; --rot: -600deg; --s: 1.1; --dur: 3.9s;"></div>
+                <div class="absolute w-[4px] h-[10px] bg-emerald-400 confetti-particle" style="--tx: -105vw; --ty: -5vh; --rot: -400deg; --s: 1; --dur: 3.7s;"></div>
+                <div class="absolute w-[12px] h-[3px] bg-rose-400 confetti-particle" style="--tx: -75vw; --ty: 105vh; --rot: -250deg; --s: 1.3; --dur: 4.3s;"></div>
+                <div class="absolute w-[3px] h-[12px] bg-yellow-300 confetti-particle" style="--tx: -55vw; --ty: 40vh; --rot: -800deg; --s: 0.9; --dur: 3.0s;"></div>
+                <div class="absolute w-[8px] h-[2px] bg-blue-400 confetti-particle" style="--tx: -100vw; --ty: 85vh; --rot: -150deg; --s: 1.2; --dur: 3.8s;"></div>
+                <div class="absolute w-[6px] h-[6px] bg-purple-400 confetti-particle" style="--tx: -125vw; --ty: 20vh; --rot: -550deg; --s: 1.4; --dur: 4.1s;"></div>
+            </div>
+
+            <!-- Center-Top Emitter (10 particles, cascading down) -->
+            <div class="absolute left-[50%] top-[-10%]">
+                <div class="absolute w-[8px] h-[3px] bg-cyan-400 confetti-particle" style="--tx: -40vw; --ty: 100vh; --rot: 360deg; --s: 1.2; --dur: 3.5s;"></div>
+                <div class="absolute w-[4px] h-[10px] bg-amber-300 confetti-particle" style="--tx: 30vw; --ty: 110vh; --rot: -540deg; --s: 1; --dur: 4.2s;"></div>
+                <div class="absolute w-[6px] h-[6px] bg-emerald-400 confetti-particle" style="--tx: 10vw; --ty: 90vh; --rot: 720deg; --s: 1.4; --dur: 2.8s;"></div>
+                <div class="absolute w-[10px] h-[4px] bg-purple-400 confetti-particle" style="--tx: -20vw; --ty: 115vh; --rot: -180deg; --s: 0.9; --dur: 3.3s;"></div>
+                <div class="absolute w-[3px] h-[12px] bg-blue-400 confetti-particle" style="--tx: 50vw; --ty: 85vh; --rot: 650deg; --s: 1.1; --dur: 4.5s;"></div>
+                <div class="absolute w-[8px] h-[2px] bg-rose-400 confetti-particle" style="--tx: -50vw; --ty: 95vh; --rot: -450deg; --s: 1.3; --dur: 3.0s;"></div>
+                <div class="absolute w-[4px] h-[4px] bg-yellow-300 confetti-particle" style="--tx: 20vw; --ty: 120vh; --rot: 300deg; --s: 0.8; --dur: 3.9s;"></div>
+                <div class="absolute w-[12px] h-[3px] bg-indigo-400 confetti-particle" style="--tx: -10vw; --ty: 105vh; --rot: -900deg; --s: 1.5; --dur: 2.5s;"></div>
+                <div class="absolute w-[6px] h-[6px] bg-green-500 confetti-particle" style="--tx: 45vw; --ty: 80vh; --rot: 600deg; --s: 1; --dur: 4.0s;"></div>
+                <div class="absolute w-[4px] h-[10px] bg-cyan-400 confetti-particle" style="--tx: -30vw; --ty: 110vh; --rot: -400deg; --s: 1.2; --dur: 3.6s;"></div>
+            </div>
+        </div>
+
+        <!-- Celebration Modal Card -->
+        <div class="bg-white rounded-[32px] w-full max-w-[320px] p-8 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] flex flex-col items-center text-center relative z-40 opacity-0 animate-[modalBounce_0.6s_cubic-bezier(0.34,1.56,0.64,1)_forwards]">
+
+            <!-- Hero Icon with Micro-animations -->
+            <div class="w-[88px] h-[88px] rounded-full bg-emerald-50 flex items-center justify-center mb-6 opacity-0 animate-[pop_0.5s_cubic-bezier(0.175,0.885,0.32,1.275)_0.1s_forwards] shadow-[inset_0_0_20px_rgba(16,185,129,0.1)]">
+                <iconify-icon icon="lucide:check-circle" class="text-emerald-500 text-[56px] drop-shadow-sm animate-check-micro"></iconify-icon>
+            </div>
+
+            <!-- Title -->
+            <h2 class="text-[24px] font-extrabold text-gray-900 mb-5 leading-[1.2] tracking-tight opacity-0 animate-[fadeInUp_0.5s_ease-out_0.2s_forwards]">
+                Tugas Tuntas!<br>Kerja Bagus ✨
+            </h2>
+
+            <!-- Performance Summary Row -->
+            <div class="flex items-center justify-center gap-4 w-full bg-gray-50 rounded-[18px] py-3.5 px-4 mb-5 border border-gray-100 opacity-0 animate-[fadeInUp_0.5s_ease-out_0.3s_forwards]">
+                <div class="flex items-center gap-2">
+                    <iconify-icon icon="lucide:timer" class="text-emerald-600 text-[18px]"></iconify-icon>
+                    <span class="text-[14px] font-bold text-gray-700 tracking-wide mt-0.5">45m</span>
+                </div>
+                <div class="w-[1.5px] h-5 bg-gray-200 rounded-full"></div>
+                <div class="flex items-center gap-2">
+                    <iconify-icon icon="lucide:star" class="text-emerald-600 text-[18px]"></iconify-icon>
+                    <span class="text-[14px] font-bold text-gray-700 tracking-wide mt-0.5">Sangat Yakin</span>
+                </div>
+            </div>
+
+            <!-- Encouragement Text -->
+            <p class="text-[14px] text-gray-500 font-medium leading-[1.6] mb-8 opacity-0 animate-[fadeInUp_0.5s_ease-out_0.4s_forwards] px-1">
+                Satu langkah lebih dekat ke tujuanmu. Teruslah belajar dengan otonom!
+            </p>
+
+            <!-- Action Buttons -->
+            <div class="w-full">
+                <a href="#dashboard" id="btn-return-dashboard" class="w-full h-[54px] bg-primary hover:bg-primaryHover text-white font-bold text-[15px] rounded-[18px] transition-all active:scale-[0.98] flex items-center justify-center opacity-0 btn-primary-pulse">
+                    Kembali ke Dashboard
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
