@@ -24,9 +24,12 @@ const MOCK_USER_DATA = {
     {
       id: "task-1",
       title: "Calculus Chapter 4 Review",
+      course: "MATH201 - Calculus II",
+      description: "Review all formulas and practice problems for the upcoming midterm.",
       progressText: "3/5",
       progressPercent: 60,
       priority: "High",
+      difficulty: "Medium",
       time: "2:00 PM",
       tag: "Monitoring",
       subtasks: [
@@ -40,9 +43,12 @@ const MOCK_USER_DATA = {
     {
       id: "task-2",
       title: "Write Physics Lab Report",
+      course: "PHY102 - Quantum Mechanics",
+      description: "Draft the introduction and format the data tables from yesterday's lab.",
       progressText: "1/3",
       progressPercent: 33,
       priority: "Medium",
+      difficulty: "Hard",
       time: "4:30 PM",
       tag: "Planning",
       subtasks: [

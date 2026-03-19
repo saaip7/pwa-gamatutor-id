@@ -12,10 +12,13 @@ export interface Subtask {
 export interface Task {
   id: string;
   title: string;
+  course?: string;
+  description?: string;
   progressText: string;
   progressPercent: number; // e.g., 60 for 3/5
   subtasks: Subtask[];
   priority: "High" | "Medium" | "Low";
+  difficulty: "Hard" | "Medium" | "Easy"; // Added difficulty
   time: string;
   tag?: string;
   href?: string;
@@ -26,10 +29,18 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task }: TaskCardProps) {
+  // SOLID Backgrounds for Priority
   const priorityStyles = {
-    High: "bg-red-50 text-error border-red-100/50",
-    Medium: "bg-yellow-50 text-warning border-yellow-100/50",
-    Low: "bg-green-50 text-success border-green-100/50",
+    High: "bg-red-500 text-white border-red-600 shadow-sm",
+    Medium: "bg-amber-500 text-white border-amber-600 shadow-sm",
+    Low: "bg-slate-500 text-white border-slate-600 shadow-sm",
+  };
+
+  // LIGHT Backgrounds for Difficulty
+  const difficultyStyles = {
+    Hard: "bg-rose-100 text-rose-700 border-rose-200",
+    Medium: "bg-blue-100 text-blue-700 border-blue-200",
+    Easy: "bg-emerald-100 text-emerald-700 border-emerald-200",
   };
 
   return (
@@ -44,17 +55,23 @@ export function TaskCard({ task }: TaskCardProps) {
           style={{ width: `${task.progressPercent}%` }}
         ></div>
         <div className="relative z-10 flex justify-between items-start gap-4">
-          <h4 className="text-[15px] font-bold text-neutral-900 leading-snug pt-0.5">{task.title}</h4>
-          <span className="text-[11px] font-bold text-primary bg-white px-2 py-1 rounded-[8px] border border-blue-100 shrink-0 shadow-sm">
+          <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+            <h4 className="text-[15px] font-bold text-neutral-900 leading-snug pt-0.5 truncate">{task.title}</h4>
+            {task.course && <p className="text-xs text-neutral-500 truncate">{task.course}</p>}
+          </div>
+          <span className="text-[11px] font-bold text-primary bg-white px-2 py-1 rounded-[8px] border border-blue-100 shrink-0 shadow-sm mt-0.5">
             {task.progressText}
           </span>
         </div>
       </div>
       
-      {/* ROW 2: Subtask Checklists */}
-      {task.subtasks && task.subtasks.length > 0 && (
+      {/* ROW 2: Description & Subtask Checklists */}
+      {(task.description || (task.subtasks && task.subtasks.length > 0)) && (
         <div className="px-4 py-3 bg-white space-y-2.5 border-t border-neutral-50">
-          {task.subtasks.slice(0, 3).map((subtask) => (
+          {task.description && (
+            <p className="text-xs text-neutral-500 truncate mb-3">{task.description}</p>
+          )}
+          {task.subtasks && task.subtasks.slice(0, 3).map((subtask) => (
             <div key={subtask.id} className="flex items-start gap-3">
               {subtask.isCompleted ? (
                 <div className="mt-0.5 shrink-0 w-4 h-4 rounded-[5px] border border-neutral-200 flex items-center justify-center bg-neutral-50">
@@ -71,7 +88,7 @@ export function TaskCard({ task }: TaskCardProps) {
               </span>
             </div>
           ))}
-          {task.subtasks.length > 3 && (
+          {task.subtasks && task.subtasks.length > 3 && (
             <div className="flex items-start gap-3">
               <div className="mt-0.5 shrink-0 w-4 h-4 rounded-[5px] border-[1.5px] border-neutral-300 flex items-center justify-center bg-white"></div>
               <span className="text-[13px] font-medium text-neutral-500">+{task.subtasks.length - 3} more subtasks</span>

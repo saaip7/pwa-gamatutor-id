@@ -21,6 +21,12 @@
   --neutral-400: #9ca3af;
   --neutral-500: #6b7280;
   --neutral-800: #1f2937;
+
+  /* Kanban Column Colors */
+  --color-planning: #8CD2FF;
+  --color-monitoring: #246BDF;
+  --color-controlling: #f59e0b; /* Amber 500 */
+  --color-reflection: #10b981; /* Emerald 500 */
 }
 
 @theme inline {
@@ -43,6 +49,12 @@
   --color-neutral-400: var(--neutral-400);
   --color-neutral-500: var(--neutral-500);
   --color-neutral-800: var(--neutral-800);
+
+  /* Kanban Column Colors */
+  --color-planning: var(--color-planning);
+  --color-monitoring: var(--color-monitoring);
+  --color-controlling: var(--color-controlling);
+  --color-reflection: var(--color-reflection);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -79,6 +91,14 @@ body {
   -webkit-touch-callout: default;
   -webkit-user-select: text;
   user-select: text;
+}
+
+@utility no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
 }
 
 /* Custom Onboarding Animations */
