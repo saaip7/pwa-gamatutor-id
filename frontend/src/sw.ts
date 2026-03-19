@@ -1,4 +1,4 @@
-import { defaultCache } from "@serwist/next/browser";
+import { defaultCache } from "@serwist/next/worker";
 import { type PrecacheEntry, Serwist } from "serwist";
 
 declare const self: ServiceWorkerGlobalScope & {
