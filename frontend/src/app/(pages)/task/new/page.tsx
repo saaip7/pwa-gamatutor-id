@@ -11,6 +11,8 @@ import { PrioritySelector, PriorityLevel } from "@/components/feature/task/Prior
 import { AdvancedOptions } from "@/components/feature/task/AdvancedOptions";
 import { Input } from "@/components/ui/Input";
 import { Drawer } from "@/components/ui/Drawer";
+import { Calendar } from "@/components/ui/Calendar";
+import { TimePicker } from "@/components/ui/TimePicker";
 import { cn } from "@/lib/utils";
 
 export default function NewTaskPage() {
@@ -23,7 +25,7 @@ export default function NewTaskPage() {
   const [strategy, setStrategy] = useState<LearningStrategy | "">("");
   const [goal, setGoal] = useState("");
   const [priority, setPriority] = useState<PriorityLevel>("Medium");
-  const [dueDate, setDueDate] = useState("");
+  const [dueDate, setDueDate] = useState<Date | null>(null);
   const [dueTime, setDueTime] = useState("");
 
   // UI State for Drawers
@@ -35,6 +37,16 @@ export default function NewTaskPage() {
   const handleSave = () => {
     console.log("Saving Task:", { course, taskName, description, strategy, goal, priority, dueDate, dueTime });
     router.back();
+  };
+
+  // Helper for formatting date
+  const formatDateDisplay = (date: Date | null) => {
+    if (!date) return "Pilih tgl";
+    return new Intl.DateTimeFormat("id-ID", { 
+      day: "numeric", 
+      month: "short", 
+      year: "numeric" 
+    }).format(date);
   };
 
   return (
@@ -128,8 +140,8 @@ export default function NewTaskPage() {
                 )}
               >
                 <CalendarIcon className={cn("w-5 h-5", dueDate ? "text-primary" : "text-neutral-400")} />
-                <span className={cn("text-[14px] font-medium", dueDate ? "text-primary font-bold" : "text-neutral-600")}>
-                  {dueDate || "Pilih tgl"}
+                <span className={cn("text-[14px] font-medium truncate", dueDate ? "text-primary font-bold" : "text-neutral-600")}>
+                  {formatDateDisplay(dueDate)}
                 </span>
               </button>
               <button 
@@ -160,17 +172,33 @@ export default function NewTaskPage() {
         onClose={() => setIsDateDrawerOpen(false)} 
         title="Pilih Tanggal"
       >
-        <div className="grid grid-cols-1 gap-2">
-          {["Hari ini", "Besok", "Lusa", "Minggu depan"].map((d) => (
-            <button
-              key={d}
-              onClick={() => { setDueDate(d); setIsDateDrawerOpen(false); }}
-              className="w-full text-left px-4 py-4 rounded-2xl hover:bg-neutral-50 font-medium text-neutral-700 flex justify-between items-center transition-colors"
-            >
-              {d}
-              {dueDate === d && <Check className="w-5 h-5 text-primary" />}
-            </button>
-          ))}
+        <Calendar 
+          selectedDate={dueDate} 
+          onSelect={(date) => {
+            setDueDate(date);
+            setIsDateDrawerOpen(false);
+          }} 
+        />
+        <div className="mt-4 pt-4 border-t border-neutral-100 grid grid-cols-2 gap-3">
+          <button 
+            type="button"
+            onClick={() => { setDueDate(new Date()); setIsDateDrawerOpen(false); }}
+            className="py-3.5 rounded-xl bg-neutral-100 text-neutral-600 text-sm font-bold active:bg-neutral-200"
+          >
+            Hari Ini
+          </button>
+          <button 
+            type="button"
+            onClick={() => { 
+              const tomorrow = new Date();
+              tomorrow.setDate(tomorrow.getDate() + 1);
+              setDueDate(tomorrow); 
+              setIsDateDrawerOpen(false); 
+            }}
+            className="py-3.5 rounded-xl bg-neutral-100 text-neutral-600 text-sm font-bold active:bg-neutral-200"
+          >
+            Besok
+          </button>
         </div>
       </Drawer>
 
@@ -180,20 +208,21 @@ export default function NewTaskPage() {
         onClose={() => setIsTimeDrawerOpen(false)} 
         title="Pilih Jam"
       >
-        <div className="grid grid-cols-3 gap-3">
-          {["08:00", "10:00", "13:00", "15:00", "19:00", "21:00"].map((t) => (
-            <button
-              key={t}
-              onClick={() => { setDueTime(t); setIsTimeDrawerOpen(false); }}
-              className={cn(
-                "py-3 rounded-xl border text-sm font-bold transition-all",
-                dueTime === t ? "bg-primary text-white border-primary shadow-md scale-105" : "bg-neutral-50 text-neutral-600 border-neutral-200 hover:bg-neutral-100"
-              )}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
+        <TimePicker 
+          selectedTime={dueTime} 
+          onSelect={(time) => {
+            setDueTime(time);
+            // We don't close automatically for specific time input unless it's a suggestion
+            // But let's close for now to match UX flow or add a confirm button
+          }} 
+        />
+        <button
+          type="button"
+          onClick={() => setIsTimeDrawerOpen(false)}
+          className="w-full mt-6 py-4 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/20 active:scale-95 transition-transform"
+        >
+          Selesai
+        </button>
       </Drawer>
     </div>
   );

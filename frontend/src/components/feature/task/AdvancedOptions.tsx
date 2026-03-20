@@ -10,6 +10,41 @@ export function AdvancedOptions() {
   const [difficulty, setDifficulty] = useState<"Easy" | "Medium" | "Hard">("Medium");
   const [isTrackNilai, setTrackNilai] = useState(false);
 
+  // Subtasks State
+  const [subtasks, setSubtasks] = useState<{ id: string; text: string }[]>([]);
+  
+  // Links State
+  const [links, setLinks] = useState<{ id: string; title: string; url: string }[]>([]);
+  const [showLinkInput, setShowLinkInput] = useState(false);
+  const [newLink, setNewLink] = useState({ title: "", url: "" });
+
+  // Subtask Actions
+  const addSubtask = () => {
+    const id = Math.random().toString(36).substr(2, 9);
+    setSubtasks([...subtasks, { id, text: "" }]);
+  };
+
+  const updateSubtask = (id: string, text: string) => {
+    setSubtasks(subtasks.map(s => s.id === id ? { ...s, text } : s));
+  };
+
+  const removeSubtask = (id: string) => {
+    setSubtasks(subtasks.filter(s => s.id !== id));
+  };
+
+  // Link Actions
+  const addLink = () => {
+    if (!newLink.title || !newLink.url) return;
+    const id = Math.random().toString(36).substr(2, 9);
+    setLinks([...links, { id, ...newLink }]);
+    setNewLink({ title: "", url: "" });
+    setShowLinkInput(false);
+  };
+
+  const removeLink = (id: string) => {
+    setLinks(links.filter(l => l.id !== id));
+  };
+
   return (
     <div className="bg-white border-y border-neutral-100 -mx-5 px-5 py-6 mb-4">
       <button 
@@ -86,7 +121,7 @@ export function AdvancedOptions() {
                   <LineChart className="w-3.5 h-3.5" />
                   Tracking Evaluasi
                 </label>
-                <div className="p-4 rounded-xl border border-neutral-200 bg-white">
+                <div className="p-4 rounded-xl border border-neutral-200 bg-white shadow-sm">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-[14px] font-medium text-neutral-900">Track Nilai</p>
@@ -109,8 +144,8 @@ export function AdvancedOptions() {
                   
                   {isTrackNilai && (
                     <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
                       className="mt-4 pt-4 border-t border-neutral-100"
                     >
                       <label className="text-[12px] font-medium text-neutral-600 mb-2 block">Nilai Pre-test (Opsional)</label>
@@ -118,7 +153,7 @@ export function AdvancedOptions() {
                         <input 
                           type="number" 
                           placeholder="0" 
-                          className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none text-[14px] transition-all"
+                          className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none text-[14px] transition-all"
                         />
                         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 text-[14px] font-medium">%</span>
                       </div>
@@ -127,55 +162,139 @@ export function AdvancedOptions() {
                 </div>
               </div>
 
-              {/* Subtasks Placeholder */}
+              {/* Subtasks */}
               <div className="space-y-3">
                 <label className="flex items-center gap-1.5 text-[11px] font-bold text-neutral-400 tracking-wider uppercase">
                   <CheckSquare className="w-3.5 h-3.5" />
                   Subtasks
                 </label>
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3 pl-2 pr-3 py-2 rounded-xl border border-neutral-200 bg-white focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all group">
-                    <button type="button" className="text-neutral-400 cursor-grab active:cursor-grabbing hover:text-neutral-600 transition-colors shrink-0">
-                      <GripVertical className="w-5 h-5" />
-                    </button>
-                    <div className="w-5 h-5 rounded border border-neutral-300 flex items-center justify-center shrink-0"></div>
-                    <input type="text" placeholder="Review materi bab 1" className="flex-1 text-[14px] py-1.5 outline-none text-neutral-900 bg-transparent min-w-0" />
-                    <button type="button" className="text-neutral-400 hover:text-error transition-colors shrink-0">
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
+                  <AnimatePresence>
+                    {subtasks.map((subtask) => (
+                      <motion.div 
+                        key={subtask.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 10 }}
+                        className="flex items-center gap-3 pl-2 pr-3 py-2 rounded-xl border border-neutral-200 bg-white focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all group"
+                      >
+                        <div className="text-neutral-300 shrink-0">
+                          <GripVertical className="w-5 h-5" />
+                        </div>
+                        <input 
+                          type="text" 
+                          value={subtask.text}
+                          onChange={(e) => updateSubtask(subtask.id, e.target.value)}
+                          placeholder="Apa yang perlu dilakukan?" 
+                          className="flex-1 text-[14px] py-1.5 outline-none text-neutral-900 bg-transparent min-w-0" 
+                        />
+                        <button 
+                          type="button" 
+                          onClick={() => removeSubtask(subtask.id)}
+                          className="w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-error hover:bg-red-50 rounded-full transition-colors shrink-0"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
                   
-                  <button type="button" className="w-full py-3.5 rounded-xl border border-dashed border-neutral-300 text-[14px] font-medium text-neutral-600 hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all flex items-center justify-center gap-2">
-                    <Plus className="w-4 h-4" />
+                  <button 
+                    type="button" 
+                    onClick={addSubtask}
+                    className="w-full py-4 rounded-xl border-2 border-dashed border-neutral-200 text-[14px] font-bold text-neutral-500 hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                  >
+                    <Plus className="w-5 h-5" />
                     Tambah Subtask
                   </button>
                 </div>
               </div>
 
-              {/* Links Placeholder */}
-              <div className="space-y-3">
+              {/* Links */}
+              <div className="space-y-3 pb-6">
                 <label className="flex items-center gap-1.5 text-[11px] font-bold text-neutral-400 tracking-wider uppercase">
                   <LinkIcon className="w-3.5 h-3.5" />
                   Links
                 </label>
-                <div className="space-y-3 pb-4">
-                  <div className="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 bg-white">
-                    <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-error shrink-0">
-                      <Youtube className="w-5 h-5" />
-                    </div>
-                    <div className="flex-1 overflow-hidden">
-                      <p className="text-[14px] font-medium text-neutral-900 truncate">Tutorial Algoritma Dasar</p>
-                      <p className="text-[12px] text-neutral-500 truncate mt-0.5">youtube.com/watch?v=123</p>
-                    </div>
-                    <button type="button" className="w-10 h-10 flex items-center justify-center rounded-full text-neutral-400 hover:text-error hover:bg-red-50 transition-colors shrink-0">
-                      <Trash2 className="w-5 h-5" />
+                <div className="space-y-3">
+                  <AnimatePresence>
+                    {links.map((link) => (
+                      <motion.div 
+                        key={link.id}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 bg-white"
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-neutral-50 flex items-center justify-center text-neutral-500 shrink-0 border border-neutral-100">
+                          {link.url.includes("youtube.com") || link.url.includes("youtu.be") ? (
+                            <Youtube className="w-5 h-5 text-error" />
+                          ) : (
+                            <LinkIcon className="w-5 h-5" />
+                          )}
+                        </div>
+                        <div className="flex-1 overflow-hidden">
+                          <p className="text-[14px] font-bold text-neutral-900 truncate">{link.title}</p>
+                          <p className="text-[12px] text-neutral-500 truncate mt-0.5">{link.url}</p>
+                        </div>
+                        <button 
+                          type="button" 
+                          onClick={() => removeLink(link.id)}
+                          className="w-10 h-10 flex items-center justify-center rounded-full text-neutral-400 hover:text-error hover:bg-red-50 transition-colors shrink-0"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+
+                  {showLinkInput ? (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 rounded-2xl border-2 border-primary/20 bg-primary/5 space-y-3 shadow-inner"
+                    >
+                      <input 
+                        type="text" 
+                        placeholder="Judul Link (misal: Tutorial Bab 1)"
+                        value={newLink.title}
+                        onChange={(e) => setNewLink({ ...newLink, title: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none text-sm transition-all"
+                      />
+                      <input 
+                        type="url" 
+                        placeholder="https://..."
+                        value={newLink.url}
+                        onChange={(e) => setNewLink({ ...newLink, url: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none text-sm transition-all"
+                      />
+                      <div className="flex gap-2 pt-1">
+                        <button 
+                          type="button"
+                          onClick={addLink}
+                          className="flex-1 py-3.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 active:scale-95 transition-all"
+                        >
+                          Simpan Link
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={() => setShowLinkInput(false)}
+                          className="px-6 py-3.5 bg-white text-neutral-500 border border-neutral-200 rounded-xl font-bold text-sm active:scale-95 transition-all"
+                        >
+                          Batal
+                        </button>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <button 
+                      type="button" 
+                      onClick={() => setShowLinkInput(true)}
+                      className="w-full py-4 rounded-xl border-2 border-dashed border-neutral-200 text-[14px] font-bold text-neutral-500 hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                    >
+                      <Plus className="w-5 h-5" />
+                      Tambah Link
                     </button>
-                  </div>
-                  
-                  <button type="button" className="w-full py-3.5 rounded-xl border border-dashed border-neutral-300 text-[14px] font-medium text-neutral-600 hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all flex items-center justify-center gap-2">
-                    <Plus className="w-4 h-4" />
-                    Tambah Link
-                  </button>
+                  )}
                 </div>
               </div>
 
