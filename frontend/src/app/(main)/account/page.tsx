@@ -50,8 +50,8 @@ export default function AccountPage() {
             value={language}
             onChange={setLanguage}
             options={[
-              { label: "Indonesia", value: "id", flag: "🇮🇩" },
-              { label: "English", value: "en", flag: "🇺🇸" },
+              { label: "ID", value: "id" },
+              { label: "EN", value: "en" },
             ]}
             iconBgClass="bg-purple-100" // Closer to the design's purple-50
             iconColorClass="text-purple-600" // Closer to the design's purple-500
