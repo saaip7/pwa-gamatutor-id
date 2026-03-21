@@ -116,41 +116,41 @@ export default function NotificationSettingsPage() {
             {/* Time Pickers Section */}
             <div 
               className={cn(
-                "px-5 py-6 bg-white transition-all duration-300",
+                "px-4 py-6 bg-white transition-all duration-300",
                 !preferences.quietSchedule && "opacity-40 grayscale pointer-events-none"
               )}
             >
-              <div className="flex items-center gap-4">
-                <div className="flex-1 flex flex-col gap-2">
-                  <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest pl-1">
+              <div className="flex flex-row items-center gap-3">
+                <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest pl-1">
                     Mulai
                   </label>
                   <div className="relative group">
-                    <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 group-focus-within:text-primary transition-colors pointer-events-none" />
+                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400 group-focus-within:text-primary transition-colors pointer-events-none" />
                     <input 
                       type="time" 
                       value={quietTime.start}
                       onChange={(e) => setQuietTime(prev => ({ ...prev, start: e.target.value }))}
                       disabled={!preferences.quietSchedule}
-                      className="w-full pl-11 pr-4 py-3 text-sm bg-neutral-50 border border-neutral-100 rounded-xl focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 outline-none transition-all font-bold text-neutral-800"
+                      className="w-full pl-8 pr-2 py-2.5 text-xs bg-neutral-50 border border-neutral-100 rounded-xl focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 outline-none transition-all font-bold text-neutral-800"
                     />
                   </div>
                 </div>
                 
-                <div className="w-3 h-[2px] bg-neutral-200 mt-6 rounded-full shrink-0" />
+                <div className="w-4 h-[2px] bg-neutral-100 mt-5 rounded-full shrink-0" />
                 
-                <div className="flex-1 flex flex-col gap-2">
-                  <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest pl-1">
+                <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest pl-1">
                     Berakhir
                   </label>
                   <div className="relative group">
-                    <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 group-focus-within:text-primary transition-colors pointer-events-none" />
+                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400 group-focus-within:text-primary transition-colors pointer-events-none" />
                     <input 
                       type="time" 
                       value={quietTime.end}
                       onChange={(e) => setQuietTime(prev => ({ ...prev, end: e.target.value }))}
                       disabled={!preferences.quietSchedule}
-                      className="w-full pl-11 pr-4 py-3 text-sm bg-neutral-50 border border-neutral-100 rounded-xl focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 outline-none transition-all font-bold text-neutral-800"
+                      className="w-full pl-8 pr-2 py-2.5 text-xs bg-neutral-50 border border-neutral-100 rounded-xl focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 outline-none transition-all font-bold text-neutral-800"
                     />
                   </div>
                 </div>

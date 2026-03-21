@@ -66,12 +66,14 @@ export function SettingItem(props: SettingItemProps) {
 
   if (props.type === "toggle") {
     return (
-      <div className={baseContainerClasses} onClick={props.onToggle}>
+      <div 
+        className={cn(baseContainerClasses, "cursor-pointer active:bg-neutral-50/80")} 
+        onClick={props.onToggle}
+      >
         {renderIconAndLabel()}
-        <button 
-          type="button" 
+        <div
           className={cn(
-            "w-11 h-6 rounded-full relative transition-colors focus:outline-none pointer-events-none",
+            "w-11 h-6 rounded-full relative transition-colors duration-200 shrink-0 ml-4",
             props.isActive ? "bg-primary" : "bg-neutral-200"
           )}
         >
@@ -79,7 +81,7 @@ export function SettingItem(props: SettingItemProps) {
             "absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ease-in-out",
             props.isActive ? "translate-x-5" : "translate-x-0"
           )}></div>
-        </button>
+        </div>
       </div>
     );
   }

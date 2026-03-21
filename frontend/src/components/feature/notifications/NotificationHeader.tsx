@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ArrowLeft, Settings2 } from "lucide-react";
 
 export function NotificationHeader() {
@@ -18,9 +19,12 @@ export function NotificationHeader() {
       
       <h1 className="text-[16px] font-bold text-neutral-900 tracking-tight">Notifikasi</h1>
       
-      <button className="w-10 h-10 flex items-center justify-center text-neutral-500 hover:text-primary transition-colors rounded-full active:bg-blue-50">
+      <Link 
+        href="/account/notifications"
+        className="w-10 h-10 flex items-center justify-center text-neutral-500 hover:text-primary transition-colors rounded-full active:bg-blue-50"
+      >
         <Settings2 className="text-[22px]" />
-      </button>
+      </Link>
     </header>
   );
 }

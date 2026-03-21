@@ -39,7 +39,7 @@ export default function AccountPage() {
             type="link"
             icon={Bell}
             label="Notifikasi Belajar"
-            href="/notifications"
+            href="/account/notifications"
             iconBgClass="bg-primary/10"
             iconColorClass="text-primary"
           />
