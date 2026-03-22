@@ -28,7 +28,7 @@ export function LearningStrategies({ strategies }: LearningStrategiesProps) {
       <div className="flex justify-between items-center mb-5">
         <h3 className="text-sm font-bold text-neutral-800">Learning Strategies</h3>
         <Link 
-          href="/strategies" 
+          href="/progress/strategies" 
           className="text-[11px] font-bold text-primary flex items-center gap-1 hover:text-primary-hover transition-colors"
         >
           View details 
