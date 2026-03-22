@@ -223,7 +223,7 @@ export default function TaskDetailPage() {
 
       </main>
 
-      <TaskDetailActionBar status={task.status} />
+      <TaskDetailActionBar taskId={task.id} status={task.status} />
     </div>
   );
 }

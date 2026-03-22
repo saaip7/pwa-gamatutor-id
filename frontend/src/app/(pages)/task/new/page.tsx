@@ -83,11 +83,11 @@ export default function NewTaskPage() {
             </label>
             <textarea 
               id="description" 
-              rows={2} 
+              rows={5} 
               placeholder="Deskripsi tambahan (opsional)..." 
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-3.5 rounded-xl border border-neutral-200 bg-white text-[15px] placeholder:text-neutral-400 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all resize-none shadow-sm"
+              className="w-full px-4 py-3.5 rounded-xl border border-neutral-200 bg-white text-[15px] placeholder:text-neutral-400 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all resize-none shadow-sm min-h-[120px] max-h-[200px]"
             ></textarea>
           </div>
 

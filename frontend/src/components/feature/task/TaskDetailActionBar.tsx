@@ -2,12 +2,14 @@
 
 import React from "react";
 import { Play, Trash2, Edit3, Lightbulb } from "lucide-react";
+import Link from "next/link";
 
 interface TaskDetailActionBarProps {
+  taskId: string;
   status: string;
 }
 
-export function TaskDetailActionBar({ status }: TaskDetailActionBarProps) {
+export function TaskDetailActionBar({ taskId, status }: TaskDetailActionBarProps) {
   const isPlanning = status.toLowerCase() === "planning";
 
   return (
@@ -20,11 +22,12 @@ export function TaskDetailActionBar({ status }: TaskDetailActionBarProps) {
       )}
       
       <div className="flex items-center gap-3">
-        <button 
+        <Link 
+          href={`/task/${taskId}/edit`}
           className="w-12 h-12 flex items-center justify-center rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-600 active:scale-95 transition-all shrink-0"
         >
           <Edit3 className="w-5 h-5" />
-        </button>
+        </Link>
         
         <button 
           disabled={isPlanning}
