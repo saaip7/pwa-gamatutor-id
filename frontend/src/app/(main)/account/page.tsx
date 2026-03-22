@@ -63,7 +63,7 @@ export default function AccountPage() {
             type="link"
             icon={User}
             label="Edit Profil"
-            href="/account/edit"
+            href="/account/wardrobe"
             iconBgClass="bg-amber-100"
             iconColorClass="text-amber-600"
           />

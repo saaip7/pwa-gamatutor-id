@@ -4,6 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Flame, Timer, CheckCircle2, ShieldCheck, Palette } from "lucide-react";
 import { AchievementBanner } from "@/components/feature/mastery/AchievementBanner";
+import Link from "next/link";
 
 interface UserStats {
   streak: number;
@@ -71,9 +72,12 @@ export function CharacterShowcase({ stats }: CharacterShowcaseProps) {
             </div>
 
             {/* Customize Button */}
-            <button className="absolute top-3 right-3 w-10 h-10 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 hover:text-neutral-600 hover:shadow-sm hover:border-neutral-300 transition-all z-20 active:scale-95 cursor-pointer">
+            <Link 
+              href="/account/wardrobe"
+              className="absolute top-3 right-3 w-10 h-10 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 hover:text-neutral-600 hover:shadow-sm hover:border-neutral-300 transition-all z-20 active:scale-95 cursor-pointer"
+            >
               <Palette className="w-5 h-5" />
-            </button>
+            </Link>
 
             {/* Lighting & Shadows */}
             <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/80 rounded-full blur-3xl z-0 pointer-events-none"></div>
