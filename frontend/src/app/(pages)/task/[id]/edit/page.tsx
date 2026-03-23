@@ -24,36 +24,43 @@ import { AdvancedOptions } from "@/components/feature/task/AdvancedOptions";
 import { TaskStatusStepper, TaskStatus } from "@/components/feature/task/TaskStatusStepper";
 import { cn } from "@/lib/utils";
 
-// Mock Data for Pre-filling
-const MOCK_TASK_DATA = {
-  id: "1",
-  course: "Algoritma & Pemrograman",
-  taskName: "Review materi sorting",
-  description: "Pelajari bubble sort dan insertion sort untuk persiapan kuis minggu depan. Buat ringkasan kompleksitas waktu dan contoh code dalam Python.",
-  strategy: "Practice Questions" as LearningStrategy,
-  goal: "Persiapan kuis mingguan",
-  priority: "High" as PriorityLevel,
-  dueDate: new Date(2025, 1, 28),
-  dueTime: "23:59",
-  status: "Monitoring" as TaskStatus,
-  createdAt: "24 Feb 2025, 14:30",
-  updatedAt: "26 Feb 2025, 09:15"
+// Mock Data Generator for Pre-filling
+const getMockTaskData = (id: string) => {
+  const isTask1 = id === "task-1" || id === "1";
+  return {
+    id: id,
+    course: isTask1 ? "MATH201 - Calculus II" : "Algoritma & Pemrograman",
+    taskName: isTask1 ? "Calculus Chapter 4 Review" : "Review materi sorting",
+    description: isTask1 
+      ? "Review all formulas and practice problems for the upcoming midterm focused on derivatives."
+      : "Pelajari bubble sort dan insertion sort untuk persiapan kuis minggu depan. Buat ringkasan kompleksitas waktu dan contoh code dalam Python.",
+    strategy: "Practice Questions" as LearningStrategy,
+    goal: isTask1 ? "Memahami turunan parsial" : "Persiapan kuis mingguan",
+    priority: isTask1 ? ("Medium" as PriorityLevel) : ("High" as PriorityLevel),
+    dueDate: new Date(2025, 1, 28),
+    dueTime: "23:59",
+    status: isTask1 ? ("Monitoring" as TaskStatus) : ("Planning" as TaskStatus),
+    createdAt: "24 Feb 2025, 14:30",
+    updatedAt: "26 Feb 2025, 09:15"
+  };
 };
 
 export default function EditTaskPage() {
   const router = useRouter();
   const params = useParams();
-  
+  const id = params?.id as string;
+  const mockData = getMockTaskData(id);
+
   // Form State
-  const [status, setStatus] = useState<TaskStatus>(MOCK_TASK_DATA.status);
-  const [course, setCourse] = useState(MOCK_TASK_DATA.course);
-  const [taskName, setTaskName] = useState(MOCK_TASK_DATA.taskName);
-  const [description, setDescription] = useState(MOCK_TASK_DATA.description);
-  const [strategy, setStrategy] = useState<LearningStrategy | "">(MOCK_TASK_DATA.strategy);
-  const [goal, setGoal] = useState(MOCK_TASK_DATA.goal);
-  const [priority, setPriority] = useState<PriorityLevel>(MOCK_TASK_DATA.priority);
-  const [dueDate, setDueDate] = useState<Date | null>(MOCK_TASK_DATA.dueDate);
-  const [dueTime, setDueTime] = useState(MOCK_TASK_DATA.dueTime);
+  const [status, setStatus] = useState<TaskStatus>(mockData.status);
+  const [course, setCourse] = useState(mockData.course);
+  const [taskName, setTaskName] = useState(mockData.taskName);
+  const [description, setDescription] = useState(mockData.description);
+  const [strategy, setStrategy] = useState<LearningStrategy | "">(mockData.strategy);
+  const [goal, setGoal] = useState(mockData.goal);
+  const [priority, setPriority] = useState<PriorityLevel>(mockData.priority);
+  const [dueDate, setDueDate] = useState<Date | null>(mockData.dueDate);
+  const [dueTime, setDueTime] = useState(mockData.dueTime);
 
   // UI State
   const [isDateDrawerOpen, setIsDateDrawerOpen] = useState(false);
@@ -164,8 +171,8 @@ export default function EditTaskPage() {
           {/* Meta & Danger Zone */}
           <section className="flex flex-col items-center gap-8 pt-4 pb-10">
             <div className="text-center space-y-1.5">
-              <p className="text-[10px] font-black text-neutral-300 uppercase tracking-widest">Dibuat: {MOCK_TASK_DATA.createdAt}</p>
-              <p className="text-[10px] font-black text-neutral-300 uppercase tracking-widest">Terakhir diupdate: {MOCK_TASK_DATA.updatedAt}</p>
+              <p className="text-[10px] font-black text-neutral-300 uppercase tracking-widest">Dibuat: {mockData.createdAt}</p>
+              <p className="text-[10px] font-black text-neutral-300 uppercase tracking-widest">Terakhir diupdate: {mockData.updatedAt}</p>
             </div>
             
             <div className="w-full space-y-3.5">

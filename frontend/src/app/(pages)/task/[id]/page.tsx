@@ -22,36 +22,47 @@ import { GoalSection } from "@/components/feature/task/GoalSection";
 import { TaskDetailActionBar } from "@/components/feature/task/TaskDetailActionBar";
 import { cn } from "@/lib/utils";
 
-// Mock Data for Slicing
-const MOCK_TASK = {
-  id: "1",
-  title: "Review Materi Sorting: Bubble & Insertion Sort",
-  course: "Algoritma & Struktur Data",
-  status: "Planning",
-  goal: "Persiapan UTS & memahami konsep sorting dasar sebagai fondasi untuk struktur data yang lebih kompleks.",
-  strategy: "Video Tutorial",
-  bestRecord: "2j 15m",
-  dueDate: "28 Feb 2025",
-  priority: "High",
-  description: "Tonton video penjelasan visual algoritma sorting, lalu coba implementasikan kembali menggunakan Python tanpa melihat referensi. Fokus pada perbandingan jumlah iterasi.",
-  subtasks: [
-    { id: "s1", text: "Nonton video bab sorting", completed: true },
-    { id: "s2", text: "Catat poin penting", completed: true },
-    { id: "s3", text: "Latihan implementasi Bubble Sort", completed: false },
-    { id: "s4", text: "Latihan implementasi Insertion Sort", completed: false },
-    { id: "s5", text: "Analisis kompleksitas waktu", completed: false },
-  ],
-  links: [
-    { id: "l1", title: "Visualgo: Sorting Visualization", url: "visualgo.net/en/sorting", type: "web" },
-    { id: "l2", title: "Sorting Algorithm Document.pdf", url: "Google Drive Reference", type: "file" },
-  ]
+// Mock Data Generator for Slicing
+const getMockTask = (id: string) => {
+  const isTask1 = id === "task-1" || id === "1";
+  
+  return {
+    id: id,
+    title: isTask1 ? "Calculus Chapter 4 Review" : "Review Materi Sorting: Bubble & Insertion Sort",
+    course: isTask1 ? "MATH201 - Calculus II" : "Algoritma & Struktur Data",
+    status: isTask1 ? "Monitoring" : "Planning",
+    goal: isTask1 
+      ? "Memahami turunan parsial untuk persiapan kuis minggu depan."
+      : "Persiapan UTS & memahami konsep sorting dasar sebagai fondasi untuk struktur data yang lebih kompleks.",
+    strategy: "Video Tutorial",
+    bestRecord: "2j 15m",
+    dueDate: "28 Feb 2025",
+    priority: isTask1 ? "Medium" : "High",
+    description: isTask1
+      ? "Review all formulas and practice problems for the upcoming midterm focused on derivatives."
+      : "Tonton video penjelasan visual algoritma sorting, lalu coba implementasikan kembali menggunakan Python tanpa melihat referensi.",
+    subtasks: [
+      { id: "s1", text: "Nonton video bab terkait", completed: true },
+      { id: "s2", text: "Catat poin penting", completed: isTask1 },
+      { id: "s3", text: "Latihan soal mandiri", completed: false },
+    ],
+    links: [
+      { id: "l1", title: "Video Tutorial", url: "youtube.com/watch?v=123", type: "video" },
+    ]
+  };
 };
 
 export default function TaskDetailPage() {
   const params = useParams();
+  const id = params?.id as string;
   
   // State for Task (to allow interactivity in slicing)
-  const [task, setTask] = React.useState(MOCK_TASK);
+  const [task, setTask] = React.useState(getMockTask(id));
+
+  // Sync state if ID changes
+  React.useEffect(() => {
+    setTask(getMockTask(id));
+  }, [id]);
 
   const toggleSubtask = (subtaskId: string) => {
     setTask(prev => ({

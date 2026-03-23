@@ -3,6 +3,7 @@
 import React from "react";
 import { Play, Trash2, Edit3, Lightbulb } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 interface TaskDetailActionBarProps {
   taskId: string;
@@ -29,17 +30,18 @@ export function TaskDetailActionBar({ taskId, status }: TaskDetailActionBarProps
           <Edit3 className="w-5 h-5" />
         </Link>
         
-        <button 
-          disabled={isPlanning}
-          className={`flex-1 h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-[15px] transition-all active:scale-[0.98] shadow-lg ${
+        <Link 
+          href={`/task/${taskId}/focus`}
+          className={cn(
+            "flex-1 h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-[15px] transition-all active:scale-[0.98] shadow-lg",
             isPlanning 
-              ? "bg-neutral-100 text-neutral-400 cursor-not-allowed border border-neutral-200" 
+              ? "bg-neutral-100 text-neutral-400 cursor-not-allowed border border-neutral-200 pointer-events-none" 
               : "bg-primary text-white shadow-primary/20"
-          }`}
+          )}
         >
           <Play className="w-5 h-5 fill-current" />
           Mulai Sesi Fokus
-        </button>
+        </Link>
         
         <button 
           className="w-12 h-12 flex items-center justify-center rounded-xl bg-red-50 border border-red-100 text-red-500 active:scale-95 transition-all shrink-0"
