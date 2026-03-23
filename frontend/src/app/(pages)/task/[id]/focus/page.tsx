@@ -27,9 +27,8 @@ export default function FocusModePage() {
   const params = useParams();
 
   const handleFinish = () => {
-    // Navigate to reflection page (next step)
-    console.log("Session finished for task:", params.id);
-    router.back();
+    // Navigate to reflection page
+    router.push(`/task/${params.id}/reflection`);
   };
 
   return (
