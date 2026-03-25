@@ -44,24 +44,24 @@ export function Drawer({ isOpen, onClose, title, children }: DrawerProps) {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-[32px] shadow-[0_-8px_30px_rgba(0,0,0,0.1)] flex flex-col max-h-[90dvh]"
+            className="fixed bottom-0 left-0 right-0 mx-auto max-w-md z-50 bg-white rounded-t-[32px] shadow-[0_-8px_30px_rgba(0,0,0,0.2)] flex flex-col max-h-[92dvh]"
           >
             {/* Handle bar */}
-            <div className="w-12 h-1.5 bg-neutral-200 rounded-full mx-auto mt-3 mb-2 shrink-0" />
+            <div className="w-12 h-1.5 bg-neutral-200 rounded-full mx-auto mt-4 mb-2 shrink-0" />
 
             {/* Header */}
             <div className="px-6 py-4 flex items-center justify-between border-b border-neutral-50 shrink-0">
-              <h2 className="text-lg font-bold text-neutral-800">{title}</h2>
+              <h2 className="text-lg font-bold text-neutral-800 tracking-tight">{title}</h2>
               <button 
                 onClick={onClose}
-                className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 active:scale-90 transition-transform"
+                className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 active:scale-90 transition-transform"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Body */}
-            <div className="flex-1 overflow-y-auto p-6 no-scrollbar pb-[env(safe-area-inset-bottom,24px)]">
+            <div className="flex-1 overflow-y-auto p-6 no-scrollbar pb-[calc(32px+env(safe-area-inset-bottom,24px))]">
               {children}
             </div>
           </motion.div>

@@ -3,6 +3,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Flame, Timer, CheckCircle2, ShieldCheck, Palette } from "lucide-react";
+import { AchievementBanner } from "@/components/feature/mastery/AchievementBanner";
+import Link from "next/link";
 
 interface UserStats {
   streak: number;
@@ -17,8 +19,6 @@ interface CharacterShowcaseProps {
 }
 
 export function CharacterShowcase({ stats }: CharacterShowcaseProps) {
-  const badgeProgressPercent = (stats.badgesUnlocked / stats.totalBadges) * 100;
-
   return (
     <motion.div 
       className="px-6 mb-8"
@@ -72,9 +72,12 @@ export function CharacterShowcase({ stats }: CharacterShowcaseProps) {
             </div>
 
             {/* Customize Button */}
-            <button className="absolute top-3 right-3 w-10 h-10 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 hover:text-neutral-600 hover:shadow-sm hover:border-neutral-300 transition-all z-20 active:scale-95 cursor-pointer">
+            <Link 
+              href="/account/wardrobe"
+              className="absolute top-3 right-3 w-10 h-10 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 hover:text-neutral-600 hover:shadow-sm hover:border-neutral-300 transition-all z-20 active:scale-95 cursor-pointer"
+            >
               <Palette className="w-5 h-5" />
-            </button>
+            </Link>
 
             {/* Lighting & Shadows */}
             <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/80 rounded-full blur-3xl z-0 pointer-events-none"></div>
@@ -88,6 +91,7 @@ export function CharacterShowcase({ stats }: CharacterShowcaseProps) {
             {/* Character SVG */}
             <div className="relative z-10 h-[250px] drop-shadow-[0_16px_24px_rgba(0,0,0,0.15)] flex items-end justify-center mb-4">
               <svg className="h-full w-auto" viewBox="0 0 128 352" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  {/* (Path content remains the same as previously read) */}
                   <path d="M43.6799 342.765C47.9322 345.469 53.572 344.215 56.2767 339.962C57.1937 338.521 57.5479 337.314 57.8032 335.816C57.9251 335.101 58.0074 334.33 58.067 333.457C58.1617 332.067 58.2022 330.328 58.198 328.212C58.1906 324.526 58.0458 319.639 57.7834 313.755C57.3555 304.159 56.6176 292.1 55.8758 281.872C55.5112 276.846 51.1409 273.067 46.1145 273.431C41.0881 273.796 37.309 278.166 37.6736 283.193C38.4041 293.263 39.1319 305.16 39.5515 314.568C39.8034 320.216 39.9412 324.869 39.948 328.248C39.9515 329.975 39.9201 331.323 39.8592 332.216C39.8545 332.286 39.8497 332.35 39.8451 332.408C38.6792 336.232 40.1421 340.514 43.6799 342.765Z" fill="#4A4E52"/>
                   <path fillRule="evenodd" clipRule="evenodd" d="M83.0837 342.75C78.0441 342.75 73.9587 338.665 73.9587 333.625C73.9587 331.774 74.5099 330.051 75.4573 328.613C75.402 329.053 75.3451 329.404 75.2891 329.656C75.2812 329.692 75.2821 329.689 75.2987 329.639L75.3045 329.621C75.3845 329.379 75.5051 329.09 75.7033 328.728C76.1179 327.97 76.6942 327.216 77.5653 326.489C79.025 325.27 80.9381 324.503 83.07 324.5C79.8871 324.505 77.0866 326.139 75.4574 328.612C75.5499 327.876 75.6376 326.89 75.7076 325.703C75.941 321.751 75.9663 316.027 75.8021 308.967C75.5377 297.596 74.7762 283.06 73.9826 272.12C73.6179 267.094 77.397 262.724 82.4234 262.359C87.4498 261.994 91.8201 265.773 92.1847 270.8C92.9985 282.017 93.7751 296.841 94.0472 308.542C94.222 316.061 94.1947 322.225 93.9259 326.779C93.7616 329.561 93.5079 331.798 93.1056 333.611C92.7914 335.026 92.3808 336.269 91.7123 337.49C91.1114 338.588 90.3388 339.599 89.2612 340.499C87.5891 341.894 85.4513 342.75 83.0837 342.75ZM75.4574 328.612C75.4574 328.613 75.4573 328.613 75.4573 328.613C75.4573 328.613 75.4573 328.613 75.4573 328.613C75.4573 328.613 75.4573 328.613 75.4574 328.613C75.4574 328.613 75.4574 328.613 75.4574 328.612Z" fill="#4A4E52"/>
                   <path d="M27.458 227.275L60.1273 230.204V319.873H37.209L27.458 227.275Z" fill="#2B353C"/>
@@ -164,20 +168,15 @@ export function CharacterShowcase({ stats }: CharacterShowcaseProps) {
               </svg>
             </div>
           </div>
-
-          {/* Character Badge Progress */}
-          <div className="text-center mt-5 mb-1 w-full relative z-20">
-            <div className="flex flex-col items-center gap-2">
-              <p className="text-[13px] font-medium text-neutral-600">
-                <span className="font-bold text-neutral-800">{stats.badgesUnlocked}/{stats.totalBadges}</span> Badges Unlocked
-              </p>
-              <div className="w-40 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
-                <div className="h-full bg-primary rounded-full" style={{ width: `${badgeProgressPercent}%` }}></div>
-              </div>
-            </div>
-          </div>
-
         </div>
+      </div>
+
+      {/* Achievement Banner as separate section */}
+      <div className="mt-6">
+        <AchievementBanner 
+          unlockedCount={stats.badgesUnlocked} 
+          totalCount={stats.totalBadges} 
+        />
       </div>
     </motion.div>
   );
