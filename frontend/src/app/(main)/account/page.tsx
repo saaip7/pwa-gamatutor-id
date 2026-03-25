@@ -39,7 +39,7 @@ export default function AccountPage() {
             type="link"
             icon={Bell}
             label="Notifikasi Belajar"
-            href="/notifications"
+            href="/account/notifications"
             iconBgClass="bg-primary/10"
             iconColorClass="text-primary"
           />
@@ -50,8 +50,8 @@ export default function AccountPage() {
             value={language}
             onChange={setLanguage}
             options={[
-              { label: "Indonesia", value: "id", flag: "🇮🇩" },
-              { label: "English", value: "en", flag: "🇺🇸" },
+              { label: "ID", value: "id" },
+              { label: "EN", value: "en" },
             ]}
             iconBgClass="bg-purple-100" // Closer to the design's purple-50
             iconColorClass="text-purple-600" // Closer to the design's purple-500
@@ -63,7 +63,7 @@ export default function AccountPage() {
             type="link"
             icon={User}
             label="Edit Profil"
-            href="/account/edit"
+            href="/account/wardrobe"
             iconBgClass="bg-amber-100"
             iconColorClass="text-amber-600"
           />

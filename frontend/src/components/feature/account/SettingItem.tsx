@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 interface SettingItemBase {
   icon: React.ElementType;
   label: string;
+  description?: string;
   iconBgClass?: string;
   iconColorClass?: string;
 }
@@ -41,11 +42,16 @@ export function SettingItem(props: SettingItemProps) {
   const baseContainerClasses = "flex items-center justify-between px-4 py-4 border-b border-neutral-50 hover:bg-neutral-50/50 transition-colors cursor-pointer last:border-b-0";
 
   const renderIconAndLabel = () => (
-    <div className="flex items-center gap-3.5">
-      <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", iconBgClass, iconColorClass)}>
+    <div className={cn("flex gap-3.5", props.description ? "items-start" : "items-center")}>
+      <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", iconBgClass, iconColorClass)}>
         <Icon className="w-5 h-5" />
       </div>
-      <span className="text-[15px] font-semibold text-neutral-800">{label}</span>
+      <div className="flex flex-col gap-0.5">
+        <span className="text-[15px] font-semibold text-neutral-800 leading-tight">{label}</span>
+        {props.description && (
+          <p className="text-[12px] text-neutral-500 leading-snug pr-4">{props.description}</p>
+        )}
+      </div>
     </div>
   );
 
@@ -60,12 +66,14 @@ export function SettingItem(props: SettingItemProps) {
 
   if (props.type === "toggle") {
     return (
-      <div className={baseContainerClasses} onClick={props.onToggle}>
+      <div 
+        className={cn(baseContainerClasses, "cursor-pointer active:bg-neutral-50/80")} 
+        onClick={props.onToggle}
+      >
         {renderIconAndLabel()}
-        <button 
-          type="button" 
+        <div
           className={cn(
-            "w-11 h-6 rounded-full relative transition-colors focus:outline-none pointer-events-none",
+            "w-11 h-6 rounded-full relative transition-colors duration-200 shrink-0 ml-4",
             props.isActive ? "bg-primary" : "bg-neutral-200"
           )}
         >
@@ -73,7 +81,7 @@ export function SettingItem(props: SettingItemProps) {
             "absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ease-in-out",
             props.isActive ? "translate-x-5" : "translate-x-0"
           )}></div>
-        </button>
+        </div>
       </div>
     );
   }

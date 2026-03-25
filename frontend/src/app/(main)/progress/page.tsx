@@ -8,6 +8,7 @@ import { ProgressSummary, SummaryData } from "@/components/feature/progress/Prog
 import { MasteryTrendChart } from "@/components/feature/progress/MasteryTrendChart";
 import { TaskDistributionChart, TaskDistributionData } from "@/components/feature/progress/TaskDistributionChart";
 import { LearningStrategies, StrategyItem } from "@/components/feature/progress/LearningStrategies";
+import { AchievementBanner } from "@/components/feature/mastery/AchievementBanner";
 
 // TODO: Fetch from API
 const MOCK_PROGRESS_DATA = {
@@ -63,6 +64,12 @@ export default function ProgressPage() {
         <PeriodSelector 
           activePeriod={activePeriod} 
           onPeriodChange={setActivePeriod} 
+        />
+        
+        <AchievementBanner 
+          unlockedCount={8} 
+          totalCount={10} 
+          className="mb-6"
         />
         
         <ProgressSummary data={MOCK_PROGRESS_DATA.summary} />

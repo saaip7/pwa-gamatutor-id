@@ -143,10 +143,10 @@ body {
   animation: twinkle 3s ease-in-out infinite;
 }
 
-@keyframes glow-pulse {
-  0%, 100% { opacity: 0.2; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.15); }
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(0.98); }
 }
-.animate-glow-pulse {
-  animation: glow-pulse 5s ease-in-out infinite;
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
 }
