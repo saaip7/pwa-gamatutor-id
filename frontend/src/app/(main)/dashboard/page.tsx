@@ -7,7 +7,7 @@ import { StudyPatterns } from "@/components/feature/dashboard/StudyPatterns";
 import { TodayTasksList } from "@/components/feature/dashboard/TodayTasksList";
 import { Task } from "@/components/ui/TaskCard";
 import { StreakHub, StreakData } from "@/components/feature/streak/StreakHub";
-import { StreakDay } from "@/components/feature/streak/StreakCalendar";
+import { StreakFreezeCelebration } from "@/components/feature/streak/StreakFreezeCelebration";
 
 // TODO: Fetch from API
 const MOCK_USER_DATA = {
@@ -84,12 +84,12 @@ const STREAK_SHOWN_KEY = "streak_hub_shown";
 
 export default function DashboardPage() {
   const [isStreakHubOpen, setIsStreakHubOpen] = useState(false);
+  const [isCelebrationOpen, setIsCelebrationOpen] = useState(false);
 
   // Auto-show streak hub on mount if streak >= 2 and not already shown this session
   useEffect(() => {
     const alreadyShown = sessionStorage.getItem(STREAK_SHOWN_KEY);
     if (!alreadyShown && MOCK_STREAK_DATA.current >= 2) {
-      // Small delay so the dashboard renders first, then modal appears
       const timer = setTimeout(() => {
         setIsStreakHubOpen(true);
         sessionStorage.setItem(STREAK_SHOWN_KEY, "1");
@@ -97,6 +97,12 @@ export default function DashboardPage() {
       return () => clearTimeout(timer);
     }
   }, []);
+
+  const handleUseFreeze = () => {
+    // Close streak hub, then show celebration
+    setIsStreakHubOpen(false);
+    setTimeout(() => setIsCelebrationOpen(true), 300);
+  };
 
   return (
     <>
@@ -119,6 +125,13 @@ export default function DashboardPage() {
         isOpen={isStreakHubOpen}
         onClose={() => setIsStreakHubOpen(false)}
         data={MOCK_STREAK_DATA}
+        onUseFreeze={handleUseFreeze}
+      />
+
+      {/* Streak Freeze Celebration Overlay */}
+      <StreakFreezeCelebration
+        isOpen={isCelebrationOpen}
+        onClose={() => setIsCelebrationOpen(false)}
       />
     </>
   );
