@@ -34,8 +34,8 @@ export function StreakCalendar({ days }: StreakCalendarProps) {
             </div>
           )}
           {day.state === "today" && (
-            <div className="flex flex-col items-center gap-2.5 relative">
-              <div className="absolute -top-6 text-[10px] font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-md">
+            <div className="relative flex flex-col items-center gap-2.5">
+              <div className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-md whitespace-nowrap">
                 Hari ini
               </div>
               <div className="w-[42px] h-[42px] rounded-full bg-neutral-50 text-neutral-300 flex items-center justify-center border-2 border-dashed border-neutral-200 shadow-sm">

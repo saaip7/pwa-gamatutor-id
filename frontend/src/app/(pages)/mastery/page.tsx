@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -23,9 +23,19 @@ import { motion, Variants } from "framer-motion";
 import { MasterySVGDefs } from "@/components/feature/mastery/MasterySVGDefs";
 import { MasterySection } from "@/components/feature/mastery/MasterySection";
 import { MasteryBadgeCard } from "@/components/feature/mastery/MasteryBadgeCard";
+import { BadgeUnlockedCelebration } from "@/components/feature/mastery/BadgeUnlockedCelebration";
+import type { BadgeCelebrationData } from "@/components/feature/mastery/BadgeUnlockedCelebration";
 
 export default function MasteryPage() {
   const router = useRouter();
+  const [celebrationOpen, setCelebrationOpen] = useState(false);
+
+  const MOCK_CELEBRATION: BadgeCelebrationData = {
+    name: "Deep Diver",
+    subtitle: "Fokus mendalam tanpa distraksi achieved.",
+    icon: Target,
+    shape: "hexagon",
+  };
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -97,12 +107,13 @@ export default function MasteryPage() {
           {/* 2. PERFORMANCE */}
           <motion.div variants={itemVariants}>
             <MasterySection title="Performance" icon={Zap} iconColor="text-amber-500">
-              <MasteryBadgeCard 
-                title="Deep Diver" 
-                description="Fokus mendalam tanpa distraksi." 
-                shape="hexagon" 
-                icon={Target} 
-                isUnlocked={true} 
+              <MasteryBadgeCard
+                title="Deep Diver"
+                description="Fokus mendalam tanpa distraksi."
+                shape="hexagon"
+                icon={Target}
+                isUnlocked={true}
+                onClick={() => setCelebrationOpen(true)}
               />
               <MasteryBadgeCard 
                 title="Marathoner" 
@@ -170,6 +181,13 @@ export default function MasteryPage() {
 
         </motion.div>
       </main>
+
+      {/* Badge Unlocked Celebration Overlay */}
+      <BadgeUnlockedCelebration
+        isOpen={celebrationOpen}
+        onClose={() => setCelebrationOpen(false)}
+        data={MOCK_CELEBRATION}
+      />
     </div>
   );
 }

@@ -17,12 +17,14 @@ interface StreakHubProps {
   isOpen: boolean;
   onClose: () => void;
   data: StreakData;
+  onUseFreeze?: () => void;
 }
 
-export function StreakHub({ isOpen, onClose, data }: StreakHubProps) {
+export function StreakHub({ isOpen, onClose, data, onUseFreeze }: StreakHubProps) {
   const handleUseFreeze = () => {
     // TODO: Call API to use streak freeze
     console.log("Streak freeze used");
+    onUseFreeze?.();
   };
 
   return (

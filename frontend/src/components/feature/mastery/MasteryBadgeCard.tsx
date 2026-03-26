@@ -13,11 +13,13 @@ interface MasteryBadgeCardProps {
   shape: BadgeShape;
   icon: LucideIcon;
   isUnlocked?: boolean;
+  onClick?: () => void;
 }
 
-export function MasteryBadgeCard({ title, description, shape, icon, isUnlocked = false }: MasteryBadgeCardProps) {
+export function MasteryBadgeCard({ title, description, shape, icon, isUnlocked = false, onClick }: MasteryBadgeCardProps) {
   return (
     <motion.button
+      onClick={onClick}
       whileHover={isUnlocked ? { y: -4 } : { y: -1 }}
       whileTap={isUnlocked ? { y: -1 } : undefined}
       className={cn(

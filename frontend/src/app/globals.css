@@ -210,3 +210,36 @@ body {
   animation: flameFlicker 2.5s ease-in-out infinite alternate;
   transform-origin: bottom center;
 }
+
+/* Snowfall Particles */
+@keyframes snowFall {
+  0% { transform: translateY(-10vh) translateX(0); opacity: 0; }
+  10% { opacity: 0.7; }
+  90% { opacity: 0.5; }
+  100% { transform: translateY(100vh) translateX(0); opacity: 0; }
+}
+.particle-container {
+  animation: snowFall 10s linear infinite;
+  will-change: transform;
+}
+
+.particle-inner {
+  display: inline-block;
+  animation: snowSway ease-in-out infinite alternate;
+  color: var(--particle-color, rgba(147, 197, 253, 0.7));
+}
+
+@keyframes snowSway {
+  from { transform: translateX(0) rotate(0deg); }
+  to { transform: translateX(var(--sway-amt, 20px)) rotate(var(--rot-amt, 180deg)); }
+}
+
+.particle-icon {
+  filter: drop-shadow(0 0 4px var(--particle-shadow, rgba(147, 197, 253, 0.4)));
+}
+
+.particle-blur {
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--particle-blur-inner, rgba(147, 197, 253, 0.6)) 0%, transparent 70%);
+  filter: blur(1px);
+}
