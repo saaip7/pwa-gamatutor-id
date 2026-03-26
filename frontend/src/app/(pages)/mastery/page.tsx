@@ -2,22 +2,22 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { 
-  ArrowLeft, 
-  Layers, 
-  Zap, 
-  Brain, 
-  Crown, 
-  Sprout, 
-  Square, 
-  Target, 
-  Timer, 
-  Flame, 
-  BookOpen, 
-  Compass, 
-  Mountain, 
-  TrendingUp, 
-  Award 
+import {
+  ArrowLeft,
+  Layers,
+  Zap,
+  Brain,
+  Crown,
+  Sprout,
+  Square,
+  Target,
+  Timer,
+  Flame,
+  BookOpen,
+  Compass,
+  Mountain,
+  TrendingUp,
+  Award
 } from "lucide-react";
 import { motion, Variants } from "framer-motion";
 import { MasterySVGDefs } from "@/components/feature/mastery/MasterySVGDefs";
@@ -111,12 +111,12 @@ export default function MasteryPage() {
                 icon={Timer} 
                 isUnlocked={true} 
               />
-              <MasteryBadgeCard 
-                title="Ritualist" 
-                description="Selesaikan 7 hari streak belajar." 
-                shape="hexagon" 
-                icon={Flame} 
-                isUnlocked={true} 
+              <MasteryBadgeCard
+                title="Ritualist"
+                description="Selesaikan 7 hari streak belajar."
+                shape="hexagon"
+                icon={Flame}
+                isUnlocked={false}
               />
             </MasterySection>
           </motion.div>
@@ -131,19 +131,19 @@ export default function MasteryPage() {
                 icon={BookOpen} 
                 isUnlocked={true} 
               />
-              <MasteryBadgeCard 
-                title="Strategist" 
-                description="Buat 5 rencana belajar detail." 
-                shape="circle" 
-                icon={Compass} 
-                isUnlocked={true} 
+              <MasteryBadgeCard
+                title="Strategist"
+                description="Buat 5 rencana belajar detail."
+                shape="circle"
+                icon={Compass}
+                isUnlocked={false}
               />
-              <MasteryBadgeCard 
-                title="Explorer" 
-                description="Selesaikan topik di luar zona nyaman." 
-                shape="circle" 
-                icon={Mountain} 
-                isUnlocked={true} 
+              <MasteryBadgeCard
+                title="Explorer"
+                description="Selesaikan topik di luar zona nyaman."
+                shape="circle"
+                icon={Mountain}
+                isUnlocked={false}
               />
             </MasterySection>
           </motion.div>
@@ -151,19 +151,19 @@ export default function MasteryPage() {
           {/* 4. MASTERY */}
           <motion.div variants={itemVariants}>
             <MasterySection title="Mastery" icon={Crown} iconColor="text-blue-500">
-              <MasteryBadgeCard 
-                title="Improver" 
-                description="Tingkatkan skor di 3 kuis berturut." 
-                shape="shield" 
-                icon={TrendingUp} 
-                isUnlocked={true} 
+              <MasteryBadgeCard
+                title="Improver"
+                description="Tingkatkan skor di 3 kuis berturut."
+                shape="shield"
+                icon={TrendingUp}
+                isUnlocked={false}
               />
-              <MasteryBadgeCard 
-                title="Zenith" 
-                description="Capaian tertinggi. Master 3 kategori." 
-                shape="shield" 
-                icon={Award} 
-                isUnlocked={true} 
+              <MasteryBadgeCard
+                title="Zenith"
+                description="Capaian tertinggi. Master 3 kategori."
+                shape="shield"
+                icon={Award}
+                isUnlocked={false}
               />
             </MasterySection>
           </motion.div>
