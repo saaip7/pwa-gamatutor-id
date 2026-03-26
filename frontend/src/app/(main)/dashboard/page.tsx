@@ -1,9 +1,13 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import { DashboardHeader } from "@/components/feature/dashboard/DashboardHeader";
 import { CharacterShowcase } from "@/components/feature/dashboard/CharacterShowcase";
 import { StudyPatterns } from "@/components/feature/dashboard/StudyPatterns";
 import { TodayTasksList } from "@/components/feature/dashboard/TodayTasksList";
 import { Task } from "@/components/ui/TaskCard";
+import { StreakHub, StreakData } from "@/components/feature/streak/StreakHub";
+import { StreakDay } from "@/components/feature/streak/StreakCalendar";
 
 // TODO: Fetch from API
 const MOCK_USER_DATA = {
@@ -60,19 +64,62 @@ const MOCK_USER_DATA = {
   ],
 };
 
+// TODO: Fetch from API — this would come from analytics endpoint
+const MOCK_STREAK_DATA: StreakData = {
+  current: 7,
+  longest: 12,
+  days: [
+    { label: "Sen", state: "completed" },
+    { label: "Sel", state: "completed" },
+    { label: "Rab", state: "freeze" },
+    { label: "Kam", state: "completed" },
+    { label: "Jum", state: "today" },
+    { label: "Sab", state: "future" },
+    { label: "Min", state: "future" },
+  ],
+  freezesAvailable: 1,
+};
+
+const STREAK_SHOWN_KEY = "streak_hub_shown";
+
 export default function DashboardPage() {
+  const [isStreakHubOpen, setIsStreakHubOpen] = useState(false);
+
+  // Auto-show streak hub on mount if streak >= 2 and not already shown this session
+  useEffect(() => {
+    const alreadyShown = sessionStorage.getItem(STREAK_SHOWN_KEY);
+    if (!alreadyShown && MOCK_STREAK_DATA.current >= 2) {
+      // Small delay so the dashboard renders first, then modal appears
+      const timer = setTimeout(() => {
+        setIsStreakHubOpen(true);
+        sessionStorage.setItem(STREAK_SHOWN_KEY, "1");
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   return (
     <>
-      <DashboardHeader 
-        userName={MOCK_USER_DATA.name} 
-        hasUnreadNotifications={MOCK_USER_DATA.hasUnreadNotifications} 
+      <DashboardHeader
+        userName={MOCK_USER_DATA.name}
+        hasUnreadNotifications={MOCK_USER_DATA.hasUnreadNotifications}
       />
-      
-      <CharacterShowcase stats={MOCK_USER_DATA.stats} />
-      
+
+      <CharacterShowcase
+        stats={MOCK_USER_DATA.stats}
+        onStreakTap={() => setIsStreakHubOpen(true)}
+      />
+
       <StudyPatterns patterns={MOCK_USER_DATA.patterns} />
-      
+
       <TodayTasksList tasks={MOCK_USER_DATA.todayTasks} />
+
+      {/* Streak Hub Modal */}
+      <StreakHub
+        isOpen={isStreakHubOpen}
+        onClose={() => setIsStreakHubOpen(false)}
+        data={MOCK_STREAK_DATA}
+      />
     </>
   );
 }

@@ -16,25 +16,30 @@ interface UserStats {
 
 interface CharacterShowcaseProps {
   stats: UserStats;
+  onStreakTap?: () => void;
 }
 
-export function CharacterShowcase({ stats }: CharacterShowcaseProps) {
+export function CharacterShowcase({ stats, onStreakTap }: CharacterShowcaseProps) {
   return (
-    <motion.div 
+    <motion.div
       className="px-6 mb-8"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="bg-white rounded-[24px] border border-neutral-100 shadow-[0_8px_30px_-4px_rgba(0,0,0,0.04)] p-5 flex flex-col relative overflow-hidden">
-        
+
         {/* 1. Stats Bar (Top) */}
         <div className="flex justify-between items-center w-full px-5 pb-5 mb-6 border-b border-neutral-100/80">
           <div className="flex flex-col items-center">
-            <div className="flex items-center gap-1 mb-1">
-              <Flame className="text-error w-[18px] h-[18px]" />
+            <button
+              type="button"
+              onClick={onStreakTap}
+              className="flex items-center gap-1 mb-1 group cursor-pointer bg-transparent border-none p-0"
+            >
+              <Flame className="text-error w-[18px] h-[18px] group-active:scale-110 transition-transform" />
               <span className="text-sm font-bold text-neutral-900">{stats.streak}</span>
-            </div>
+            </button>
             <span className="text-xs font-medium text-neutral-500">Streak</span>
           </div>
           
