@@ -33,7 +33,7 @@ export function CharacterItemGrid({ unlocked = true }: CharacterItemGridProps) {
               }`}
             >
               <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center">
-                <Icon className="text-[22px] text-gray-800 drop-shadow-sm" />
+                <Icon className="text-xl text-gray-800 drop-shadow-sm" />
               </div>
             </div>
           );

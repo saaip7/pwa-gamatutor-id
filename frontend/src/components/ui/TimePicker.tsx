@@ -43,7 +43,7 @@ export function TimePicker({ selectedTime, onSelect }: TimePickerProps) {
               type="button"
               onClick={() => onSelect(t)}
               className={cn(
-                "py-3.5 rounded-xl border-2 text-[15px] font-bold transition-all active:scale-95",
+                "py-3.5 rounded-xl border-2 text-base font-bold transition-all active:scale-95",
                 selectedTime === t 
                   ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
                   : "bg-white text-neutral-600 border-neutral-100 hover:border-primary/30"

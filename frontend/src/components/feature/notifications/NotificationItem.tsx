@@ -54,7 +54,7 @@ export function NotificationItem({
       
       <div className="flex-1 min-w-0 pr-5">
         <div className="flex items-start justify-between gap-2 mb-0.5">
-          <h4 className="text-[14px] font-semibold text-neutral-900 leading-tight truncate">
+          <h4 className="text-sm font-semibold text-neutral-900 leading-tight truncate">
             {title}
           </h4>
           <span className={cn(
@@ -64,7 +64,7 @@ export function NotificationItem({
             {time}
           </span>
         </div>
-        <p className="text-[12px] text-neutral-600 leading-snug">
+        <p className="text-xs text-neutral-600 leading-snug">
           {description}
         </p>
       </div>

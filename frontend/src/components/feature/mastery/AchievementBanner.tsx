@@ -35,7 +35,7 @@ export function AchievementBanner({ unlockedCount, totalCount, className }: Achi
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">
-                <h3 className="text-[15px] font-bold text-neutral-900 tracking-tight">
+                <h3 className="text-base font-bold text-neutral-900 tracking-tight">
                   {unlockedCount} Pencapaian Tercapai
                 </h3>
                 <ChevronRight className="w-5 h-5 text-neutral-300 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />

@@ -53,7 +53,7 @@ export function Step2GoalSetting({ onNext }: Step2GoalSettingProps) {
           <h1 className="text-2xl font-bold text-neutral-800 tracking-tight mb-3">
             Apa tujuan utama belajarmu semester ini?
           </h1>
-          <p className="text-neutral-500 text-[15px] leading-relaxed">
+          <p className="text-neutral-500 text-base leading-relaxed">
             Tetapkan satu tujuan besar yang ingin kamu capai. Ini akan menjadi kompas belajarmu dalam mengelola waktu dan tugas.
           </p>
         </motion.div>
@@ -108,7 +108,7 @@ export function Step2GoalSetting({ onNext }: Step2GoalSettingProps) {
           <Button
             type="submit"
             form="goal-form"
-            className="py-4 text-[17px] shadow-[0_4px_14px_rgba(59,130,246,0.25)] rounded-xl"
+            className="py-4 text-lg shadow-[0_4px_14px_rgba(59,130,246,0.25)] rounded-xl"
             rightIcon={<ArrowRight className="w-5 h-5" />}
             disabled={!goal.trim()}
           >

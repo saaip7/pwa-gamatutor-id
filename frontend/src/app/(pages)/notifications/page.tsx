@@ -78,7 +78,7 @@ export default function NotificationPage() {
         {latestNotifs.length > 0 && (
           <section className="space-y-3">
             <div className="flex items-center justify-between px-2">
-              <h3 className="text-[12px] font-bold text-neutral-400 tracking-wider uppercase">
+              <h3 className="text-xs font-bold text-neutral-400 tracking-wider uppercase">
                 Terbaru
               </h3>
               <button 
@@ -105,7 +105,7 @@ export default function NotificationPage() {
         {/* SEBELUMNYA SECTION */}
         {previousNotifs.length > 0 && (
           <section className="space-y-3">
-            <h3 className="text-[12px] font-bold text-neutral-400 tracking-wider uppercase px-2">
+            <h3 className="text-xs font-bold text-neutral-400 tracking-wider uppercase px-2">
               Sebelumnya
             </h3>
             

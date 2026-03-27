@@ -46,8 +46,8 @@ export function StrategyPerformanceCard({ data, index }: StrategyPerformanceCard
             <data.icon className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="font-bold text-neutral-600 text-[16px]">{data.name}</h3>
-            <p className="text-[13px] text-neutral-400 font-medium mt-0.5">{data.category}</p>
+            <h3 className="font-bold text-neutral-600 text-base">{data.name}</h3>
+            <p className="text-sm text-neutral-400 font-medium mt-0.5">{data.category}</p>
           </div>
         </div>
 
@@ -55,8 +55,8 @@ export function StrategyPerformanceCard({ data, index }: StrategyPerformanceCard
           <div className="w-12 h-12 bg-neutral-100/80 rounded-full flex items-center justify-center mb-3">
             <BarChart2 className="w-5 h-5 text-neutral-400" />
           </div>
-          <p className="text-[15px] font-bold text-neutral-700 mb-1.5">Belum ada data</p>
-          <p className="text-[13px] text-neutral-500 leading-relaxed max-w-[240px]">
+          <p className="text-base font-bold text-neutral-700 mb-1.5">Belum ada data</p>
+          <p className="text-sm text-neutral-500 leading-relaxed max-w-[240px]">
             Strategi ini belum pernah digunakan. Coba strategi ini di tugas berikutnya! <Sparkles className="inline w-3.5 h-3.5 text-amber-400" />
           </p>
         </div>
@@ -82,8 +82,8 @@ export function StrategyPerformanceCard({ data, index }: StrategyPerformanceCard
             <data.icon className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="font-bold text-neutral-900 text-[16px]">{data.name}</h3>
-            <p className="text-[13px] text-neutral-500 font-medium mt-0.5">{data.category}</p>
+            <h3 className="font-bold text-neutral-900 text-base">{data.name}</h3>
+            <p className="text-sm text-neutral-500 font-medium mt-0.5">{data.category}</p>
           </div>
         </div>
         {data.isTop && (
@@ -100,12 +100,12 @@ export function StrategyPerformanceCard({ data, index }: StrategyPerformanceCard
         {data.subjective && (
           <div className="bg-neutral-50/80 rounded-[16px] p-4 border border-neutral-100/80">
             <div className="flex justify-between items-center mb-3">
-              <p className="text-[12px] text-neutral-500 font-medium">
+              <p className="text-xs text-neutral-500 font-medium">
                 Rating Kamu <span className="text-neutral-400">(Berdasarkan {data.subjective.totalTasks} tugas)</span>
               </p>
-              <span className="text-[16px] font-black text-neutral-900 flex items-center gap-1">
+              <span className="text-base font-black text-neutral-900 flex items-center gap-1">
                 {data.subjective.emoji} {data.subjective.rating}
-                <span className="text-[12px] text-neutral-400 font-bold">/5</span>
+                <span className="text-xs text-neutral-400 font-bold">/5</span>
               </span>
             </div>
             <div className="w-full bg-neutral-200/80 h-2 rounded-full overflow-hidden mb-1.5">
@@ -130,7 +130,7 @@ export function StrategyPerformanceCard({ data, index }: StrategyPerformanceCard
               ? "bg-amber-50/40 border-amber-100/60" 
               : "bg-blue-50/50 border-blue-100/50"
           )}>
-            <p className="text-[12px] text-neutral-500 font-medium mb-3">
+            <p className="text-xs text-neutral-500 font-medium mb-3">
               Peningkatan Nilai <span className="text-neutral-400">(Berdasarkan {data.objective.totalTasks} tugas)</span>
             </p>
             
@@ -140,8 +140,8 @@ export function StrategyPerformanceCard({ data, index }: StrategyPerformanceCard
                   <AlertTriangle className="w-4.5 h-4.5" />
                 </div>
                 <div>
-                  <span className="text-[14px] font-bold text-amber-800">Data Kurang</span>
-                  <p className="text-[12px] text-amber-700/80 font-medium mt-0.5 leading-snug">
+                  <span className="text-sm font-bold text-amber-800">Data Kurang</span>
+                  <p className="text-xs text-amber-700/80 font-medium mt-0.5 leading-snug">
                     Aktifkan tracking nilai pada tugas untuk melihat insight objektif.
                   </p>
                 </div>
@@ -153,11 +153,11 @@ export function StrategyPerformanceCard({ data, index }: StrategyPerformanceCard
                 </div>
                 <div>
                   <div className="flex items-end gap-1.5 mb-0.5">
-                    <span className="text-[20px] font-black text-neutral-900 leading-none">
+                    <span className="text-xl font-black text-neutral-900 leading-none">
                       +{data.objective.improvement}%
                     </span>
                   </div>
-                  <p className="text-[12px] text-emerald-600 font-bold">
+                  <p className="text-xs text-emerald-600 font-bold">
                     Peningkatan {data.objective.improvement > 20 ? 'signifikan' : 'stabil'}
                   </p>
                 </div>

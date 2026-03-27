@@ -60,7 +60,7 @@ export function CelebrationDialog({ isOpen, onConfirm, duration, confidence }: C
             </motion.div>
 
             {/* Title */}
-            <h2 className="text-[24px] font-black text-neutral-900 mb-5 leading-tight tracking-tight">
+            <h2 className="text-2xl font-black text-neutral-900 mb-5 leading-tight tracking-tight">
               Tugas Tuntas!<br/>Kerja Bagus ✨
             </h2>
 
@@ -68,24 +68,24 @@ export function CelebrationDialog({ isOpen, onConfirm, duration, confidence }: C
             <div className="flex items-center justify-center gap-4 w-full bg-neutral-50 rounded-[20px] py-4 px-4 mb-6 border border-neutral-100/80">
               <div className="flex items-center gap-2">
                 <Timer className="text-emerald-600 w-4.5 h-4.5" />
-                <span className="text-[14px] font-bold text-neutral-700 mt-0.5">{duration}</span>
+                <span className="text-sm font-bold text-neutral-700 mt-0.5">{duration}</span>
               </div>
               <div className="w-[1.5px] h-5 bg-neutral-200 rounded-full"></div>
               <div className="flex items-center gap-2">
                 <Star className="text-emerald-600 w-4.5 h-4.5 fill-emerald-600" />
-                <span className="text-[14px] font-bold text-neutral-700 mt-0.5">{confidence}</span>
+                <span className="text-sm font-bold text-neutral-700 mt-0.5">{confidence}</span>
               </div>
             </div>
 
             {/* Text */}
-            <p className="text-[14px] text-neutral-500 font-medium leading-relaxed mb-8 px-1">
+            <p className="text-sm text-neutral-500 font-medium leading-relaxed mb-8 px-1">
               Satu langkah lebih dekat ke tujuanmu. Teruslah belajar dengan otonom!
             </p>
 
             {/* Button */}
             <button 
               onClick={onConfirm}
-              className="w-full h-[56px] bg-primary hover:bg-primary-hover text-white font-black text-[15px] rounded-2xl transition-all active:scale-95 shadow-lg shadow-primary/20 animate-pulse-slow"
+              className="w-full h-[56px] bg-primary hover:bg-primary-hover text-white font-black text-base rounded-2xl transition-all active:scale-95 shadow-lg shadow-primary/20 animate-pulse-slow"
             >
               Kembali ke Dashboard
             </button>

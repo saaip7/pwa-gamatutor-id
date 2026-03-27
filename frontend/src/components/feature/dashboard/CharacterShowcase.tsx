@@ -73,7 +73,7 @@ export function CharacterShowcase({ stats, onStreakTap }: CharacterShowcaseProps
             {/* The Strategist Badge */}
             <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm border border-blue-100 pl-2.5 pr-3.5 py-1.5 rounded-full z-20 flex items-center gap-1.5 shadow-sm">
               <ShieldCheck className="w-[15px] h-[15px] text-blue-600" />
-              <span className="text-[12px] font-bold text-blue-700 tracking-tight">The Strategist</span>
+              <span className="text-xs font-bold text-blue-700 tracking-tight">The Strategist</span>
             </div>
 
             {/* Customize Button */}

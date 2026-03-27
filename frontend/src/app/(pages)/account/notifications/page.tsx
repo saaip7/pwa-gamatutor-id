@@ -39,7 +39,7 @@ export default function NotificationSettingsPage() {
 
       <main className="flex-1 overflow-y-auto no-scrollbar px-5 pt-6 pb-28 space-y-6">
         <div className="px-2 mb-2">
-          <p className="text-[13px] text-neutral-500 leading-relaxed">
+          <p className="text-sm text-neutral-500 leading-relaxed">
             Atur preferensi notifikasi sesuai kenyamananmu. Pengaturan ini sepenuhnya <span className="font-bold text-neutral-700">opsional</span> untuk memberimu kendali penuh atas atensimu.
           </p>
         </div>
@@ -84,7 +84,7 @@ export default function NotificationSettingsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
         >
-          <h3 className="text-[12px] font-bold text-neutral-400 tracking-wider mb-3 px-2">JADWAL HENING</h3>
+          <h3 className="text-xs font-bold text-neutral-400 tracking-wider mb-3 px-2">JADWAL HENING</h3>
           <div className="bg-white rounded-[24px] border border-neutral-100 shadow-sm overflow-hidden">
             
             {/* Header Info with Toggle */}
@@ -94,8 +94,8 @@ export default function NotificationSettingsPage() {
                   <MoonStar className="w-5 h-5 text-neutral-600" />
                 </div>
                 <div className="flex flex-col gap-0.5">
-                  <h4 className="text-[15px] font-bold text-neutral-900 leading-tight">Jadwal Hening</h4>
-                  <p className="text-[12px] text-neutral-500 leading-snug">Matikan semua notifikasi selama jam istirahat.</p>
+                  <h4 className="text-base font-bold text-neutral-900 leading-tight">Jadwal Hening</h4>
+                  <p className="text-xs text-neutral-500 leading-snug">Matikan semua notifikasi selama jam istirahat.</p>
                 </div>
               </div>
               <button

@@ -108,7 +108,7 @@ export function Step1Welcome({ onNext }: Step1WelcomeProps) {
           Welcome to <br />
           <span className="text-primary">Gamatutor</span>
         </h1>
-        <p className="text-neutral-500 text-[15px] leading-relaxed px-2">
+        <p className="text-neutral-500 text-base leading-relaxed px-2">
           Level up your learning experience. Manage your study tasks, track your progress, and earn rewards along the way.
         </p>
       </motion.div>
@@ -121,7 +121,7 @@ export function Step1Welcome({ onNext }: Step1WelcomeProps) {
         variants={fadeInUp}
         transition={{ delay: 0.2 }}
       >
-        <Button onClick={onNext} className="py-4 text-[17px] shadow-[0_4px_14px_rgba(59,130,246,0.25)] rounded-xl" rightIcon={<ArrowRight className="w-5 h-5" />}>
+        <Button onClick={onNext} className="py-4 text-lg shadow-[0_4px_14px_rgba(59,130,246,0.25)] rounded-xl" rightIcon={<ArrowRight className="w-5 h-5" />}>
           Get Started
         </Button>
       </motion.div>

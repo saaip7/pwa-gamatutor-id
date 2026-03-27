@@ -20,7 +20,7 @@ const PRIORITIES: { id: PriorityLevel; label: string }[] = [
 export function PrioritySelector({ value, onChange }: PrioritySelectorProps) {
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-[14px] font-semibold text-neutral-900 flex items-center gap-2">
+      <label className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
         <Zap className="w-[18px] h-[18px] text-neutral-500" /> 
         Prioritas <span className="text-error">*</span>
       </label>
@@ -46,7 +46,7 @@ export function PrioritySelector({ value, onChange }: PrioritySelectorProps) {
                   <Check className="w-[10px] h-[10px]" />
                 </div>
               )}
-              <span className="text-[13px] font-medium">{prio.label}</span>
+              <span className="text-sm font-medium">{prio.label}</span>
             </button>
           );
         })}

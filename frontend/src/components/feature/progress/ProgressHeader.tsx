@@ -5,7 +5,7 @@ export function ProgressHeader() {
   return (
     <header className="shrink-0 pt-14 px-6 pb-2 flex items-center justify-between relative z-10">
       <div>
-        <h1 className="text-2xl font-bold text-neutral-800 tracking-tight">Progress</h1>
+        <h1 className="text-lg md:text-xl font-bold text-neutral-800 tracking-tight">Progress</h1>
         <p className="text-sm text-neutral-500 mt-0.5">Track your learning journey</p>
       </div>
       <button 

@@ -77,7 +77,7 @@ export function StreakFreezeCelebration({ isOpen, onClose }: StreakFreezeCelebra
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
-              className="text-[15px] text-white/60 leading-relaxed mb-12 px-2"
+              className="text-base text-white/60 leading-relaxed mb-12 px-2"
             >
               Streak kamu aman. Nikmati waktu istirahatmu hari ini.
             </motion.p>
@@ -87,7 +87,7 @@ export function StreakFreezeCelebration({ isOpen, onClose }: StreakFreezeCelebra
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.7 }}
-              className="text-[13px] text-white/40 italic leading-relaxed mb-14 px-4"
+              className="text-sm text-white/40 italic leading-relaxed mb-14 px-4"
             >
               &ldquo;{quote}&rdquo;
             </motion.p>
@@ -98,7 +98,7 @@ export function StreakFreezeCelebration({ isOpen, onClose }: StreakFreezeCelebra
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
               onClick={onClose}
-              className="flex items-center gap-2 px-6 py-3.5 bg-white/10 hover:bg-white/15 active:bg-white/20 text-white text-[14px] font-semibold rounded-2xl border border-white/10 backdrop-blur-sm transition-all active:scale-[0.98]"
+              className="flex items-center gap-2 px-6 py-3.5 bg-white/10 hover:bg-white/15 active:bg-white/20 text-white text-sm font-semibold rounded-2xl border border-white/10 backdrop-blur-sm transition-all active:scale-[0.98]"
             >
               Kembali ke Beranda
               <ArrowRight className="w-4 h-4" />

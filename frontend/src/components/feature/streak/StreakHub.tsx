@@ -72,12 +72,12 @@ export function StreakHub({ isOpen, onClose, data, onUseFreeze }: StreakHubProps
                     {/* Streak Number Pill */}
                     <div className="bg-white px-6 py-2 rounded-full border border-amber-100 shadow-[0_4px_16px_rgba(245,158,11,0.15)] relative z-20 -mt-6 flex items-center gap-1.5">
                       <span className="text-[26px] font-extrabold text-amber-600 leading-none tracking-tight">{data.current}</span>
-                      <span className="text-[14px] font-bold text-amber-600/80 uppercase tracking-widest leading-none mt-0.5">Hari</span>
+                      <span className="text-sm font-bold text-amber-600/80 uppercase tracking-widest leading-none mt-0.5">Hari</span>
                     </div>
                   </div>
 
-                  <h2 className="text-[24px] font-bold text-neutral-900 mb-2.5 tracking-tight">Konsistensi Kamu</h2>
-                  <p className="text-[15px] text-neutral-500 px-4 leading-relaxed">
+                  <h2 className="text-2xl font-bold text-neutral-900 mb-2.5 tracking-tight">Konsistensi Kamu</h2>
+                  <p className="text-base text-neutral-500 px-4 leading-relaxed">
                     {data.current === 0
                       ? "Yuk mulai belajar hari ini!"
                       : `Luar biasa! Kamu telah aktif belajar selama ${data.current} hari berturut-turut.`

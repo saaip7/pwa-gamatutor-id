@@ -73,7 +73,7 @@ export function MasteryTrendChart() {
 
       {/* Fallback Text Note */}
       <div className="mt-4 pt-3 border-t border-neutral-100 flex items-start gap-2">
-        <Info className="text-[12px] text-neutral-400 mt-0.5 w-3 h-3 shrink-0" />
+        <Info className="text-xs text-neutral-400 mt-0.5 w-3 h-3 shrink-0" />
         <p className="text-[10px] text-neutral-500 leading-tight">Enable score tracking for complete insights regarding the correlation between self-confidence and actual improvement.</p>
       </div>
     </motion.div>

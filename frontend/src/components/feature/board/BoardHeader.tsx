@@ -14,7 +14,7 @@ export function BoardHeader({ userName, activeTasksCount, hasUnreadNotifications
   return (
     <header className="shrink-0 pt-14 pb-3 px-5 bg-white border-b border-neutral-200 flex justify-between items-center z-20">
       <div className="flex flex-col">
-        <h1 className="text-xl font-bold text-neutral-800 tracking-tight">Hi, {userName} 👋</h1>
+        <h1 className="text-lg md:text-xl font-bold text-neutral-800 tracking-tight">Hi, {userName} 👋</h1>
         <span className="text-neutral-500 text-xs font-medium mt-0.5">{activeTasksCount} Active Tasks</span>
       </div>
       <div className="flex items-center gap-3">

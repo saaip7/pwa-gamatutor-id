@@ -21,7 +21,7 @@ const STRATEGIES: { id: LearningStrategy; label: string; icon: any }[] = [
 export function StrategySelector({ value, onChange }: StrategySelectorProps) {
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-[14px] font-semibold text-neutral-900 flex items-center gap-2">
+      <label className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
         <Brain className="w-[18px] h-[18px] text-purple-500" /> 
         Strategi Belajar <span className="text-error">*</span>
       </label>
@@ -49,7 +49,7 @@ export function StrategySelector({ value, onChange }: StrategySelectorProps) {
                 </div>
               )}
               <Icon className={cn("w-5 h-5", isSelected ? "text-primary" : "text-neutral-400")} />
-              <span className="text-[13px] font-medium">{strategy.label}</span>
+              <span className="text-sm font-medium">{strategy.label}</span>
             </button>
           );
         })}

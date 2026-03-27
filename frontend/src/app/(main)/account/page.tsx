@@ -89,7 +89,7 @@ export default function AccountPage() {
             className="bg-white border border-red-100 flex items-center justify-center w-full px-4 py-4 rounded-[20px] hover:bg-red-50 active:scale-[0.98] transition-all duration-200 gap-2 shadow-sm text-error"
           >
             <LogOut className="w-5 h-5" />
-            <span className="text-[15px] font-bold">Keluar</span>
+            <span className="text-base font-bold">Keluar</span>
           </button>
         </motion.div>
       </div>

@@ -10,7 +10,7 @@ export function MindParking() {
         <StickyNote className="w-3.5 h-3.5" /> Parkir Pikiran (Quick Notes)
       </h3>
       <textarea 
-        className="w-full h-32 p-5 bg-neutral-50 border border-neutral-200 rounded-[24px] text-[15px] text-neutral-900 placeholder:text-neutral-400 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all resize-none shadow-inner leading-relaxed font-medium"
+        className="w-full h-32 p-5 bg-neutral-50 border border-neutral-200 rounded-[24px] text-base text-neutral-900 placeholder:text-neutral-400 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all resize-none shadow-inner leading-relaxed font-medium"
         placeholder="Ada distraksi? Tulis di sini agar otakmu tetap tenang dan fokus..."
       ></textarea>
     </section>

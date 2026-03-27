@@ -54,7 +54,7 @@ export default function GuidedReflectionPage() {
       <footer className="shrink-0 p-6 bg-white border-t border-neutral-100 z-50">
         <button 
           onClick={handleFinish}
-          className="w-full h-[56px] bg-primary hover:bg-primary/90 text-white rounded-2xl font-black text-[15px] flex items-center justify-center gap-2.5 shadow-lg shadow-primary/20 active:scale-[0.98] transition-all animate-pulse-slow"
+          className="w-full h-[56px] bg-primary hover:bg-primary/90 text-white rounded-2xl font-black text-base flex items-center justify-center gap-2.5 shadow-lg shadow-primary/20 active:scale-[0.98] transition-all animate-pulse-slow"
         >
           <CheckCircle className="w-5 h-5" />
           Simpan & Selesaikan Tugas

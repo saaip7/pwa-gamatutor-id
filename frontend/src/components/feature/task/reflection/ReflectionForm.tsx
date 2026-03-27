@@ -40,7 +40,7 @@ export function ReflectionForm({ strategyName, mainGoal }: ReflectionFormProps) 
     >
       {/* Q1: Strategy Effectiveness */}
       <motion.section variants={itemVariants} className="space-y-4">
-        <h3 className="text-[15px] font-bold text-neutral-800 leading-snug">
+        <h3 className="text-base font-bold text-neutral-800 leading-snug">
           Seberapa efektif strategi <span className="text-primary bg-primary/5 px-2 py-0.5 rounded-lg border border-primary/10">{strategyName}</span> bagimu?
         </h3>
         <div className="flex justify-between items-center px-1">
@@ -64,7 +64,7 @@ export function ReflectionForm({ strategyName, mainGoal }: ReflectionFormProps) 
 
       {/* Q2: Mastery Confidence */}
       <motion.section variants={itemVariants} className="space-y-4">
-        <h3 className="text-[15px] font-bold text-neutral-800 leading-snug">
+        <h3 className="text-base font-bold text-neutral-800 leading-snug">
           Seberapa yakin kamu menguasai materi ini sekarang?
         </h3>
         <div className="space-y-3">
@@ -96,7 +96,7 @@ export function ReflectionForm({ strategyName, mainGoal }: ReflectionFormProps) 
 
       {/* Q3: Goal Alignment */}
       <motion.section variants={itemVariants} className="space-y-4">
-        <h3 className="text-[15px] font-bold text-neutral-800 leading-snug">
+        <h3 className="text-base font-bold text-neutral-800 leading-snug">
           Apakah tugas ini membantumu mencapai <span className="text-primary font-black underline decoration-primary/20 underline-offset-4">{mainGoal}</span>?
         </h3>
         <div className="flex gap-3">
@@ -117,7 +117,7 @@ export function ReflectionForm({ strategyName, mainGoal }: ReflectionFormProps) 
               )}
             >
               <opt.icon className={cn("w-5 h-5", goalAlignment === opt.id ? "" : "opacity-50")} />
-              <span className="text-[13px] font-black">{opt.label}</span>
+              <span className="text-sm font-black">{opt.label}</span>
             </button>
           ))}
         </div>
@@ -125,11 +125,11 @@ export function ReflectionForm({ strategyName, mainGoal }: ReflectionFormProps) 
 
       {/* Q4: Future Notes */}
       <motion.section variants={itemVariants} className="space-y-3">
-        <h3 className="text-[15px] font-bold text-neutral-800 leading-snug">
-          Ada catatan untuk dirimu di masa depan? <span className="text-neutral-400 font-medium text-[13px]">(Opsional)</span>
+        <h3 className="text-base font-bold text-neutral-800 leading-snug">
+          Ada catatan untuk dirimu di masa depan? <span className="text-neutral-400 font-medium text-sm">(Opsional)</span>
         </h3>
         <textarea 
-          className="w-full h-32 p-4 bg-neutral-50 border border-neutral-200 rounded-[24px] text-[15px] text-neutral-900 placeholder:text-neutral-400 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all resize-none leading-relaxed"
+          className="w-full h-32 p-4 bg-neutral-50 border border-neutral-200 rounded-[24px] text-base text-neutral-900 placeholder:text-neutral-400 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all resize-none leading-relaxed"
           placeholder="Misal: Perlu latihan lebih banyak di bagian iterasi dalam..."
         ></textarea>
       </motion.section>

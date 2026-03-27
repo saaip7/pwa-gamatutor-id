@@ -50,7 +50,7 @@ export function StreakCalendar({ days }: StreakCalendarProps) {
           )}
           <span
             className={cn(
-              "text-[12px] leading-none",
+              "text-xs leading-none",
               day.state === "freeze" ? "font-semibold text-blue-600" :
               day.state === "today" ? "font-bold text-neutral-900" :
               day.state === "future" ? "font-medium text-neutral-400" :

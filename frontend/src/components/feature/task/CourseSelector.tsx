@@ -13,7 +13,7 @@ interface CourseSelectorProps {
 export function CourseSelector({ value, onChange, suggestions }: CourseSelectorProps) {
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor="course" className="text-[14px] font-semibold text-neutral-900 flex items-center gap-2">
+      <label htmlFor="course" className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
         <BookOpen className="w-[18px] h-[18px] text-blue-500" /> 
         Mata Kuliah <span className="text-error">*</span>
       </label>
@@ -35,7 +35,7 @@ export function CourseSelector({ value, onChange, suggestions }: CourseSelectorP
             key={course}
             type="button"
             onClick={() => onChange(course)}
-            className="px-3.5 py-1.5 rounded-lg border border-neutral-200 text-[12px] font-medium text-neutral-700 bg-white shadow-sm active:bg-neutral-50 transition-colors"
+            className="px-3.5 py-1.5 rounded-lg border border-neutral-200 text-xs font-medium text-neutral-700 bg-white shadow-sm active:bg-neutral-50 transition-colors"
           >
             {course}
           </button>

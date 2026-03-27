@@ -17,7 +17,7 @@ export function CourseGoalsList({ goals }: CourseGoalsListProps) {
       transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="mb-4">
-        <h3 className="text-lg font-bold text-neutral-800">Progress Mata Kuliah</h3>
+        <h3 className="text-lg md:text-xl font-bold text-neutral-800">Progress Mata Kuliah</h3>
       </div>
       
       <div className="space-y-3">
