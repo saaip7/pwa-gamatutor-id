@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { SettingsHeader } from "@/components/feature/settings/SettingsHeader";
-import { ProfileCard } from "@/components/feature/account/ProfileCard";
+
 import { Input } from "@/components/ui/Input";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 
@@ -67,22 +67,13 @@ export default function EditProfilePage() {
       <main className="flex-1 overflow-y-auto no-scrollbar px-5 pt-6 pb-28 relative">
         <div className="space-y-6">
 
-          {/* Identity Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <ProfileCard name={name} title={MOCK_USER.title} />
-          </motion.div>
-
           {/* Informasi Pribadi Section */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
-            <h3 className="text-xs font-bold text-neutral-400 tracking-wider mb-3 px-2">
+            <h3 className="text-xs font-bold text-neutral-500 tracking-wider mb-3 px-2">
               INFORMASI PRIBADI
             </h3>
 

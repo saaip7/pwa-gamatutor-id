@@ -55,7 +55,7 @@ export function ProfileCard({ name, title }: ProfileCardProps) {
           href="/account/wardrobe" 
           className="inline-flex w-fit px-4 py-2.5 rounded-lg border border-neutral-200 bg-white text-neutral-700 text-xs font-semibold items-center justify-center hover:bg-neutral-50 active:bg-neutral-100 transition-all shadow-sm"
         >
-          Sesuaikan Karakter 👕
+          Sesuaikan Karakter
         </Link>
       </div>
     </motion.div>

@@ -51,7 +51,7 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
             type={showPassword ? "text" : "password"}
             ref={ref}
             className={cn(
-              "w-full pl-4 pr-12 py-3.5 bg-neutral-50 border rounded-xl text-neutral-800 placeholder-neutral-400 text-base transition-all duration-200 outline-none focus:bg-white focus:ring-4",
+              "w-full pl-4 pr-12 py-3.5 bg-neutral-50 border rounded-lg text-neutral-800 placeholder-neutral-400 text-base transition-all duration-200 outline-none focus:bg-white focus:ring-4",
               props.error
                 ? "border-error focus:border-error focus:ring-error/10"
                 : "border-neutral-200 focus:border-primary focus:ring-primary/10",
