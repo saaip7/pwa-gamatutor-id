@@ -34,13 +34,9 @@ def update_board():
 
 
 @jwt_required()
-def update_card():
+def update_card(card_id):
     user_id = get_jwt_identity()
     data = request.json
-    card_id = data.get("card_id")
-
-    if not card_id:
-        return jsonify({"message": "Missing card_id"}), 400
 
     # Build updates from allowed fields
     allowed_fields = [
@@ -51,15 +47,10 @@ def update_card():
         "reflection", "personal_best", "goal_check",
         "checklists", "links", "column_movements",
     ]
-    updates = {k: v for k, v in data.items() if k in allowed_fields and k != "card_id"}
+    updates = {k: v for k, v in data.items() if k in allowed_fields}
 
     if not updates:
         return jsonify({"message": "No valid fields to update"}), 400
-
-    # Add created_at for new cards
-    if "created_at" in data:
-        from datetime import datetime
-        updates["created_at"] = datetime.utcnow()
 
     success, msg, code = Board.update_card(user_id, card_id, updates)
     return jsonify({"message": msg}), code

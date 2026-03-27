@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
@@ -51,6 +51,11 @@ app.register_blueprint(board_bp)
 app.register_blueprint(course_bp)
 app.register_blueprint(learningstrat_bp)
 app.register_blueprint(study_session_bp)
+
+
+@app.route("/", methods=["GET"])
+def index():
+    return jsonify({"message": "API gamatutor-pwa ready", "docs": "/api/health"}), 200
 
 
 @app.route("/api/health", methods=["GET"])
