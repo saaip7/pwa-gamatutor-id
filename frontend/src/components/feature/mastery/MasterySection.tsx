@@ -18,7 +18,7 @@ export function MasterySection({ title, icon: Icon, iconColor, children }: Maste
           <div className={`w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center border border-neutral-50`}>
             <Icon className={`w-4 h-4 ${iconColor}`} />
           </div>
-          <h3 className="font-bold text-[15px] text-neutral-900 tracking-tight">{title}</h3>
+          <h3 className="font-bold text-base text-neutral-900 tracking-tight">{title}</h3>
         </div>
       </div>
       

@@ -43,7 +43,7 @@ export function MasteryBadgeCard({ title, description, shape, icon, isUnlocked =
 
       {/* Text Info */}
       <h4 className={cn(
-        "font-bold text-[13px] leading-tight",
+        "font-bold text-sm leading-tight",
         isUnlocked ? "text-neutral-900" : "text-neutral-500"
       )}>
         {title}

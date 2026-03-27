@@ -94,7 +94,7 @@ export default function TaskDetailPage() {
             </span>
           </div>
           
-          <h2 className="text-[28px] font-black text-neutral-900 leading-[1.15] tracking-tight">
+          <h2 className="text-2xl font-black text-neutral-900 leading-[1.15] tracking-tight">
             {task.title}
           </h2>
 
@@ -117,7 +117,7 @@ export default function TaskDetailPage() {
             <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
               <Calendar className="w-3.5 h-3.5" /> Due Date
             </span>
-            <span className="text-[14px] font-bold text-neutral-900">
+            <span className="text-sm font-bold text-neutral-900">
               {task.dueDate}
             </span>
           </div>
@@ -126,7 +126,7 @@ export default function TaskDetailPage() {
               <Flag className="w-3.5 h-3.5" /> Priority
             </span>
             <span className={cn(
-              "text-[14px] font-bold",
+              "text-sm font-bold",
               task.priority === "High" ? "text-error" : "text-amber-600"
             )}>
               {task.priority} Priority
@@ -136,11 +136,11 @@ export default function TaskDetailPage() {
 
         {/* Section 4: Description */}
         <section className="space-y-3">
-          <h3 className="text-[13px] font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
+          <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
             <AlignLeft className="w-4 h-4 text-neutral-400" />
             Description
           </h3>
-          <div className="bg-neutral-50 rounded-2xl p-5 border border-neutral-100 leading-relaxed text-[14px] text-neutral-600 font-medium">
+          <div className="bg-neutral-50 rounded-2xl p-5 border border-neutral-100 leading-relaxed text-sm text-neutral-600 font-medium">
             {task.description}
           </div>
         </section>
@@ -148,7 +148,7 @@ export default function TaskDetailPage() {
         {/* Section 5: Subtasks */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-[13px] font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
+            <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
               <CheckSquare className="w-4 h-4 text-neutral-400" />
               Subtasks
             </h3>
@@ -187,7 +187,7 @@ export default function TaskDetailPage() {
                   {subtask.completed && <CheckSquare className="w-3.5 h-3.5" />}
                 </div>
                 <span className={cn(
-                  "text-[14px] font-medium transition-all",
+                  "text-sm font-medium transition-all",
                   subtask.completed ? "text-neutral-400 line-through" : "text-neutral-800"
                 )}>
                   {subtask.text}
@@ -199,7 +199,7 @@ export default function TaskDetailPage() {
 
         {/* Section 6: References */}
         <section className="space-y-3">
-          <h3 className="text-[13px] font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
+          <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
             <LinkIcon className="w-4 h-4 text-neutral-400" />
             References
           </h3>
@@ -219,7 +219,7 @@ export default function TaskDetailPage() {
                   {link.url.includes("visualgo") ? <Globe className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[14px] font-bold text-neutral-900 truncate group-hover:text-primary transition-colors">
+                  <p className="text-sm font-bold text-neutral-900 truncate group-hover:text-primary transition-colors">
                     {link.title}
                   </p>
                   <p className="text-[11px] text-neutral-400 truncate mt-0.5 font-medium">

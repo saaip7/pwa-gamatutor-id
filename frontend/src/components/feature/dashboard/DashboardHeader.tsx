@@ -21,7 +21,7 @@ export function DashboardHeader({ userName, hasUnreadNotifications = false }: Da
       >
         <div className="flex flex-col">
           <p className="text-sm font-medium text-neutral-500 mb-0.5">Selamat Pagi,</p>
-          <h1 className="text-2xl font-bold text-neutral-900 tracking-tight leading-none">
+          <h1 className="text-lg md:text-xl font-bold text-neutral-900 tracking-tight leading-none">
             {userName}!
           </h1>
         </div>

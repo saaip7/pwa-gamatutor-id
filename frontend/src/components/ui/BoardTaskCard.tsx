@@ -79,7 +79,7 @@ export function BoardTaskCard({ task, statusColorClass, progressBgClass, isCompl
                   <div className="mt-0.5 shrink-0 w-4 h-4 rounded-[5px] border-[1.5px] border-primary flex items-center justify-center bg-white shadow-[0_2px_4px_rgba(59,130,246,0.1)]"></div>
                 )}
                 <span className={cn(
-                  "text-[13px]",
+                  "text-sm",
                   subtask.isCompleted ? "font-medium text-neutral-400 line-through" : "font-semibold text-neutral-700"
                 )}>
                   {subtask.title}
@@ -89,7 +89,7 @@ export function BoardTaskCard({ task, statusColorClass, progressBgClass, isCompl
             {task.subtasks.length > 3 && (
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 shrink-0 w-4 h-4 rounded-[5px] border-[1.5px] border-neutral-300 flex items-center justify-center bg-white"></div>
-                <span className="text-[13px] font-medium text-neutral-500">+{task.subtasks.length - 3} more subtasks</span>
+                <span className="text-sm font-medium text-neutral-500">+{task.subtasks.length - 3} more subtasks</span>
               </div>
             )}
           </div>

@@ -33,7 +33,7 @@ export function TaskDetailActionBar({ taskId, status }: TaskDetailActionBarProps
         <Link 
           href={`/task/${taskId}/focus`}
           className={cn(
-            "flex-1 h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-[15px] transition-all active:scale-[0.98] shadow-lg",
+            "flex-1 h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-base transition-all active:scale-[0.98] shadow-lg",
             isPlanning 
               ? "bg-neutral-100 text-neutral-400 cursor-not-allowed border border-neutral-200 pointer-events-none" 
               : "bg-primary text-white shadow-primary/20"

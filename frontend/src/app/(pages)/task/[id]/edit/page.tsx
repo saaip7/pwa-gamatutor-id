@@ -87,7 +87,7 @@ export default function EditTaskPage() {
         >
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <h1 className="text-[16px] font-bold text-neutral-900 tracking-tight">Edit Tugas</h1>
+        <h1 className="text-lg md:text-xl font-bold text-neutral-900 tracking-tight">Edit Tugas</h1>
         <button onClick={handleSave} className="text-sm font-bold text-primary hover:text-primary/80 transition-colors">
           Simpan
         </button>
@@ -112,28 +112,28 @@ export default function EditTaskPage() {
           />
 
           <div className="flex flex-col gap-2">
-            <label className="text-[14px] font-bold text-neutral-900 flex items-center gap-2">
+            <label className="text-sm font-bold text-neutral-900 flex items-center gap-2">
               <Target className="w-[18px] h-[18px] text-amber-500" /> Nama Tugas <span className="text-error">*</span>
             </label>
             <Input value={taskName} onChange={(e) => setTaskName(e.target.value)} placeholder="Apa yang mau dikerjakan?" />
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-[14px] font-bold text-neutral-900 flex items-center gap-2">
+            <label className="text-sm font-bold text-neutral-900 flex items-center gap-2">
               <AlignLeft className="w-[18px] h-[18px] text-neutral-400" /> Deskripsi
             </label>
             <textarea 
               rows={5} 
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-3.5 rounded-xl border border-neutral-200 bg-white text-[14px] focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all resize-none shadow-sm leading-relaxed min-h-[120px] max-h-[200px]"
+              className="w-full px-4 py-3.5 rounded-xl border border-neutral-200 bg-white text-sm focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all resize-none shadow-sm leading-relaxed min-h-[120px] max-h-[200px]"
             ></textarea>
           </div>
 
           <StrategySelector value={strategy} onChange={setStrategy} />
 
           <div className="flex flex-col gap-2">
-            <label className="text-[14px] font-bold text-neutral-900 flex items-center gap-2">
+            <label className="text-sm font-bold text-neutral-900 flex items-center gap-2">
               <Lightbulb className="w-[18px] h-[18px] text-amber-500" /> Tujuan Task
             </label>
             <Input value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="Tulis tujuanmu..." />
@@ -142,7 +142,7 @@ export default function EditTaskPage() {
           <PrioritySelector value={priority} onChange={setPriority} />
 
           <div className="flex flex-col gap-2">
-            <label className="text-[14px] font-bold text-neutral-900 flex items-center gap-2">
+            <label className="text-sm font-bold text-neutral-900 flex items-center gap-2">
               <CalendarIcon className="w-[18px] h-[18px] text-teal-500" /> Deadline
             </label>
             <div className="grid grid-cols-2 gap-3">

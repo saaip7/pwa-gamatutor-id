@@ -23,7 +23,7 @@ export function TaskStatusStepper({ currentStatus, onUpdateStatus }: TaskStatusS
 
   return (
     <section className="px-5 py-6 bg-white border-b border-neutral-100">
-      <h2 className="text-[12px] font-black text-neutral-400 mb-6 uppercase tracking-widest">
+      <h2 className="text-xs font-black text-neutral-400 mb-6 uppercase tracking-widest">
         Status Saat Ini
       </h2>
       

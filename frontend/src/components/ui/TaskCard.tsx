@@ -56,7 +56,7 @@ export function TaskCard({ task }: TaskCardProps) {
         ></div>
         <div className="relative z-10 flex justify-between items-start gap-4">
           <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-            <h4 className="text-[15px] font-bold text-neutral-900 leading-snug pt-0.5 truncate">{task.title}</h4>
+            <h4 className="text-base font-bold text-neutral-900 leading-snug pt-0.5 truncate">{task.title}</h4>
             {task.course && <p className="text-xs text-neutral-500 truncate">{task.course}</p>}
           </div>
           <span className="text-[11px] font-bold text-primary bg-white px-2 py-1 rounded-[8px] border border-blue-100 shrink-0 shadow-sm mt-0.5">
@@ -81,7 +81,7 @@ export function TaskCard({ task }: TaskCardProps) {
                 <div className="mt-0.5 shrink-0 w-4 h-4 rounded-[5px] border-[1.5px] border-primary flex items-center justify-center bg-white shadow-[0_2px_4px_rgba(59,130,246,0.1)]"></div>
               )}
               <span className={cn(
-                "text-[13px]",
+                "text-sm",
                 subtask.isCompleted ? "font-medium text-neutral-400 line-through" : "font-semibold text-neutral-700"
               )}>
                 {subtask.title}
@@ -91,7 +91,7 @@ export function TaskCard({ task }: TaskCardProps) {
           {task.subtasks && task.subtasks.length > 3 && (
             <div className="flex items-start gap-3">
               <div className="mt-0.5 shrink-0 w-4 h-4 rounded-[5px] border-[1.5px] border-neutral-300 flex items-center justify-center bg-white"></div>
-              <span className="text-[13px] font-medium text-neutral-500">+{task.subtasks.length - 3} more subtasks</span>
+              <span className="text-sm font-medium text-neutral-500">+{task.subtasks.length - 3} more subtasks</span>
             </div>
           )}
         </div>

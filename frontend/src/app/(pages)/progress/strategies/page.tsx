@@ -87,7 +87,7 @@ export default function StrategyEffectivenessPage() {
         >
           <ArrowLeft className="w-5.5 h-5.5" />
         </button>
-        <h1 className="font-bold text-[17px] tracking-tight text-neutral-900">Efektivitas Strategi</h1>
+        <h1 className="font-bold text-lg md:text-xl tracking-tight text-neutral-900">Efektivitas Strategi</h1>
         <button className="w-10 h-10 flex items-center justify-center -mr-2 text-neutral-400 active:bg-neutral-50 rounded-full transition-colors">
           <Info className="w-5.5 h-5.5" />
         </button>

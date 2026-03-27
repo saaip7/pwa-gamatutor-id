@@ -79,7 +79,7 @@ export default function FocusModePage() {
       <footer className="shrink-0 pb-[34px] pt-4 px-6 bg-white border-t border-neutral-100 z-50">
         <button 
           onClick={handleFinish}
-          className="w-full h-[56px] bg-primary hover:bg-primary/90 text-white rounded-2xl font-black text-[15px] flex items-center justify-center gap-2.5 shadow-lg shadow-primary/20 active:scale-[0.98] transition-all group"
+          className="w-full h-[56px] bg-primary hover:bg-primary/90 text-white rounded-2xl font-black text-base flex items-center justify-center gap-2.5 shadow-lg shadow-primary/20 active:scale-[0.98] transition-all group"
         >
           <SquareCheckBig className="w-5 h-5 group-active:scale-110 transition-transform" />
           Selesai & Beri Refleksi

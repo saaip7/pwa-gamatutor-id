@@ -19,10 +19,10 @@ export function TodayTasksList({ tasks }: TodayTasksListProps) {
       transition={{ duration: 0.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="flex justify-between items-center mb-5 px-1">
-        <h3 className="text-[17px] font-bold text-neutral-900 tracking-tight">Tugas Hari Ini</h3>
+        <h3 className="text-lg md:text-xl font-bold text-neutral-900 tracking-tight">Tugas Hari Ini</h3>
         <Link 
           href="/board" 
-          className="text-[13px] font-bold text-primary flex items-center gap-1 hover:text-primary-hover transition-colors"
+          className="text-sm font-bold text-primary flex items-center gap-1 hover:text-primary-hover transition-colors"
         >
           View Board 
           <ArrowRight className="w-[15px] h-[15px]" />

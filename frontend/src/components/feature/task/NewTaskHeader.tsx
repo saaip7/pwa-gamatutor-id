@@ -23,7 +23,7 @@ export function NewTaskHeader({ isValid, onSave }: NewTaskHeaderProps) {
         <ArrowLeft className="w-6 h-6" />
       </button>
       
-      <h1 className="text-[17px] font-bold tracking-tight text-neutral-900">Tugas Baru</h1>
+      <h1 className="text-lg md:text-xl font-bold tracking-tight text-neutral-900">Tugas Baru</h1>
       
       <button 
         onClick={onSave}

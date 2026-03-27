@@ -14,16 +14,16 @@ export function NotificationHeader() {
         onClick={() => router.back()}
         className="w-10 h-10 flex items-center justify-center text-neutral-500 hover:text-neutral-900 transition-colors rounded-full active:bg-neutral-50"
       >
-        <ArrowLeft className="text-[22px]" />
+        <ArrowLeft className="text-xl" />
       </button>
       
-      <h1 className="text-[16px] font-bold text-neutral-900 tracking-tight">Notifikasi</h1>
+      <h1 className="text-lg md:text-xl font-bold text-neutral-900 tracking-tight">Notifikasi</h1>
       
       <Link 
         href="/account/notifications"
         className="w-10 h-10 flex items-center justify-center text-neutral-500 hover:text-primary transition-colors rounded-full active:bg-blue-50"
       >
-        <Settings2 className="text-[22px]" />
+        <Settings2 className="text-xl" />
       </Link>
     </header>
   );

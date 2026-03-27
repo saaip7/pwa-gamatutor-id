@@ -47,9 +47,9 @@ export function SettingItem(props: SettingItemProps) {
         <Icon className="w-5 h-5" />
       </div>
       <div className="flex flex-col gap-0.5">
-        <span className="text-[15px] font-semibold text-neutral-800 leading-tight">{label}</span>
+        <span className="text-base font-semibold text-neutral-800 leading-tight">{label}</span>
         {props.description && (
-          <p className="text-[12px] text-neutral-500 leading-snug pr-4">{props.description}</p>
+          <p className="text-xs text-neutral-500 leading-snug pr-4">{props.description}</p>
         )}
       </div>
     </div>
@@ -97,7 +97,7 @@ export function SettingItem(props: SettingItemProps) {
         >
           {renderIconAndLabel()}
           <div className="flex items-center gap-2">
-            <span className="text-[14px] font-medium text-neutral-500">{selectedLabel}</span>
+            <span className="text-sm font-medium text-neutral-500">{selectedLabel}</span>
             <motion.div
               animate={{ rotate: isOpen ? 180 : 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}

@@ -65,7 +65,7 @@ export default function NewTaskPage() {
 
           {/* 2. Nama Tugas */}
           <div className="flex flex-col gap-2">
-            <label htmlFor="task_name" className="text-[14px] font-semibold text-neutral-900 flex items-center gap-2">
+            <label htmlFor="task_name" className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
               <Target className="w-[18px] h-[18px] text-amber-500" /> Nama Tugas <span className="text-error">*</span>
             </label>
             <Input 
@@ -78,7 +78,7 @@ export default function NewTaskPage() {
 
           {/* 3. Deskripsi */}
           <div className="flex flex-col gap-2">
-            <label htmlFor="description" className="text-[14px] font-semibold text-neutral-900 flex items-center gap-2">
+            <label htmlFor="description" className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
               <AlignLeft className="w-[18px] h-[18px] text-neutral-500" /> Deskripsi
             </label>
             <textarea 
@@ -87,7 +87,7 @@ export default function NewTaskPage() {
               placeholder="Deskripsi tambahan (opsional)..." 
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-3.5 rounded-xl border border-neutral-200 bg-white text-[15px] placeholder:text-neutral-400 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all resize-none shadow-sm min-h-[120px] max-h-[200px]"
+              className="w-full px-4 py-3.5 rounded-xl border border-neutral-200 bg-white text-base placeholder:text-neutral-400 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all resize-none shadow-sm min-h-[120px] max-h-[200px]"
             ></textarea>
           </div>
 
@@ -96,7 +96,7 @@ export default function NewTaskPage() {
 
           {/* 5. Tujuan Task (Now Mandatory) */}
           <div className="flex flex-col gap-2">
-            <label htmlFor="goal" className="text-[14px] font-semibold text-neutral-900 flex items-center gap-2">
+            <label htmlFor="goal" className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
               <Lightbulb className="w-[18px] h-[18px] text-amber-500" /> Tujuan Task <span className="text-error">*</span>
             </label>
             
@@ -113,7 +113,7 @@ export default function NewTaskPage() {
                   key={g}
                   type="button" 
                   onClick={() => setGoal(g)}
-                  className="px-3 py-1.5 rounded-lg bg-white border border-neutral-200 text-[12px] font-medium text-neutral-600 shadow-sm active:bg-neutral-50 transition-colors"
+                  className="px-3 py-1.5 rounded-lg bg-white border border-neutral-200 text-xs font-medium text-neutral-600 shadow-sm active:bg-neutral-50 transition-colors"
                 >
                   {g}
                 </button>
@@ -126,7 +126,7 @@ export default function NewTaskPage() {
 
           {/* 7. Deadline (Functional Drawers) */}
           <div className="flex flex-col gap-2">
-            <label className="text-[14px] font-semibold text-neutral-900 flex items-center gap-2">
+            <label className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
               <CalendarIcon className="w-[18px] h-[18px] text-teal-500" /> Deadline Target
             </label>
             
@@ -140,7 +140,7 @@ export default function NewTaskPage() {
                 )}
               >
                 <CalendarIcon className={cn("w-5 h-5", dueDate ? "text-primary" : "text-neutral-400")} />
-                <span className={cn("text-[14px] font-medium truncate", dueDate ? "text-primary font-bold" : "text-neutral-600")}>
+                <span className={cn("text-sm font-medium truncate", dueDate ? "text-primary font-bold" : "text-neutral-600")}>
                   {formatDateDisplay(dueDate)}
                 </span>
               </button>
@@ -153,7 +153,7 @@ export default function NewTaskPage() {
                 )}
               >
                 <Clock className={cn("w-5 h-5", dueTime ? "text-primary" : "text-neutral-400")} />
-                <span className={cn("text-[14px] font-medium", dueTime ? "text-primary font-bold" : "text-neutral-600")}>
+                <span className={cn("text-sm font-medium", dueTime ? "text-primary font-bold" : "text-neutral-600")}>
                   {dueTime || "Pilih jam"}
                 </span>
               </button>

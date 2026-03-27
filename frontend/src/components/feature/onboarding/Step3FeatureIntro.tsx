@@ -60,7 +60,7 @@ export function Step3FeatureIntro({ onComplete }: Step3FeatureIntroProps) {
           transition={{ delay: 0.1 }}
         >
           <h1 className="text-2xl font-bold text-neutral-800 tracking-tight">Kamu siap!</h1>
-          <p className="text-[15px] text-neutral-500 mt-2">Mari kenalan dengan fitur-fitur Gamatutor</p>
+          <p className="text-base text-neutral-500 mt-2">Mari kenalan dengan fitur-fitur Gamatutor</p>
         </motion.div>
 
         {/* Feature Cards List */}
@@ -97,8 +97,8 @@ export function Step3FeatureIntro({ onComplete }: Step3FeatureIntroProps) {
                 <feature.icon className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1 pt-0.5">
-                <h3 className="font-bold text-neutral-800 text-[15px]">{feature.title}</h3>
-                <p className="text-[13px] text-neutral-500 mt-1 leading-relaxed">{feature.desc}</p>
+                <h3 className="font-bold text-neutral-800 text-base">{feature.title}</h3>
+                <p className="text-sm text-neutral-500 mt-1 leading-relaxed">{feature.desc}</p>
               </div>
             </motion.div>
           ))}
@@ -115,7 +115,7 @@ export function Step3FeatureIntro({ onComplete }: Step3FeatureIntroProps) {
         <div className="max-w-sm mx-auto w-full">
           <Button
             onClick={onComplete}
-            className="py-4 text-[17px] shadow-[0_8px_16px_-4px_rgba(59,130,246,0.3)] rounded-xl"
+            className="py-4 text-lg shadow-[0_8px_16px_-4px_rgba(59,130,246,0.3)] rounded-xl"
             leftIcon={<Sparkles className="w-5 h-5" />}
           >
             Mulai Tour

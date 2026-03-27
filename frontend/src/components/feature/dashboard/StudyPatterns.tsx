@@ -28,7 +28,7 @@ export function StudyPatterns({ patterns }: StudyPatternsProps) {
             <Brain className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-[15px] font-bold text-neutral-800 tracking-tight">Pola Belajarmu ✨</h3>
+            <h3 className="text-base font-bold text-neutral-800 tracking-tight">Pola Belajarmu ✨</h3>
           </div>
         </div>
         
@@ -40,7 +40,7 @@ export function StudyPatterns({ patterns }: StudyPatternsProps) {
             </div>
             <div>
               <p className="text-[11px] text-neutral-500 font-bold uppercase tracking-wider mb-0.5">Waktu Produktif</p>
-              <p className="text-[13px] font-bold text-neutral-800">{patterns.productiveTime}</p>
+              <p className="text-sm font-bold text-neutral-800">{patterns.productiveTime}</p>
             </div>
           </div>
           
@@ -51,16 +51,16 @@ export function StudyPatterns({ patterns }: StudyPatternsProps) {
             </div>
             <div>
               <p className="text-[11px] text-neutral-500 font-bold uppercase tracking-wider mb-0.5">Hari Produktif</p>
-              <p className="text-[13px] font-bold text-neutral-800">{patterns.productiveDays}</p>
+              <p className="text-sm font-bold text-neutral-800">{patterns.productiveDays}</p>
             </div>
           </div>
         </div>
         
         <div className="border-t border-neutral-100 pt-5">
-          <p className="text-[12px] font-medium text-neutral-500 mb-3 text-center">Jadwalkan tugas penting di waktu terbaikmu</p>
+          <p className="text-xs font-medium text-neutral-500 mb-3 text-center">Jadwalkan tugas penting di waktu terbaikmu</p>
           <Link 
             href="/progress" 
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-[14px] border-2 border-neutral-100 text-neutral-700 font-bold text-[13px] hover:bg-neutral-50 active:scale-[0.98] transition-all"
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-[14px] border-2 border-neutral-100 text-neutral-700 font-bold text-sm hover:bg-neutral-50 active:scale-[0.98] transition-all"
           >
             Lihat Statistik Lengkap
             <ArrowRight className="w-[15px] h-[15px]" />

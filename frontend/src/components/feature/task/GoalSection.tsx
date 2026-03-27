@@ -18,7 +18,7 @@ export function GoalSection({ goal }: GoalSectionProps) {
           Kenapa Tugas Ini Penting?
         </h3>
       </div>
-      <p className="text-[14px] text-neutral-700 leading-relaxed font-medium pl-1">
+      <p className="text-sm text-neutral-700 leading-relaxed font-medium pl-1">
         {goal}
       </p>
     </div>

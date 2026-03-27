@@ -51,7 +51,7 @@ export function FocusSubtaskList({ initialSubtasks }: FocusSubtaskListProps) {
               {s.completed && <Check className="w-3.5 h-3.5 stroke-[4]" />}
             </div>
             <span className={cn(
-              "flex-1 text-[15px] font-bold transition-all duration-300",
+              "flex-1 text-base font-bold transition-all duration-300",
               s.completed ? "text-emerald-900/50 line-through" : "text-neutral-800"
             )}>
               {s.text}
@@ -64,7 +64,7 @@ export function FocusSubtaskList({ initialSubtasks }: FocusSubtaskListProps) {
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              className="mt-4 p-4 bg-emerald-100 border border-emerald-200 rounded-2xl text-emerald-700 text-[14px] font-black flex items-center justify-center gap-2 shadow-sm"
+              className="mt-4 p-4 bg-emerald-100 border border-emerald-200 rounded-2xl text-emerald-700 text-sm font-black flex items-center justify-center gap-2 shadow-sm"
             >
               <Sparkles className="w-4 h-4 text-emerald-600" />
               Hebat! Semua langkah selesai ✨

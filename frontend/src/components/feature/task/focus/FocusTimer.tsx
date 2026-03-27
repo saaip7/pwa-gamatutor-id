@@ -60,7 +60,7 @@ export function FocusTimer({ personalBest }: FocusTimerProps) {
         </span>
       </div>
 
-      <button className="mt-8 flex items-center justify-center gap-2 w-[240px] py-3 px-4 bg-transparent border border-neutral-200 rounded-2xl text-[14px] font-bold text-neutral-500 hover:bg-neutral-50 active:scale-95 transition-all">
+      <button className="mt-8 flex items-center justify-center gap-2 w-[240px] py-3 px-4 bg-transparent border border-neutral-200 rounded-2xl text-sm font-bold text-neutral-500 hover:bg-neutral-50 active:scale-95 transition-all">
         <Settings2 className="w-4.5 h-4.5" />
         Jeda & Sesuaikan
       </button>

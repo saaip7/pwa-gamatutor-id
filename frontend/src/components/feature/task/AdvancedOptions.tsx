@@ -54,7 +54,7 @@ export function AdvancedOptions() {
       >
         <div className="flex items-center gap-2">
           <Settings2 className="w-[18px] h-[18px] text-neutral-500" />
-          <span className="text-[15px] font-semibold text-neutral-900">Opsi Lanjutan</span>
+          <span className="text-base font-semibold text-neutral-900">Opsi Lanjutan</span>
         </div>
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0 }}
@@ -106,7 +106,7 @@ export function AdvancedOptions() {
                           </div>
                         )}
                         <DiffIcon className={cn("w-6 h-6", diff.color)} />
-                        <span className={cn("text-[13px]", isSelected ? "font-semibold text-amber-700" : "font-medium text-neutral-600")}>
+                        <span className={cn("text-sm", isSelected ? "font-semibold text-amber-700" : "font-medium text-neutral-600")}>
                           {diff.label}
                         </span>
                       </button>
@@ -124,8 +124,8 @@ export function AdvancedOptions() {
                 <div className="p-4 rounded-xl border border-neutral-200 bg-white shadow-sm">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[14px] font-medium text-neutral-900">Track Nilai</p>
-                      <p className="text-[12px] text-neutral-500 mt-0.5">Pantau progress pre/post test</p>
+                      <p className="text-sm font-medium text-neutral-900">Track Nilai</p>
+                      <p className="text-xs text-neutral-500 mt-0.5">Pantau progress pre/post test</p>
                     </div>
                     <button
                       type="button"
@@ -148,14 +148,14 @@ export function AdvancedOptions() {
                       animate={{ opacity: 1, height: "auto" }}
                       className="mt-4 pt-4 border-t border-neutral-100"
                     >
-                      <label className="text-[12px] font-medium text-neutral-600 mb-2 block">Nilai Pre-test (Opsional)</label>
+                      <label className="text-xs font-medium text-neutral-600 mb-2 block">Nilai Pre-test (Opsional)</label>
                       <div className="relative">
                         <input 
                           type="number" 
                           placeholder="0" 
-                          className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none text-[14px] transition-all"
+                          className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none text-sm transition-all"
                         />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 text-[14px] font-medium">%</span>
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 text-sm font-medium">%</span>
                       </div>
                     </motion.div>
                   )}
@@ -186,7 +186,7 @@ export function AdvancedOptions() {
                           value={subtask.text}
                           onChange={(e) => updateSubtask(subtask.id, e.target.value)}
                           placeholder="Apa yang perlu dilakukan?" 
-                          className="flex-1 text-[14px] py-1.5 outline-none text-neutral-900 bg-transparent min-w-0" 
+                          className="flex-1 text-sm py-1.5 outline-none text-neutral-900 bg-transparent min-w-0" 
                         />
                         <button 
                           type="button" 
@@ -202,7 +202,7 @@ export function AdvancedOptions() {
                   <button 
                     type="button" 
                     onClick={addSubtask}
-                    className="w-full py-4 rounded-xl border-2 border-dashed border-neutral-200 text-[14px] font-bold text-neutral-500 hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                    className="w-full py-4 rounded-xl border-2 border-dashed border-neutral-200 text-sm font-bold text-neutral-500 hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
                   >
                     <Plus className="w-5 h-5" />
                     Tambah Subtask
@@ -234,8 +234,8 @@ export function AdvancedOptions() {
                           )}
                         </div>
                         <div className="flex-1 overflow-hidden">
-                          <p className="text-[14px] font-bold text-neutral-900 truncate">{link.title}</p>
-                          <p className="text-[12px] text-neutral-500 truncate mt-0.5">{link.url}</p>
+                          <p className="text-sm font-bold text-neutral-900 truncate">{link.title}</p>
+                          <p className="text-xs text-neutral-500 truncate mt-0.5">{link.url}</p>
                         </div>
                         <button 
                           type="button" 
@@ -289,7 +289,7 @@ export function AdvancedOptions() {
                     <button 
                       type="button" 
                       onClick={() => setShowLinkInput(true)}
-                      className="w-full py-4 rounded-xl border-2 border-dashed border-neutral-200 text-[14px] font-bold text-neutral-500 hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                      className="w-full py-4 rounded-xl border-2 border-dashed border-neutral-200 text-sm font-bold text-neutral-500 hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
                     >
                       <Plus className="w-5 h-5" />
                       Tambah Link

@@ -27,9 +27,9 @@ export function StrategyInsightBanner({ strategyName, impactPercent }: StrategyI
             <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
               <span className="text-sm">💡</span>
             </div>
-            <h2 className="font-bold text-blue-900 text-[15px] tracking-tight">Insight Khusus Untukmu</h2>
+            <h2 className="font-bold text-blue-900 text-base tracking-tight">Insight Khusus Untukmu</h2>
           </div>
-          <p className="text-blue-800 text-[14px] leading-relaxed pr-2">
+          <p className="text-blue-800 text-sm leading-relaxed pr-2">
             Strategi <strong className="font-extrabold text-blue-900">{strategyName}</strong> terbukti meningkatkan keyakinan dirimu hingga <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-white font-black text-blue-700 shadow-sm mx-0.5">{impactPercent}%</span>. Gunakan lebih sering untuk tugas yang sulit!
           </p>
         </div>

@@ -36,7 +36,7 @@ export function SettingsHeader({ title, onSave }: SettingsHeaderProps) {
         <ArrowLeft className="w-5.5 h-5.5" />
       </button>
       
-      <h1 className="text-[17px] font-bold text-neutral-900 tracking-tight">{title}</h1>
+      <h1 className="text-lg md:text-xl font-bold text-neutral-900 tracking-tight">{title}</h1>
       
       {onSave ? (
         <button 
@@ -44,7 +44,7 @@ export function SettingsHeader({ title, onSave }: SettingsHeaderProps) {
           onClick={handleSave}
           disabled={saveStatus !== "idle"}
           className={cn(
-            "px-2 py-1.5 -mr-2 flex items-center gap-1.5 font-bold text-[13px] transition-all rounded-lg active:scale-95",
+            "px-2 py-1.5 -mr-2 flex items-center gap-1.5 font-bold text-sm transition-all rounded-lg active:scale-95",
             saveStatus === "idle" && "text-primary hover:bg-primary/5",
             saveStatus === "loading" && "text-neutral-400 cursor-not-allowed",
             saveStatus === "success" && "text-emerald-500 bg-emerald-50"

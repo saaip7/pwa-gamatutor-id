@@ -71,7 +71,7 @@ export default function MasteryPage() {
         >
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <h1 className="text-lg font-bold text-neutral-900 tracking-tight">Mastery Gallery</h1>
+        <h1 className="text-lg md:text-xl font-bold text-neutral-900 tracking-tight">Mastery Gallery</h1>
         <div className="w-10 h-10" />
       </header>
 

@@ -26,7 +26,7 @@ export function ReflectionSummary({ duration, subtasksCompleted, totalSubtasks }
         initial={{ y: 10, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="text-[24px] font-black text-neutral-900 tracking-tight leading-tight"
+        className="text-2xl font-black text-neutral-900 tracking-tight leading-tight"
       >
         Sesi Selesai!<br/>Kamu Luar Biasa
       </motion.h2>
@@ -38,7 +38,7 @@ export function ReflectionSummary({ duration, subtasksCompleted, totalSubtasks }
         className="mt-6 p-4 bg-emerald-50 text-emerald-800 rounded-2xl flex items-center justify-center gap-3 border border-emerald-100 shadow-sm"
       >
         <Timer className="w-5 h-5 text-emerald-600" />
-        <div className="flex items-center gap-2.5 text-[13px] font-black tracking-wider">
+        <div className="flex items-center gap-2.5 text-sm font-black tracking-wider">
           <span>{duration}</span>
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-300"></span>
           <span className="uppercase">{subtasksCompleted}/{totalSubtasks} Subtask</span>

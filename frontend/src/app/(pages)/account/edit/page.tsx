@@ -82,7 +82,7 @@ export default function EditProfilePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
-            <h3 className="text-[12px] font-bold text-neutral-400 tracking-wider mb-3 px-2">
+            <h3 className="text-xs font-bold text-neutral-400 tracking-wider mb-3 px-2">
               INFORMASI PRIBADI
             </h3>
 
