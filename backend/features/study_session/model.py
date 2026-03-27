@@ -14,6 +14,7 @@ class StudySession:
         }
         result = mongo.db.study_sessions.insert_one(doc)
         doc["_id"] = str(result.inserted_id)
+        doc["user_id"] = str(doc["user_id"])
         return doc
 
     @staticmethod
@@ -29,6 +30,7 @@ class StudySession:
         sessions = list(mongo.db.study_sessions.find({"card_id": card_id}))
         for s in sessions:
             s["_id"] = str(s["_id"])
+            s["user_id"] = str(s["user_id"])
         return sessions
 
     @staticmethod

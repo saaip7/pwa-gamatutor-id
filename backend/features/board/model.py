@@ -1,6 +1,12 @@
 from shared.db import mongo
 from bson import ObjectId
 from datetime import datetime
+import secrets
+
+
+def generate_card_id():
+    """Generate a random unique card ID (8 char hex)."""
+    return secrets.token_hex(8)
 
 
 class Board:
@@ -28,6 +34,11 @@ class Board:
 
     @staticmethod
     def update_board(board_id, user_id, lists):
+        # Auto-generate IDs for cards that don't have one
+        for lst in lists:
+            for card in lst.get("cards", []):
+                if not card.get("id"):
+                    card["id"] = generate_card_id()
         try:
             result = mongo.db.boards.update_one(
                 {"_id": ObjectId(board_id), "user_id": ObjectId(user_id)},
