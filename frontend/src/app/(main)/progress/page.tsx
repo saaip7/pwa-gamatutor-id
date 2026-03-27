@@ -66,10 +66,11 @@ export default function ProgressPage() {
           onPeriodChange={setActivePeriod} 
         />
         
-        <AchievementBanner 
-          unlockedCount={8} 
-          totalCount={10} 
-          className="mb-6"
+        <AchievementBanner
+          unlockedCount={8}
+          totalCount={10}
+          variant="progress"
+          className="mt-4"
         />
         
         <ProgressSummary data={MOCK_PROGRESS_DATA.summary} />

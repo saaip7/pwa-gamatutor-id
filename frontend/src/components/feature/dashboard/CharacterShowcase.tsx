@@ -178,9 +178,10 @@ export function CharacterShowcase({ stats, onStreakTap }: CharacterShowcaseProps
 
       {/* Achievement Banner as separate section */}
       <div className="mt-6">
-        <AchievementBanner 
-          unlockedCount={stats.badgesUnlocked} 
-          totalCount={stats.totalBadges} 
+        <AchievementBanner
+          unlockedCount={stats.badgesUnlocked}
+          totalCount={stats.totalBadges}
+          variant="dashboard"
         />
       </div>
     </motion.div>
