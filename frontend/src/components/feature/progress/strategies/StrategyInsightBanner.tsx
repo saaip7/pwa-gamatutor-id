@@ -16,7 +16,7 @@ export function StrategyInsightBanner({ strategyName, impactPercent }: StrategyI
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="bg-blue-50 rounded-[20px] p-5 border border-blue-100 shadow-sm relative overflow-hidden group">
+      <div className="bg-blue-50 rounded-2xl p-5 border border-blue-100 shadow-sm relative overflow-hidden group">
         {/* Decorative background icon */}
         <div className="absolute -right-4 -top-4 opacity-[0.07] rotate-12 group-hover:rotate-0 transition-transform duration-700">
           <Lightbulb className="w-32 h-32 text-blue-600" />
