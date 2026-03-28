@@ -1,0 +1,37 @@
+/* Character SVG Animations — generic, works for any character SVG */
+
+@keyframes charBreathe {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.018); }
+}
+@keyframes charHeadBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1.5px); }
+}
+@keyframes charArmSwayL {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-0.8deg); }
+}
+@keyframes charArmSwayR {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(0.8deg); }
+}
+@keyframes charBlink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  96% { transform: scaleY(0.05); }
+}
+@keyframes charHairSway {
+  0%, 100% { transform: translateX(0) skewX(0deg); }
+  50% { transform: translateX(0.6px) skewX(-0.3deg); }
+}
+
+.torso { animation: charBreathe 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center bottom; }
+.head  { animation: charHeadBob 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center bottom; }
+.armL  { animation: charArmSwayL 4s ease-in-out infinite; transform-box: fill-box; transform-origin: top right; }
+.armR  { animation: charArmSwayR 4s ease-in-out infinite; transform-box: fill-box; transform-origin: top left; }
+.eyes  { animation: charBlink 4s ease-in-out infinite; transform-box: fill-box; transform-origin: center center; }
+.hair  { animation: charHairSway 5s ease-in-out infinite; transform-box: fill-box; transform-origin: bottom center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .torso, .head, .armL, .armR, .eyes, .hair { animation: none; }
+}
