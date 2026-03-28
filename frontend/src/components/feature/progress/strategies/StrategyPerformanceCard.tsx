@@ -39,7 +39,7 @@ export function StrategyPerformanceCard({ data, index }: StrategyPerformanceCard
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
-        className="rounded-[24px] border-2 border-dashed border-neutral-200 bg-white/60 p-5 opacity-70 relative overflow-hidden"
+        className="rounded-2xl border-2 border-dashed border-neutral-200 bg-white/60 p-5 opacity-70 relative overflow-hidden"
       >
         <div className="flex items-center gap-3.5 mb-2">
           <div className="w-[52px] h-[52px] rounded-[14px] bg-neutral-100 text-neutral-400 flex items-center justify-center shrink-0 border border-neutral-200">
@@ -69,7 +69,7 @@ export function StrategyPerformanceCard({ data, index }: StrategyPerformanceCard
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
-      className="bg-white rounded-[24px] border border-neutral-100 shadow-sm p-5"
+      className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-5"
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-5">
