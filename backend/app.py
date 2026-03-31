@@ -14,6 +14,10 @@ from features.board.routes import board_bp
 from features.course.routes import course_bp
 from features.learning_strat.routes import learningstrat_bp
 from features.study_session.routes import study_session_bp
+from features.goal.routes import goals_bp
+from features.preferences.routes import preferences_bp
+from features.badge.routes import badge_bp
+from features.notification.routes import notification_bp
 
 load_dotenv()
 
@@ -51,6 +55,10 @@ app.register_blueprint(board_bp)
 app.register_blueprint(course_bp)
 app.register_blueprint(learningstrat_bp)
 app.register_blueprint(study_session_bp)
+app.register_blueprint(goals_bp)
+app.register_blueprint(preferences_bp)
+app.register_blueprint(badge_bp)
+app.register_blueprint(notification_bp)
 
 
 @app.route("/", methods=["GET"])
