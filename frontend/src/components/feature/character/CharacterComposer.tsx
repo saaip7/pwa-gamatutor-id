@@ -27,18 +27,23 @@ interface CharacterComposerProps {
 const COMPOSER_WIDTH = 120;
 const COMPOSER_HEIGHT = 400;
 
-// Horizontal & vertical offsets for each piece (tune to fit)
-const HEAD_X = 11.5;
-const HEAD_Y = 20;
-const HEAD_MAX_H = 120;
-
-const TOP_X = 0;
-const TOP_Y = 110;
-const TOP_MAX_H = 170;
-
-const BOTTOM_X = 10;
-const BOTTOM_Y = 230;
-const BOTTOM_MAX_H = 150;
+// Per-gender offsets for each piece (tune to fit)
+const LAYOUT: Record<Gender, {
+  head:    { x: number; y: number; maxH: number };
+  top:     { x: number; y: number; maxH: number };
+  bottom:  { x: number; y: number; maxH: number };
+}> = {
+  male: {
+    head:    { x: 0, y: 20,  maxH: 120 },
+    top:     { x: 0, y: 110, maxH: 170 },
+    bottom:  { x: 1, y: 238, maxH: 150 },
+  },
+  female: {
+    head:    { x: 0, y: 40,  maxH: 120 },
+    top:     { x: 0, y: 110, maxH: 170 },
+    bottom:  { x: 1, y: 238, maxH: 150 },
+  },
+};
 
 export function CharacterComposer({
   gender,
@@ -51,6 +56,8 @@ export function CharacterComposer({
   const TopComponent = getTopComponent(top);
   const BottomComponent = getBottomComponent(bottom);
 
+  const layout = LAYOUT[gender];
+
   return (
     <svg
       viewBox={`0 0 ${COMPOSER_WIDTH} ${COMPOSER_HEIGHT}`}
@@ -60,10 +67,10 @@ export function CharacterComposer({
     >
       {/* Bottom piece (rendered first = behind) */}
       <svg
-        x={BOTTOM_X}
-        y={BOTTOM_Y}
+        x={layout.bottom.x}
+        y={layout.bottom.y}
         width={COMPOSER_WIDTH}
-        height={BOTTOM_MAX_H}
+        height={layout.bottom.maxH}
         overflow="visible"
       >
         <BottomComponent gender={gender} />
@@ -71,10 +78,10 @@ export function CharacterComposer({
 
       {/* Top piece (middle layer) */}
       <svg
-        x={TOP_X}
-        y={TOP_Y}
+        x={layout.top.x}
+        y={layout.top.y}
         width={COMPOSER_WIDTH}
-        height={TOP_MAX_H}
+        height={layout.top.maxH}
         overflow="visible"
       >
         <TopComponent gender={gender} />
@@ -82,10 +89,10 @@ export function CharacterComposer({
 
       {/* Head piece (rendered last = on top) */}
       <svg
-        x={HEAD_X}
-        y={HEAD_Y}
+        x={layout.head.x}
+        y={layout.head.y}
         width={COMPOSER_WIDTH}
-        height={HEAD_MAX_H}
+        height={layout.head.maxH}
         overflow="visible"
       >
         <HeadComponent gender={gender} />
