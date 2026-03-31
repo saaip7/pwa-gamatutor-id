@@ -5,7 +5,7 @@ import { Gender } from "../../types";
 export function TopLv3({ gender }: { gender: Gender }) {
   if (gender === "male") {
     return (
-      <svg width="128" height="133" viewBox="0 0 128 133" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 128 133" preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M33.249 118.207C33.249 120.781 35.2045 122.935 37.7673 123.183L60.9425 125.426C63.1423 125.639 65.3568 125.648 67.558 125.454L93.5938 123.16C96.231 122.928 98.23 120.68 98.1528 118.033L95.391 23.5998C95.312 20.8966 93.0975 18.7461 90.393 18.7461H38.249C35.4875 18.7461 33.249 20.9846 33.249 23.7461V118.207Z" fill="#A82639"/>
 <path d="M45.2905 64.1167H88.7905V51.3667H45.2905V64.1167Z" fill="#36386D"/>
 <path d="M42.5405 87.1167H86.0405V74.3667H42.5405V87.1167Z" fill="#36386D"/>
@@ -36,7 +36,7 @@ export function TopLv3({ gender }: { gender: Gender }) {
     );
   }
   return (
-    <svg width="116" height="162" viewBox="0 0 116 162" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 116 162" preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M41 128.501L46.25 20.875L58 14.75L69.875 20.875L75 128.501C75 128.501 63.0812 131.5 58 131.5C52.9187 131.5 41 128.501 41 128.501Z" fill="#F2F2F2"/>
 <path d="M49.25 8.75C49.25 3.9175 53.1675 0 58 0C62.8325 0 66.75 3.9175 66.75 8.75V20C66.75 24.8325 62.8325 28.75 58 28.75C53.1675 28.75 49.25 24.8325 49.25 20V8.75Z" fill="#EBBAAA"/>
 <path d="M14.4199 37.8074C20.4522 25.8689 30.311 26.7699 34.5 27.2222L26.6805 68.5997V129C-9.16637 118.888 -4.28159 74.8197 14.4199 37.8074Z" fill="#A1D9EB"/>
