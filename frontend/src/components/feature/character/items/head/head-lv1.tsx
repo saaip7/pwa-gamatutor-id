@@ -5,7 +5,7 @@ import { Gender } from "../../types";
 export function HeadLv1({ gender }: { gender: Gender }) {
   if (gender === "male") {
     return (
-      <svg width="93" height="115" viewBox="0 0 93 115" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 93 115" preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path opacity="0.5" d="M82.5 81.7505C88.0227 81.7505 92.5 77.2732 92.5 71.7505C92.5 66.2277 88.0227 61.7505 82.5 61.7505C76.9773 61.7505 72.5 66.2277 72.5 71.7505C72.5 77.2732 76.9773 81.7505 82.5 81.7505Z" fill="#DE8E7C"/>
 <path opacity="0.5" d="M10 81.7505C4.47715 81.7505 0 77.2732 0 71.7505C0 66.2277 4.47715 61.7505 10 61.7505C15.5228 61.7505 20 66.2277 20 71.7505C20 77.2732 15.5228 81.7505 10 81.7505Z" fill="#DE8E7C"/>
 <path d="M8.75 47.25C8.75 26.5392 25.5392 9.75 46.25 9.75C66.9608 9.75 83.75 26.5392 83.75 47.25V77.25C83.75 97.9608 66.9608 114.75 46.25 114.75C25.5392 114.75 8.75 97.9608 8.75 77.25V47.25Z" fill="#F4D5CC"/>
@@ -23,7 +23,7 @@ export function HeadLv1({ gender }: { gender: Gender }) {
     );
   }
   return (
-    <svg width="98" height="149" viewBox="0 0 98 149" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 98 149" preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M9.3606 47.6623C9.3606 26.3718 27.5066 9.1123 49.8908 9.1123C72.2751 9.1123 90.4211 26.3718 90.4211 47.6623V86.005C87.1526 110.876 67.5411 124.555 49.8908 124.555C32.2406 124.555 11.7576 107.975 9.3606 86.005V47.6623Z" fill="#F6DDD6"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M38.9946 95.3105C38.9676 95.626 38.9539 95.9453 38.9539 96.2675V97.8768C38.9539 103.988 43.9074 108.941 50.0181 108.941C56.1289 108.941 61.0824 103.988 61.0824 97.8768V96.2675C61.0824 95.9453 61.0686 95.626 61.0416 95.3105H38.9946Z" fill="#393939"/>
 <mask id="mask0_9561_385" maskUnits="userSpaceOnUse" x="38" y="93" width="24" height="16">

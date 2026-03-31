@@ -5,7 +5,7 @@ import { Gender } from "../../types";
 export function HeadLv4({ gender }: { gender: Gender }) {
   if (gender === "male") {
     return (
-      <svg width="95" height="117" viewBox="0 0 95 117" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 95 117" preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path opacity="0.5" d="M85 86.3076C90.523 86.3076 95 81.4386 95 75.4326C95 69.4264 90.523 64.5576 85 64.5576C79.4773 64.5576 75 69.4264 75 75.4326C75 81.4386 79.4773 86.3076 85 86.3076Z" fill="#C99584"/>
 <path opacity="0.5" d="M10 86.3076C4.47715 86.3076 0 81.4386 0 75.4326C0 69.4264 4.47715 64.5576 10 64.5576C15.5229 64.5576 20 69.4264 20 75.4326C20 81.4386 15.5229 86.3076 10 86.3076Z" fill="#C99584"/>
 <path d="M10 51.2494C10 30.5389 26.7892 13.7495 47.5 13.7495C68.2107 13.7495 85 30.5389 85 51.2494V64.9609C85 67.1887 84.8297 69.4129 84.4905 71.6147L82.199 86.4912C79.5672 103.574 64.8675 116.182 47.5835 116.182C30.6667 116.182 16.1675 104.091 13.1293 87.4487L10.7106 74.1997C10.2378 71.6102 10 68.9832 10 66.3509V51.2494Z" fill="#F4D5CC"/>
@@ -37,7 +37,7 @@ export function HeadLv4({ gender }: { gender: Gender }) {
     );
   }
   return (
-    <svg width="103" height="117" viewBox="0 0 103 117" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 103 117" preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M91.9795 77.7139V96.8706H91.7078V77.7139H91.9795Z" fill="#DFC5B2"/>
 <path d="M91.3004 78.6592L91.5719 78.6706L90.6209 101.224L90.3494 101.213L91.3004 78.6592Z" fill="#DFC5B2"/>
 <path d="M11.0049 77.7139V96.8706H10.7332V77.7139H11.0049Z" fill="#DFC5B2"/>
