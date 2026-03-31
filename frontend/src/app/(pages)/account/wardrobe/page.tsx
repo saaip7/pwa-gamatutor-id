@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { User, Shirt, Footprints, Sparkles, Check, Lock } from "lucide-react";
+import { Gender } from "@/components/feature/character/types";
 import { SettingsHeader } from "@/components/feature/settings/SettingsHeader";
 import { CharacterComposer } from "@/components/feature/character/CharacterComposer";
 
@@ -31,18 +32,64 @@ interface Equipped {
 
 // --- Sub-components ---
 
-function CharacterStage({ equipped }: { equipped: Equipped }) {
+function CharacterStage({ equipped, gender, onGenderChange }: { equipped: Equipped; gender: Gender; onGenderChange: (g: Gender) => void }) {
   return (
     <section className="relative w-full h-[320px] flex flex-col items-center justify-start pt-4 overflow-hidden bg-[radial-gradient(circle_at_50%_100%,#f3f4f6_0%,#ffffff_50%)]">
+      {/* Gender Switcher */}
+      <div className="absolute top-3 left-4 z-20">
+        <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-full p-[3px] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
+          {(["male", "female"] as const).map((g) => {
+            const isActive = gender === g;
+            return (
+              <button
+                key={g}
+                onClick={() => onGenderChange(g)}
+                className={cn(
+                  "relative w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-extrabold leading-none transition-all duration-200",
+                  isActive && g === "male" && "text-primary",
+                  isActive && g === "female" && "text-pink-500",
+                  !isActive && "text-neutral-300 hover:text-neutral-400"
+                )}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="genderDot"
+                    className={cn(
+                      "absolute inset-0 rounded-full",
+                      g === "male" ? "bg-primary/8 border border-primary/20" : "bg-pink-500/8 border border-pink-500/20"
+                    )}
+                    transition={{ type: "spring", stiffness: 550, damping: 35 }}
+                  />
+                )}
+                <span className="relative z-10">
+                  {g === "male" ? (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="10.5" cy="13.5" r="5.5" />
+                      <line x1="22" y1="2" x2="15.5" y2="8.5" />
+                      <polyline points="16 2 22 2 22 8" />
+                    </svg>
+                  ) : (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="15" r="5.5" />
+                      <line x1="12" y1="9.5" x2="12" y2="2" />
+                      <line x1="9" y1="5" x2="15" y2="5" />
+                    </svg>
+                  )}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="relative z-10 flex flex-col items-center">
         <CharacterComposer
-          gender="male"
+          gender={gender}
           head={equipped.head}
           top={equipped.top}
           bottom={equipped.bottom}
           className="w-[140px] h-[240px] drop-shadow-xl"
         />
-
       </div>
     </section>
   );
@@ -57,6 +104,7 @@ const CATEGORIES = [
 
 export default function WardrobePage() {
   const [activeTab, setActiveTab] = useState<"head" | "top" | "bottom" | "special">("head");
+  const [gender, setGender] = useState<Gender>("male");
   const [equipped, setEquipped] = useState<Equipped>({
     head: "base",
     top: "base",
@@ -75,7 +123,7 @@ export default function WardrobePage() {
       <SettingsHeader title="Sesuaikan Karakter" onSave={handleSave} />
 
       <main className="flex-1 overflow-y-auto no-scrollbar relative bg-white">
-        <CharacterStage equipped={equipped} />
+        <CharacterStage equipped={equipped} gender={gender} onGenderChange={setGender} />
 
         {/* Category Tabs */}
         <div className="sticky top-0 z-40 bg-white border-b border-neutral-100 flex">
@@ -125,7 +173,7 @@ export default function WardrobePage() {
                   )}>
                     {/* Real Item Preview */}
                     <div className={cn("w-16 h-16 flex items-center justify-center", !isUnlocked && "grayscale opacity-40")}>
-                      <ItemPreview gender="male" />
+                      <ItemPreview gender={gender} />
                     </div>
 
                     {/* Badge */}
