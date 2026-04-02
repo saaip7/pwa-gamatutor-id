@@ -1,6 +1,7 @@
 from flask import jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from features.preferences.model import Preferences
+from features.badge.badge_engine import BadgeEngine
 from shared.log_model import Log
 
 
@@ -56,9 +57,13 @@ def update_onboarding():
     data = request.json
     try:
         success = Preferences.update_onboarding(user_id, data)
+        badge_results = []
         if data.get("completed"):
             Log.create(user_id, "onboarding_completed", "User completed onboarding")
+            badge_results = BadgeEngine.evaluate(user_id, "onboarding_completed")
+
         prefs = Preferences.get(user_id)
+        prefs["newlyUnlocked"] = badge_results
         return jsonify(prefs), 200
     except Exception as e:
         return jsonify({"message": "An error occurred", "error": str(e)}), 500
@@ -99,7 +104,15 @@ def use_freeze():
         if not success:
             return jsonify({"message": message}), 400
         Log.create(user_id, "streak_freeze_used", "Streak freeze used")
+
+        # Check streak-based badges
+        badge_results = BadgeEngine.evaluate(user_id, "streak_updated")
+
         streak = Preferences.get_streak(user_id)
-        return jsonify({"message": message, "streak": streak}), 200
+        return jsonify({
+            "message": message,
+            "streak": streak,
+            "newlyUnlocked": badge_results,
+        }), 200
     except Exception as e:
         return jsonify({"message": "An error occurred", "error": str(e)}), 500

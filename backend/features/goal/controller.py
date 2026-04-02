@@ -1,6 +1,7 @@
 from flask import jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from features.goal.model import Goal
+from features.badge.badge_engine import BadgeEngine
 from shared.log_model import Log
 
 
@@ -83,7 +84,11 @@ def set_task_goal(card_id):
         goal["_id"] = str(goal["_id"])
         goal["user_id"] = str(goal["user_id"])
         Log.create(user_id, "goal_set", f"Task goal set for card {card_id}", {"card_id": card_id})
-        return jsonify({"goal": goal}), 200
+
+        # Check Architect badge (task linked to goal hierarchy)
+        badge_results = BadgeEngine.evaluate(user_id, "goal_linked")
+
+        return jsonify({"goal": goal, "newlyUnlocked": badge_results}), 200
     except Exception as e:
         return jsonify({"message": "An error occurred", "error": str(e)}), 500
 

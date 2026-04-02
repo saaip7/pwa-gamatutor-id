@@ -3,20 +3,40 @@ from bson import ObjectId
 from datetime import datetime
 
 BADGE_DEFINITIONS = [
-    # Foundation
-    {"type": "initiator", "name": "Initiator", "category": "foundation", "shape": "diamond", "description": "Buat task pertamamu", "condition": "first_task"},
-    {"type": "architect", "name": "Architect", "category": "foundation", "shape": "diamond", "description": "Buat 5 rencana belajar detail", "condition": "five_plans"},
-    # Performance
-    {"type": "deep_diver", "name": "Deep Diver", "category": "performance", "shape": "hexagon", "description": "Selesaikan 3 sesi fokus", "condition": "three_sessions"},
-    {"type": "marathoner", "name": "Marathoner", "category": "performance", "shape": "hexagon", "description": "Riwayat 14 hari berturut-turut", "condition": "streak_14"},
-    {"type": "ritualist", "name": "Ritualist", "category": "performance", "shape": "hexagon", "description": "Riwayat 7 hari berturut-turut", "condition": "streak_7"},
-    # Mindset
-    {"type": "reflector", "name": "Reflector", "category": "mindset", "shape": "circle", "description": "Selesaikan 5 refleksi diri", "condition": "five_reflections"},
-    {"type": "strategist", "name": "Strategist", "category": "mindset", "shape": "circle", "description": "Gunakan 3 strategi belajar berbeda", "condition": "three_strategies"},
-    {"type": "explorer", "name": "Explorer", "category": "mindset", "shape": "circle", "description": "Selesaikan task di 3 mata kuliah berbeda", "condition": "three_courses"},
-    # Mastery
-    {"type": "improver", "name": "Improver", "category": "mastery", "shape": "shield", "description": "Tingkatkan confidence rating 3 kali", "condition": "confidence_improve_3"},
-    {"type": "zenith", "name": "Zenith", "category": "mastery", "shape": "shield", "description": "Buka 7 badge lainnya", "condition": "seven_badges"},
+    # Foundation (The Start)
+    {"type": "initiator", "name": "Initiator", "category": "foundation", "shape": "diamond",
+     "description": "Perjalanan belajarmu dimulai.",
+     "condition": "onboarding_or_first_done_or_first_reflection"},
+    {"type": "architect", "name": "Architect", "category": "foundation", "shape": "diamond",
+     "description": "Visi besar diterjemahkan menjadi langkah kecil.",
+     "condition": "three_task_goals_linked"},
+    # Performance (The Action)
+    {"type": "deep_diver", "name": "Deep Diver", "category": "performance", "shape": "hexagon",
+     "description": "Fokus tanpa batas.",
+     "condition": "focus_session_60min_personal_best"},
+    {"type": "marathoner", "name": "Marathoner", "category": "performance", "shape": "hexagon",
+     "description": "Konsistensi mengalahkan intensitas.",
+     "condition": "forgiving_streak_7_days"},
+    {"type": "ritualist", "name": "Ritualist", "category": "performance", "shape": "hexagon",
+     "description": "Menemukan ritme produktivitasmu sendiri.",
+     "condition": "same_time_3_consecutive_days"},
+    # Mindset (The Strategy)
+    {"type": "reflector", "name": "Reflector", "category": "mindset", "shape": "circle",
+     "description": "Kesadaran penuh dalam proses belajar.",
+     "condition": "10_reflected_tasks"},
+    {"type": "strategist", "name": "Strategist", "category": "mindset", "shape": "circle",
+     "description": "Senjata rahasia belajarmu ditemukan.",
+     "condition": "same_strategy_3_times_with_high_effectiveness"},
+    {"type": "explorer", "name": "Explorer", "category": "mindset", "shape": "circle",
+     "description": "Eksplorasi untuk menemukan cara belajar terbaik.",
+     "condition": "all_4_strategy_types"},
+    # Mastery (The Result)
+    {"type": "improver", "name": "Improver", "category": "mastery", "shape": "shield",
+     "description": "Melampaui dirimu yang kemarin.",
+     "condition": "improvement_visualization_20_percent"},
+    {"type": "zenith", "name": "Zenith", "category": "mastery", "shape": "shield",
+     "description": "Puncak kemampuan dan kemandirian belajar.",
+     "condition": "hard_task_with_confidence_5"},
 ]
 
 

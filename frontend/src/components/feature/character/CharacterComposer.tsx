@@ -34,9 +34,9 @@ const LAYOUT: Record<Gender, {
   bottom:  { x: number; y: number; maxH: number };
 }> = {
   male: {
-    head:    { x: 0, y: 20,  maxH: 120 },
+    head:    { x: 0, y: 5,  maxH: 120 },
     top:     { x: 0, y: 110, maxH: 170 },
-    bottom:  { x: 1, y: 238, maxH: 150 },
+    bottom:  { x: 1, y: 218, maxH: 150 },
   },
   female: {
     head:    { x: 0, y: 40,  maxH: 120 },

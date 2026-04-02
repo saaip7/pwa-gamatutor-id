@@ -1,6 +1,9 @@
 from flask import jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from features.study_session.model import StudySession
+from features.badge.badge_engine import BadgeEngine
+from shared.log_model import Log
+from shared.streak import update_streak
 
 
 @jwt_required()
@@ -10,7 +13,11 @@ def start():
     if not card_id:
         return jsonify({"error": "Missing card_id"}), 400
     session = StudySession.create(user_id, card_id)
-    return jsonify(session), 201
+
+    # Update streak — study session is a meaningful activity
+    streak = update_streak(user_id)
+
+    return jsonify({**session, "streak": streak}), 201
 
 
 @jwt_required()
@@ -22,7 +29,15 @@ def end():
     success = StudySession.end(session_id)
     if not success:
         return jsonify({"error": "Session not found"}), 404
-    return jsonify({"message": "Session ended"}), 200
+
+    # Fire badge triggers for session completion
+    badge_results = BadgeEngine.evaluate(user_id, "session_completed")
+    Log.create(user_id, "session_completed", f"Study session {session_id} completed")
+
+    return jsonify({
+        "message": "Session ended",
+        "newlyUnlocked": badge_results,
+    }), 200
 
 
 @jwt_required()

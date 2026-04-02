@@ -1,10 +1,24 @@
 from shared.db import mongo
 from bson import ObjectId
+from datetime import datetime as dt
 from features.badge.model import Badge, BADGE_DEFINITIONS
+from features.notification.model import Notification
 
 
 class BadgeEngine:
     """Evaluates badge unlock conditions based on trigger actions."""
+
+    # Each trigger maps to a list of badge check functions
+    TRIGGER_MAP = {
+        "onboarding_completed": ["_check_initiator"],
+        "task_done": ["_check_initiator", "_check_reflector", "_check_zenith"],
+        "reflection_completed": ["_check_initiator", "_check_reflector", "_check_strategist"],
+        "goal_linked": ["_check_architect"],
+        "session_completed": ["_check_deep_diver", "_check_ritualist"],
+        "streak_updated": ["_check_marathoner"],
+        "strategy_used": ["_check_strategist", "_check_explorer"],
+        "grade_updated": ["_check_improver"],
+    }
 
     @staticmethod
     def evaluate(user_id, trigger):
@@ -13,172 +27,312 @@ class BadgeEngine:
             user_id = ObjectId(user_id)
 
         newly_unlocked = []
+        check_names = BadgeEngine.TRIGGER_MAP.get(trigger, [])
 
-        checks = {
-            "task_created": [BadgeEngine._check_initiator, BadgeEngine._check_architect, BadgeEngine._check_explorer],
-            "reflection_completed": [BadgeEngine._check_reflector, BadgeEngine._check_improver],
-            "strategy_used": [BadgeEngine._check_strategist],
-            "session_completed": [BadgeEngine._check_deep_diver],
-            "streak_updated": [BadgeEngine._check_ritualist, BadgeEngine._check_marathoner],
-            "badge_unlocked": [BadgeEngine._check_zenith],
-        }
-
-        evaluators = checks.get(trigger, [])
-        for check_fn in evaluators:
-            badge_type = check_fn(user_id)
-            if badge_type:
-                newly_unlocked.append(badge_type)
+        for check_name in check_names:
+            check_fn = getattr(BadgeEngine, check_name, None)
+            if check_fn:
+                badge_type = check_fn(user_id)
+                if badge_type:
+                    newly_unlocked.append(badge_type)
+                    # Auto-create notification for badge unlock
+                    badge_defn = next((b for b in BADGE_DEFINITIONS if b["type"] == badge_type), None)
+                    name = badge_defn["name"] if badge_defn else badge_type
+                    desc = badge_defn["description"] if badge_defn else ""
+                    Notification.create(
+                        user_id, "award",
+                        f"Badge Terbuka: {name}!",
+                        desc
+                    )
 
         return newly_unlocked
 
+    # --- Foundation ---
+
     @staticmethod
     def _check_initiator(user_id):
-        """First task created."""
+        """Selesai onboarding ATAU 1 task Done ATAU refleksi pertama."""
         existing = mongo.db.badges.find_one({"user_id": user_id, "badge_type": "initiator"})
         if existing:
             return None
+
+        # Condition 1: Onboarding completed
+        prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
+        if prefs and prefs.get("onboarding", {}).get("completed"):
+            Badge.unlock(user_id, "initiator")
+            return "initiator"
+
+        # Condition 2: At least 1 task in Done (list4)
         board = mongo.db.boards.find_one({"user_id": user_id})
         if board:
-            total_cards = sum(len(lst.get("cards", [])) for lst in board.get("lists", []))
-            if total_cards >= 1:
-                Badge.unlock(user_id, "initiator")
-                return "initiator"
+            for lst in board.get("lists", []):
+                if lst.get("id") == "list4" and len(lst.get("cards", [])) >= 1:
+                    Badge.unlock(user_id, "initiator")
+                    return "initiator"
+
+        # Condition 3: Any card has reflection data
+        if board:
+            for lst in board.get("lists", []):
+                for card in lst.get("cards", []):
+                    if card.get("reflection") and card["reflection"].get("q2_confidence"):
+                        Badge.unlock(user_id, "initiator")
+                        return "initiator"
+
         return None
 
     @staticmethod
     def _check_architect(user_id):
-        """5 tasks with descriptions created."""
+        """Berhasil membuat 3 Task Goal berbeda yang terhubung ke Goal Hierarchy."""
         existing = mongo.db.badges.find_one({"user_id": user_id, "badge_type": "architect"})
         if existing:
             return None
-        board = mongo.db.boards.find_one({"user_id": user_id})
-        if board:
-            detailed = 0
-            for lst in board.get("lists", []):
-                for card in lst.get("cards", []):
-                    if card.get("description"):
-                        detailed += 1
-            if detailed >= 5:
-                Badge.unlock(user_id, "architect")
-                return "architect"
+
+        # User must have a general goal AND at least 3 task goals
+        general = mongo.db.goals.find_one({"user_id": user_id, "type": "general"})
+        if not general:
+            return None
+
+        task_goal_count = mongo.db.goals.count_documents({
+            "user_id": user_id, "type": "task"
+        })
+        if task_goal_count >= 3:
+            Badge.unlock(user_id, "architect")
+            return "architect"
+
         return None
+
+    # --- Performance ---
 
     @staticmethod
     def _check_deep_diver(user_id):
-        """3 study sessions completed."""
+        """Focus Mode > 60 menit, tanpa interupsi, memecahkan Personal Best."""
         existing = mongo.db.badges.find_one({"user_id": user_id, "badge_type": "deep_diver"})
         if existing:
             return None
-        count = mongo.db.study_sessions.count_documents({"user_id": user_id, "end_time": {"$ne": None}})
-        if count >= 3:
-            Badge.unlock(user_id, "deep_diver")
-            return "deep_diver"
-        return None
 
-    @staticmethod
-    def _check_marathoner(user_id):
-        """14-day streak."""
-        existing = mongo.db.badges.find_one({"user_id": user_id, "badge_type": "marathoner"})
-        if existing:
+        # Find sessions > 60 minutes
+        pipeline = [
+            {"$match": {
+                "user_id": user_id,
+                "end_time": {"$ne": None},
+            }},
+            {"$project": {
+                "card_id": 1,
+                "duration_min": {"$divide": [{"$subtract": ["$end_time", "$start_time"]}, 60000]},
+            }},
+            {"$match": {"duration_min": {"$gte": 60}}},
+        ]
+        long_sessions = list(mongo.db.study_sessions.aggregate(pipeline))
+
+        if not long_sessions:
             return None
-        prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
-        if prefs and prefs.get("streak", {}).get("current", 0) >= 14:
-            Badge.unlock(user_id, "marathoner")
-            return "marathoner"
+
+        # Check if any of these sessions' cards have personal_best set
+        card_ids = [s["card_id"] for s in long_sessions]
+        board = mongo.db.boards.find_one({"user_id": user_id})
+        if not board:
+            return None
+
+        for lst in board.get("lists", []):
+            for card in lst.get("cards", []):
+                if card.get("id") in card_ids and card.get("personal_best"):
+                    Badge.unlock(user_id, "deep_diver")
+                    return "deep_diver"
+
         return None
 
     @staticmethod
     def _check_ritualist(user_id):
-        """7-day streak."""
+        """Mulai sesi belajar di jam yang sama selama 3 hari berturut-turut."""
         existing = mongo.db.badges.find_one({"user_id": user_id, "badge_type": "ritualist"})
         if existing:
             return None
-        prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
-        if prefs and prefs.get("streak", {}).get("current", 0) >= 7:
-            Badge.unlock(user_id, "ritualist")
-            return "ritualist"
+
+        # Get sessions sorted by start_time, extract date and hour
+        sessions = list(
+            mongo.db.study_sessions.find(
+                {"user_id": user_id, "start_time": {"$ne": None}},
+                {"start_time": 1}
+            ).sort("start_time", 1)
+        )
+
+        if len(sessions) < 3:
+            return None
+
+        # Group sessions by calendar date, keep the hour of first session each day
+        daily_hours = {}
+        for s in sessions:
+            st = s["start_time"]
+            date_key = st.strftime("%Y-%m-%d")
+            hour = st.hour
+            if date_key not in daily_hours:
+                daily_hours[date_key] = hour
+
+        # Check for 3 consecutive dates with same hour (±1 hour tolerance)
+        dates = sorted(daily_hours.keys())
+        consecutive = 1
+        for i in range(1, len(dates)):
+            prev = dt.strptime(dates[i - 1], "%Y-%m-%d").date()
+            curr = dt.strptime(dates[i], "%Y-%m-%d").date()
+
+            if (curr - prev).days == 1 and abs(daily_hours[dates[i]] - daily_hours[dates[i - 1]]) <= 1:
+                consecutive += 1
+                if consecutive >= 3:
+                    Badge.unlock(user_id, "ritualist")
+                    return "ritualist"
+            else:
+                consecutive = 1
+
         return None
 
     @staticmethod
+    def _check_marathoner(user_id):
+        """Forgiving streak selama 7 hari."""
+        existing = mongo.db.badges.find_one({"user_id": user_id, "badge_type": "marathoner"})
+        if existing:
+            return None
+
+        prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
+        if prefs and prefs.get("streak", {}).get("current", 0) >= 7:
+            Badge.unlock(user_id, "marathoner")
+            return "marathoner"
+        return None
+
+    # --- Mindset ---
+
+    @staticmethod
     def _check_reflector(user_id):
-        """5 reflections completed."""
+        """Guided Reflection pada 10 tugas berturut-turut tanpa skip."""
         existing = mongo.db.badges.find_one({"user_id": user_id, "badge_type": "reflector"})
         if existing:
             return None
-        # Count cards that have reflection data
+
         board = mongo.db.boards.find_one({"user_id": user_id})
-        if board:
-            count = 0
-            for lst in board.get("lists", []):
-                for card in lst.get("cards", []):
-                    if card.get("reflection") and card["reflection"].get("q1_strategy"):
-                        count += 1
-            if count >= 5:
-                Badge.unlock(user_id, "reflector")
-                return "reflector"
+        if not board:
+            return None
+
+        # Get cards in Done (list4) that have reflection data
+        done_cards = []
+        for lst in board.get("lists", []):
+            if lst.get("id") == "list4":
+                done_cards = lst.get("cards", [])
+                break
+
+        # Count cards with completed reflection
+        reflected_count = sum(
+            1 for card in done_cards
+            if card.get("reflection") and card["reflection"].get("q2_confidence")
+        )
+
+        if reflected_count >= 10:
+            Badge.unlock(user_id, "reflector")
+            return "reflector"
+
         return None
 
     @staticmethod
     def _check_strategist(user_id):
-        """3 different strategies used."""
+        """Strategi yang sama digunakan ≥3 kali dengan Effectiveness Rating (Q1) tinggi konsisten."""
         existing = mongo.db.badges.find_one({"user_id": user_id, "badge_type": "strategist"})
         if existing:
             return None
+
         board = mongo.db.boards.find_one({"user_id": user_id})
-        if board:
-            strategies = set()
-            for lst in board.get("lists", []):
-                for card in lst.get("cards", []):
-                    strat = card.get("reflection", {}).get("q1_strategy") or card.get("learning_strategy")
-                    if strat:
-                        strategies.add(strat)
-            if len(strategies) >= 3:
+        if not board:
+            return None
+
+        # Group cards by learning_strategy
+        strategy_cards = {}
+        for lst in board.get("lists", []):
+            for card in lst.get("cards", []):
+                strat = card.get("learning_strategy")
+                if not strat:
+                    continue
+                if strat not in strategy_cards:
+                    strategy_cards[strat] = []
+                strategy_cards[strat].append(card)
+
+        # Check if any strategy has ≥3 cards with high effectiveness (Q1 ≥ 4)
+        for strat, cards in strategy_cards.items():
+            high_effective = [
+                c for c in cards
+                if c.get("reflection", {}).get("q1_strategy", 0) >= 4
+            ]
+            if len(high_effective) >= 3:
                 Badge.unlock(user_id, "strategist")
                 return "strategist"
+
         return None
 
     @staticmethod
     def _check_explorer(user_id):
-        """Tasks done in 3 different courses."""
+        """Mencoba semua 4 tipe strategi belajar: Video, Latihan, Baca, Diskusi."""
         existing = mongo.db.badges.find_one({"user_id": user_id, "badge_type": "explorer"})
         if existing:
             return None
+
         board = mongo.db.boards.find_one({"user_id": user_id})
-        if board:
-            courses_done = set()
-            for lst in board.get("lists", []):
-                for card in lst.get("cards", []):
-                    if card.get("course_name") and lst.get("id") == "list4":
-                        courses_done.add(card["course_name"])
-            if len(courses_done) >= 3:
-                Badge.unlock(user_id, "explorer")
-                return "explorer"
+        if not board:
+            return None
+
+        required = {"Video", "Latihan", "Baca", "Diskusi"}
+        found = set()
+        for lst in board.get("lists", []):
+            for card in lst.get("cards", []):
+                strat = card.get("learning_strategy")
+                if strat in required:
+                    found.add(strat)
+
+        if found >= required:
+            Badge.unlock(user_id, "explorer")
+            return "explorer"
+
         return None
+
+    # --- Mastery ---
 
     @staticmethod
     def _check_improver(user_id):
-        """Confidence rating improved 3 times."""
+        """Peningkatan Improvement Visualization > 20%."""
         existing = mongo.db.badges.find_one({"user_id": user_id, "badge_type": "improver"})
         if existing:
             return None
-        # Check logs for confidence_improvement events
-        count = mongo.db.logs.count_documents({
-            "user_id": user_id,
-            "action_type": "confidence_improved",
-        })
-        if count >= 3:
-            Badge.unlock(user_id, "improver")
-            return "improver"
+
+        board = mongo.db.boards.find_one({"user_id": user_id})
+        if not board:
+            return None
+
+        for lst in board.get("lists", []):
+            for card in lst.get("cards", []):
+                pre = card.get("pre_test_grade")
+                post = card.get("post_test_grade")
+                if pre and post and pre > 0:
+                    improvement = ((post - pre) / pre) * 100
+                    if improvement > 20:
+                        Badge.unlock(user_id, "improver")
+                        return "improver"
+
         return None
 
     @staticmethod
     def _check_zenith(user_id):
-        """7 other badges unlocked."""
+        """Menyelesaikan tugas dengan kesulitan Hard + Confidence 5."""
         existing = mongo.db.badges.find_one({"user_id": user_id, "badge_type": "zenith"})
         if existing:
             return None
-        count = Badge.count_unlocked(user_id)
-        if count >= 7:  # Not counting zenith itself since it's not unlocked yet
-            Badge.unlock(user_id, "zenith")
-            return "zenith"
+
+        board = mongo.db.boards.find_one({"user_id": user_id})
+        if not board:
+            return None
+
+        # Card must be in Done (list4) with difficulty Hard + confidence 5
+        for lst in board.get("lists", []):
+            if lst.get("id") == "list4":
+                for card in lst.get("cards", []):
+                    is_hard = card.get("difficulty") == "Hard"
+                    confidence_5 = card.get("reflection", {}).get("q2_confidence") == 5
+                    if is_hard and confidence_5:
+                        Badge.unlock(user_id, "zenith")
+                        return "zenith"
+
         return None
