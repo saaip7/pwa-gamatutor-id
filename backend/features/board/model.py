@@ -26,6 +26,10 @@ class Board:
         return str(result.inserted_id)
 
     @staticmethod
+    def delete_board(board_id, user_id):
+        mongo.db.boards.delete_one({"_id": ObjectId(board_id), "user_id": ObjectId(user_id)})
+
+    @staticmethod
     def find_by_user_id(user_id):
         try:
             return mongo.db.boards.find_one({"user_id": ObjectId(user_id)})
