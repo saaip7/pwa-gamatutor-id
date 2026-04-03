@@ -18,6 +18,7 @@ from features.goal.routes import goals_bp
 from features.preferences.routes import preferences_bp
 from features.badge.routes import badge_bp
 from features.notification.routes import notification_bp
+from features.analytics.routes import analytics_bp
 
 load_dotenv()
 
@@ -59,6 +60,7 @@ app.register_blueprint(goals_bp)
 app.register_blueprint(preferences_bp)
 app.register_blueprint(badge_bp)
 app.register_blueprint(notification_bp)
+app.register_blueprint(analytics_bp)
 
 
 @app.route("/", methods=["GET"])

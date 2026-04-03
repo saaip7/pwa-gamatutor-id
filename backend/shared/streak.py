@@ -55,12 +55,15 @@ def update_streak(user_id):
     now = datetime.utcnow()
     mongo.db.user_preferences.update_one(
         {"user_id": user_id},
-        {"$set": {
-            "streak.current": new_current,
-            "streak.longest": new_longest,
-            "streak.last_active_date": now,
-            "updated_at": now,
-        }}
+        {
+            "$set": {
+                "streak.current": new_current,
+                "streak.longest": new_longest,
+                "streak.last_active_date": now,
+                "updated_at": now,
+            },
+            "$addToSet": {"streak.active_dates": today.isoformat()},
+        }
     )
 
     # Check streak-based badges if streak increased
