@@ -20,6 +20,21 @@ def get_board():
 
 
 @jwt_required()
+def create_board():
+    """Create or recreate board for current user."""
+    user_id = get_jwt_identity()
+    existing = Board.find_by_user_id(user_id)
+    if existing:
+        Board.delete_board(str(existing["_id"]), user_id)
+    username = request.json.get("username", "User")
+    board_id = Board.create_initial_board(user_id, username)
+    return jsonify({
+        "message": "Board created",
+        "board_id": board_id,
+    }), 201
+
+
+@jwt_required()
 def update_board():
     user_id = get_jwt_identity()
     data = request.json
