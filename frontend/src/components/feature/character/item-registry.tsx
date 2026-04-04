@@ -21,52 +21,86 @@ import { BottomLv2 } from "./items/bottom/bottom-lv2";
 import { BottomLv3 } from "./items/bottom/bottom-lv3";
 import { BottomLv4 } from "./items/bottom/bottom-lv4";
 import { BottomLv5 } from "./items/bottom/bottom-lv5";
+// Special items — to be added later
+// import { SpecialLv1 } from "./items/special/special-lv1";
+// import { SpecialLv2 } from "./items/special/special-lv2";
+// import { SpecialLv3 } from "./items/special/special-lv3";
 
+// ─── Types ────────────────────────────────────────────────────
+
+export type SlotType = "head" | "top" | "bottom" | "special";
 export type SlotLevel = "base" | "lv1" | "lv2" | "lv3" | "lv4" | "lv5";
+
+export interface EquippedItems {
+  head: SlotLevel;
+  top: SlotLevel;
+  bottom: SlotLevel;
+  special: SlotLevel | null;
+}
 
 export interface ItemDef {
   id: SlotLevel;
-  name: string;
-  slot: "head" | "top" | "bottom" | "special";
-  level: number;
-  unlockStreak: number;
+  slot: SlotType;
+  names: Record<Gender, string>;
+  badgeId: string | null; // null = always available (base item)
 }
 
+// ─── Item Definitions ─────────────────────────────────────────
+
 export const ITEMS: ItemDef[] = [
-  // Head
-  { id: "base", slot: "head", name: "Default", level: 0, unlockStreak: 0 },
-  { id: "lv1", slot: "head", name: "Spiky", level: 1, unlockStreak: 3 },
-  { id: "lv2", slot: "head", name: "Wavy", level: 2, unlockStreak: 7 },
-  { id: "lv3", slot: "head", name: "Braids", level: 3, unlockStreak: 14 },
-  { id: "lv4", slot: "head", name: "Slicked", level: 4, unlockStreak: 21 },
-  // Top
-  { id: "base", slot: "top", name: "Tee", level: 0, unlockStreak: 0 },
-  { id: "lv1", slot: "top", name: "Hoodie", level: 1, unlockStreak: 3 },
-  { id: "lv2", slot: "top", name: "Blazer", level: 2, unlockStreak: 7 },
-  { id: "lv3", slot: "top", name: "Military", level: 3, unlockStreak: 14 },
-  { id: "lv4", slot: "top", name: "Royal", level: 4, unlockStreak: 21 },
-  { id: "lv5", slot: "top", name: "Emperor", level: 5, unlockStreak: 30 },
-  // Bottom
-  { id: "base", slot: "bottom", name: "Default", level: 0, unlockStreak: 0 },
-  { id: "lv1", slot: "bottom", name: "Jeans", level: 1, unlockStreak: 3 },
-  { id: "lv2", slot: "bottom", name: "Cargo", level: 2, unlockStreak: 7 },
-  { id: "lv3", slot: "bottom", name: "Chinos", level: 3, unlockStreak: 14 },
-  { id: "lv4", slot: "bottom", name: "Tactical", level: 4, unlockStreak: 21 },
-  { id: "lv5", slot: "bottom", name: "Royal", level: 5, unlockStreak: 30 },
+  // HEAD (5 items: 1 base + 4 unlockable)
+  { id: "base", slot: "head", names: { male: "Short Fade", female: "Chic Long Hair" }, badgeId: null },
+  { id: "lv1", slot: "head", names: { male: "Textured Crop", female: "Cute Bangs" }, badgeId: "initiator" },
+  { id: "lv2", slot: "head", names: { male: "Messy Wavy", female: "Sweet Pink Bob" }, badgeId: "marathoner" },
+  { id: "lv3", slot: "head", names: { male: "Side Part", female: "Neat Ponytail" }, badgeId: "ritualist" },
+  { id: "lv4", slot: "head", names: { male: "Blue Spiky", female: "Messy Bun" }, badgeId: "explorer" },
+
+  // TOP (6 items: 1 base + 5 unlockable)
+  { id: "base", slot: "top", names: { male: "Open Jacket", female: "Beige Parka" }, badgeId: null },
+  { id: "lv1", slot: "top", names: { male: "Overshirt", female: "Graphic Hoodie" }, badgeId: "initiator" },
+  { id: "lv2", slot: "top", names: { male: "Crewneck", female: "Striped Sweater" }, badgeId: "deep-diver" },
+  { id: "lv3", slot: "top", names: { male: "Denim Jacket", female: "Light Blue Coat" }, badgeId: "reflector" },
+  { id: "lv4", slot: "top", names: { male: "Track Jacket", female: "Navy Cardigan" }, badgeId: "strategist" },
+  { id: "lv5", slot: "top", names: { male: "Formal Blazer", female: "Brown Jacket" }, badgeId: "improver" },
+
+  // BOTTOM (6 items: 1 base + 5 unlockable)
+  { id: "base", slot: "bottom", names: { male: "Light Denim", female: "Track Pants" }, badgeId: null },
+  { id: "lv1", slot: "bottom", names: { male: "Black Joggers", female: "Black Cropped Pants" }, badgeId: "architect" },
+  { id: "lv2", slot: "bottom", names: { male: "Ripped Jeans", female: "Straight Pants" }, badgeId: "deep-diver" },
+  { id: "lv3", slot: "bottom", names: { male: "Dark Denim", female: "Pleated Skirt" }, badgeId: "marathoner" },
+  { id: "lv4", slot: "bottom", names: { male: "Navy Trousers", female: "Brown Midi Skirt" }, badgeId: "ritualist" },
+  { id: "lv5", slot: "bottom", names: { male: "Khaki Chinos", female: "Floral Skirt" }, badgeId: "explorer" },
+
+  // SPECIAL (3 items: all unlockable)
+  { id: "lv1", slot: "special", names: { male: "Mirror Pendant", female: "Mirror Pendant" }, badgeId: "reflector" },
+  { id: "lv2", slot: "special", names: { male: "Growth Shield", female: "Growth Shield" }, badgeId: "improver" },
+  { id: "lv3", slot: "special", names: { male: "Zenith Crown", female: "Zenith Crown" }, badgeId: "zenith" },
 ];
 
-export function getItemsBySlot(slot: ItemDef["slot"]) {
+// ─── Helpers ──────────────────────────────────────────────────
+
+export function getItemsBySlot(slot: SlotType): ItemDef[] {
   return ITEMS.filter((item) => item.slot === slot);
 }
 
-// Component mapping
+export function isItemUnlocked(item: ItemDef, unlockedBadges: string[]): boolean {
+  if (!item.badgeId) return true; // base items always available
+  return unlockedBadges.includes(item.badgeId);
+}
+
+export function getItemDisplayName(item: ItemDef, gender: Gender): string {
+  return item.names[gender];
+}
+
+// ─── Component Mapping ────────────────────────────────────────
+
 const HEAD_MAP: Record<SlotLevel, React.FC<{ gender: Gender }>> = {
   base: HeadBase,
   lv1: HeadLv1,
   lv2: HeadLv2,
   lv3: HeadLv3,
   lv4: HeadLv4,
-  lv5: HeadBase, // no lv5 head, fallback
+  lv5: HeadBase, // no lv5 head, fallback to base
 };
 
 const TOP_MAP: Record<SlotLevel, React.FC<{ gender: Gender }>> = {
@@ -87,14 +121,21 @@ const BOTTOM_MAP: Record<SlotLevel, React.FC<{ gender: Gender }>> = {
   lv5: BottomLv5,
 };
 
-export function getHeadComponent(level: SlotLevel) {
-  return HEAD_MAP[level];
+// Special items not yet implemented — will be added later
+// const SPECIAL_MAP: Record<SlotLevel, React.FC<{ gender: Gender }>> = { ... };
+
+const SLOT_MAP: Record<SlotType, Record<SlotLevel, React.FC<{ gender: Gender }>>> = {
+  head: HEAD_MAP,
+  top: TOP_MAP,
+  bottom: BOTTOM_MAP,
+  special: HEAD_MAP, // placeholder until special items are ready
+};
+
+export function getItemComponent(slot: SlotType, level: SlotLevel) {
+  return SLOT_MAP[slot][level];
 }
 
-export function getTopComponent(level: SlotLevel) {
-  return TOP_MAP[level];
-}
-
-export function getBottomComponent(level: SlotLevel) {
-  return BOTTOM_MAP[level];
-}
+// Convenience aliases for backward compatibility
+export const getHeadComponent = (level: SlotLevel) => HEAD_MAP[level];
+export const getTopComponent = (level: SlotLevel) => TOP_MAP[level];
+export const getBottomComponent = (level: SlotLevel) => BOTTOM_MAP[level];
