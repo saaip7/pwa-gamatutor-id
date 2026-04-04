@@ -15,6 +15,8 @@ import {
   getHeadComponent,
   getTopComponent,
   getBottomComponent,
+  isItemUnlocked,
+  getItemDisplayName,
 } from "@/components/feature/character/item-registry";
 
 const SLOT_COMPONENT_FN = {
@@ -153,12 +155,41 @@ export default function WardrobePage() {
 
         {/* Item Grid */}
         <div className="px-5 py-6 bg-neutral-50 min-h-full pb-32">
+          {(items.length === 0 || !SLOT_COMPONENT_FN[activeTab as keyof typeof SLOT_COMPONENT_FN]) ? (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="flex flex-col items-center justify-center pt-20 gap-4"
+            >
+              {/* Illustration */}
+              <div className="relative">
+                <div className="w-28 h-28 rounded-full bg-gradient-to-b from-neutral-100 to-neutral-50 border border-neutral-100 flex items-center justify-center">
+                  <div className="w-20 h-20 rounded-full bg-white border border-neutral-100 shadow-sm flex items-center justify-center">
+                    <Sparkles className="w-8 h-8 text-neutral-200" strokeWidth={1.5} />
+                  </div>
+                </div>
+                {/* Decorative dots */}
+                <div className="absolute top-1 right-0 w-2.5 h-2.5 rounded-full bg-neutral-200/60" />
+                <div className="absolute bottom-2 -left-1 w-2 h-2 rounded-full bg-neutral-200/40" />
+                <div className="absolute top-6 -left-3 w-1.5 h-1.5 rounded-full bg-neutral-200/30" />
+              </div>
+
+              {/* Text */}
+              <div className="text-center px-8">
+                <p className="text-[15px] font-bold text-neutral-300 tracking-tight">Belum Ada Item Spesial</p>
+                <p className="text-[12px] text-neutral-300/80 mt-1.5 leading-relaxed">Kumpulkan badge untuk membuka aksesori eksklusif</p>
+              </div>
+            </motion.div>
+          ) : (
           <div className="grid grid-cols-3 gap-4">
             {items.map((item) => {
               const isEquipped = equipped[activeTab as keyof Equipped] === item.id;
-              const isUnlocked = true; // TODO: use real unlock logic based on streak
+              const isUnlocked = isItemUnlocked(item, []); // TODO: pass real unlockedBadges
               const slotKey = activeTab as "head" | "top" | "bottom";
-              const ItemPreview = SLOT_COMPONENT_FN[slotKey](item.id);
+              const getItemFn = SLOT_COMPONENT_FN[slotKey];
+              if (!getItemFn) return null;
+              const ItemPreview = getItemFn(item.id);
               return (
                 <motion.button
                   key={item.id}
@@ -189,12 +220,13 @@ export default function WardrobePage() {
                     "text-[11px] font-bold text-center leading-tight line-clamp-1 w-full",
                     isEquipped ? "text-primary" : isUnlocked ? "text-neutral-700" : "text-neutral-400"
                   )}>
-                    {item.name}
+                    {getItemDisplayName(item, gender)}
                   </span>
                 </motion.button>
               );
             })}
           </div>
+          )}
         </div>
       </main>
     </div>
