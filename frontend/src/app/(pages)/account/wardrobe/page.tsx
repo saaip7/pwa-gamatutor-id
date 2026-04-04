@@ -17,6 +17,7 @@ import {
   getBottomComponent,
   isItemUnlocked,
   getItemDisplayName,
+  getItemPreviewStyle,
 } from "@/components/feature/character/item-registry";
 
 const SLOT_COMPONENT_FN = {
@@ -203,7 +204,13 @@ export default function WardrobePage() {
                     !isUnlocked && "bg-neutral-100/50"
                   )}>
                     {/* Real Item Preview */}
-                    <div className={cn("w-16 h-16 flex items-center justify-center", !isUnlocked && "grayscale opacity-40")}>
+                    <div className={cn(
+                      "w-4/5 h-4/5 flex items-center justify-center",
+                      "[&>svg]:!w-full [&>svg]:!h-full",
+                      !isUnlocked && "grayscale opacity-40"
+                    )}
+                    style={getItemPreviewStyle(item, gender)}
+                    >
                       <ItemPreview gender={gender} />
                     </div>
 

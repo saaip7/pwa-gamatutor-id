@@ -38,22 +38,33 @@ export interface EquippedItems {
   special: SlotLevel | null;
 }
 
+export interface PreviewTransform {
+  offsetY?: number; // % of container, negative = shift up
+  scale?: number;   // 1 = default, <1 = smaller
+}
+
 export interface ItemDef {
   id: SlotLevel;
   slot: SlotType;
   names: Record<Gender, string>;
-  badgeId: string | null; // null = always available (base item)
+  badgeId: string | null;
+  preview?: Partial<Record<Gender, PreviewTransform>>;
 }
 
 // ─── Item Definitions ─────────────────────────────────────────
 
 export const ITEMS: ItemDef[] = [
   // HEAD (5 items: 1 base + 4 unlockable)
-  { id: "base", slot: "head", names: { male: "Short Fade", female: "Chic Long Hair" }, badgeId: null },
-  { id: "lv1", slot: "head", names: { male: "Textured Crop", female: "Cute Bangs" }, badgeId: "initiator" },
-  { id: "lv2", slot: "head", names: { male: "Messy Wavy", female: "Sweet Pink Bob" }, badgeId: "marathoner" },
-  { id: "lv3", slot: "head", names: { male: "Side Part", female: "Neat Ponytail" }, badgeId: "ritualist" },
-  { id: "lv4", slot: "head", names: { male: "Blue Spiky", female: "Messy Bun" }, badgeId: "explorer" },
+  { id: "base", slot: "head", names: { male: "Short Fade", female: "Chic Long Hair" }, badgeId: null,
+    preview: { female: { offsetY: -18, scale: 0.9 } } },
+  { id: "lv1", slot: "head", names: { male: "Textured Crop", female: "Cute Bangs" }, badgeId: "initiator",
+    preview: { female: { offsetY: -10 } } },
+  { id: "lv2", slot: "head", names: { male: "Messy Wavy", female: "Sweet Pink Bob" }, badgeId: "marathoner",
+    preview: { female: { offsetY: -10 } } },
+  { id: "lv3", slot: "head", names: { male: "Side Part", female: "Neat Ponytail" }, badgeId: "ritualist",
+    preview: { female: { offsetY: -18, scale: 1.1 } } },
+  { id: "lv4", slot: "head", names: { male: "Blue Spiky", female: "Messy Bun" }, badgeId: "explorer",
+    preview: { female: { offsetY: -11, scale: 1.1 } } },
 
   // TOP (6 items: 1 base + 5 unlockable)
   { id: "base", slot: "top", names: { male: "Open Jacket", female: "Beige Parka" }, badgeId: null },
@@ -90,6 +101,14 @@ export function isItemUnlocked(item: ItemDef, unlockedBadges: string[]): boolean
 
 export function getItemDisplayName(item: ItemDef, gender: Gender): string {
   return item.names[gender];
+}
+
+export function getItemPreviewStyle(item: ItemDef, gender: Gender): React.CSSProperties | undefined {
+  const p = item.preview?.[gender];
+  if (!p) return undefined;
+  return {
+    transform: `translateY(${p.offsetY ?? 0}%) scale(${p.scale ?? 1})`,
+  };
 }
 
 // ─── Component Mapping ────────────────────────────────────────
