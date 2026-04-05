@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 
 from config import Config
 from shared.db import init_db
+from shared.fcm import init_firebase
+from shared.scheduler import init_scheduler
 
 # Feature blueprints
 from features.auth.routes import auth_bp
@@ -47,6 +49,9 @@ app.config["JWT_REFRESH_TOKEN_EXPIRES"] = 86400 * 7  # 7 days
 # Init DB
 init_db(app)
 
+# Init Firebase Admin SDK
+init_firebase()
+
 # Init JWT
 jwt = JWTManager(app)
 
@@ -78,4 +83,5 @@ def health():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     debug = os.getenv("FLASK_DEBUG", "True") == "True"
+    init_scheduler(app)
     app.run(debug=debug, host="0.0.0.0", port=port)
