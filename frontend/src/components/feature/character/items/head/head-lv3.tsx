@@ -32,8 +32,8 @@ export function HeadLv3({ gender }: { gender: Gender }) {
     );
   }
   return (
-    <svg viewBox="0 0 108 160" preserveAspectRatio="xMidYMax meet" fill="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">
-	<g transform="translate(0, 7)">
+    <svg viewBox="0 0 108 130" preserveAspectRatio="xMidYMax meet" fill="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+	<g transform="translate(0, 0)">
 		<path d="M21.5752 159.143C23.1069 139.368 32.0094 99.8179 55.3649 99.8179C48.8774 121.148 30.1352 148.256 21.5752 159.143Z" fill="#272727"/>
 		<path d="M88.3814 160.433C73.1629 140.959 80.8336 99.8179 53.8179 99.8179C61.3221 119.015 56.2681 147.794 88.3814 160.433Z" fill="#272727"/>
 		<path d="M84.8995 145.989C73.9967 131.072 78.0735 99.8179 58.7188 99.8179C64.0953 114.522 61.893 136.308 84.8995 145.989Z" fill="#272727"/>

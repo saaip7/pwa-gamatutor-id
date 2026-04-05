@@ -53,12 +53,12 @@ const LAYOUT: Record<Gender, {
   bottom:  SlotLayout;
 }> = {
   male: {
-    head:    { x: 0, y: 5,   maxH: 120 },
-    top:     { x: 0, y: 110, maxH: 170 },
-    bottom:  { x: 0, y: 218, maxH: 150 },
+    head:    { x: 0, y: 25,  maxH: 120 },
+    top:     { x: 0, y: 130, maxH: 170 },
+    bottom:  { x: 0, y: 238, maxH: 150 },
   },
   female: {
-    head:    { x: -1, y: 35,  maxH: 120 },
+    head:    { x: -1, y: 42,  maxH: 120 },
     top:     { x: 0, y: 110, maxH: 170 },
     bottom:  { x: 4, y: 238, maxH: 150 },
   },

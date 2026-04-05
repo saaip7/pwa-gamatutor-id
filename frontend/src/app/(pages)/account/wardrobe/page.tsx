@@ -37,7 +37,7 @@ interface Equipped {
 
 function CharacterStage({ equipped, gender, onGenderChange }: { equipped: Equipped; gender: Gender; onGenderChange: (g: Gender) => void }) {
   return (
-    <section className="relative w-full h-[360px] flex flex-col items-center justify-start pt-4 overflow-hidden bg-[radial-gradient(circle_at_50%_100%,#f3f4f6_0%,#ffffff_50%)]">
+    <section className="relative w-full flex flex-col items-center justify-start pt-4 pb-2 overflow-hidden bg-[radial-gradient(circle_at_50%_100%,#f3f4f6_0%,#ffffff_50%)]">
       {/* Gender Switcher */}
       <div className="absolute top-3 left-4 z-20">
         <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-full p-[3px] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
@@ -125,7 +125,7 @@ export default function WardrobePage() {
     <div className="w-full h-screen bg-white flex flex-col mx-auto overflow-hidden relative max-w-md">
       <SettingsHeader title="Sesuaikan Karakter" onSave={handleSave} />
 
-      <main className="flex-1 overflow-y-auto no-scrollbar relative bg-white">
+      <main className="flex-1 flex flex-col overflow-y-auto no-scrollbar relative bg-white">
         <CharacterStage equipped={equipped} gender={gender} onGenderChange={setGender} />
 
         {/* Category Tabs */}
@@ -155,7 +155,7 @@ export default function WardrobePage() {
         </div>
 
         {/* Item Grid */}
-        <div className="px-5 py-6 bg-neutral-50 min-h-full pb-32">
+        <div className="px-5 py-6 bg-neutral-50 pb-8 flex-1">
           {(items.length === 0 || !SLOT_COMPONENT_FN[activeTab as keyof typeof SLOT_COMPONENT_FN]) ? (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
