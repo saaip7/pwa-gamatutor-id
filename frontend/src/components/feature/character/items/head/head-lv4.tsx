@@ -44,7 +44,7 @@ export function HeadLv4({ gender }: { gender: Gender }) {
     );
   }
   return (
-    <svg viewBox="0 0 108 160" preserveAspectRatio="xMidYMax meet" fill="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+    <svg viewBox="0 0 108 130" preserveAspectRatio="xMidYMax meet" fill="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">
 	<path d="M89.9947 124.397V141.751H89.7485V124.397H89.9947Z" fill="#DFC5B2"/>
 	<path d="M89.3795 125.254L89.6255 125.264L88.764 145.695L88.5181 145.684L89.3795 125.254Z" fill="#DFC5B2"/>
 	<path d="M16.6426 124.397V141.751H16.3965V124.397H16.6426Z" fill="#DFC5B2"/>

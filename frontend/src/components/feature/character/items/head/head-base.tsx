@@ -29,8 +29,8 @@ export function HeadBase({ gender }: { gender: Gender }) {
     );
   }
   return (
-    <svg viewBox="0 0 108 160" preserveAspectRatio="xMidYMax meet" fill="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">
-	<g transform="translate(0, 43)">
+    <svg viewBox="0 0 108 130" preserveAspectRatio="xMidYMax meet" fill="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+	<g transform="translate(0, 0)">
 		<path d="M76.5 108L83 101L85 101.5L80.5 118L79 117.5L76.5 108Z" fill="#23180D"/>
 		<path d="M88.0378 54.1147C83.6145 35.2537 64.5395 25.5626 57.1453 23.2463C53.7698 16.7939 54.252 3.4237 59.5565 2.39999C67.2723 0.910957 88.0018 10.3415 97.164 28.7062C108.684 51.7947 106.531 113.149 103.75 133.5C91.3745 128.125 93.4998 123.25 79.6273 117.745C85.4435 91.439 88.0378 70.494 88.0378 70.494C88.0378 70.494 90.482 64.538 88.0378 54.1147Z" fill="#342B22"/>
 		<path d="M15.6851 45.583C15.6851 25.6253 32.4198 9.44629 53.0633 9.44629C73.7068 9.44629 90.4416 25.6253 90.4416 45.583V81.5255C87.4273 104.84 69.3411 117.662 53.0633 117.662C36.7856 117.662 17.8956 102.12 15.6851 81.5255V45.583Z" fill="#F6DDD6"/>
