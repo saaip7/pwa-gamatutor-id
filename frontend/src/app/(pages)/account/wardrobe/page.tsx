@@ -37,7 +37,7 @@ interface Equipped {
 
 function CharacterStage({ equipped, gender, onGenderChange }: { equipped: Equipped; gender: Gender; onGenderChange: (g: Gender) => void }) {
   return (
-    <section className="relative w-full h-[320px] flex flex-col items-center justify-start pt-4 overflow-hidden bg-[radial-gradient(circle_at_50%_100%,#f3f4f6_0%,#ffffff_50%)]">
+    <section className="relative w-full h-[360px] flex flex-col items-center justify-start pt-4 overflow-hidden bg-[radial-gradient(circle_at_50%_100%,#f3f4f6_0%,#ffffff_50%)]">
       {/* Gender Switcher */}
       <div className="absolute top-3 left-4 z-20">
         <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-full p-[3px] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
@@ -91,7 +91,7 @@ function CharacterStage({ equipped, gender, onGenderChange }: { equipped: Equipp
           head={equipped.head}
           top={equipped.top}
           bottom={equipped.bottom}
-          className="w-[140px] h-[240px] drop-shadow-xl"
+          className="w-[140px] h-[280px] drop-shadow-xl"
         />
       </div>
     </section>
