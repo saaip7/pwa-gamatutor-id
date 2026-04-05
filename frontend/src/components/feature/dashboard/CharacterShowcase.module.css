@@ -30,8 +30,9 @@
 .armL  { animation: charArmSwayL 4s ease-in-out infinite; transform-box: fill-box; transform-origin: top right; }
 .armR  { animation: charArmSwayR 4s ease-in-out infinite; transform-box: fill-box; transform-origin: top left; }
 .eyes  { animation: charBlink 4s ease-in-out infinite; transform-box: fill-box; transform-origin: center center; }
+.head [data-animate="eyes"] { animation: charBlink 4s ease-in-out infinite; transform-box: fill-box; transform-origin: center center; }
 .hair  { animation: charHairSway 5s ease-in-out infinite; transform-box: fill-box; transform-origin: bottom center; }
 
 @media (prefers-reduced-motion: reduce) {
-  .torso, .head, .armL, .armR, .eyes, .hair { animation: none; }
+  .torso, .head, .armL, .armR, .eyes, .hair, .head [data-animate="eyes"] { animation: none; }
 }

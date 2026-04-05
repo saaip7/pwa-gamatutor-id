@@ -10,6 +10,11 @@ interface CharacterComposerProps {
   top?: SlotLevel;
   bottom?: SlotLevel;
   className?: string;
+  slotClassNames?: {
+    head?: string;
+    top?: string;
+    bottom?: string;
+  };
 }
 
 /**
@@ -70,6 +75,7 @@ export function CharacterComposer({
   top = "base",
   bottom = "base",
   className,
+  slotClassNames,
 }: CharacterComposerProps) {
   const HeadComponent = getHeadComponent(head);
   const TopComponent = getTopComponent(top);
@@ -83,6 +89,7 @@ export function CharacterComposer({
     Component: React.FC<{ gender: Gender }>,
     slot: SlotLayout,
     bottomAdjust: number = 0,
+    slotClassName?: string,
   ) => {
     const { x, y, maxH } = slot;
     return (
@@ -92,6 +99,7 @@ export function CharacterComposer({
         width={COMPOSER_WIDTH}
         height={maxH}
         overflow="visible"
+        className={slotClassName}
       >
         <Component gender={gender} />
       </svg>
@@ -110,9 +118,9 @@ export function CharacterComposer({
       xmlns="http://www.w3.org/2000/svg"
     >
       <g transform={`translate(${cx},${cy}) scale(${scale}) translate(${-cx},${-cy})`}>
-        {renderSlot(BottomComponent, layout.bottom, bottomOffset)}
-        {renderSlot(TopComponent, layout.top)}
-        {renderSlot(HeadComponent, layout.head)}
+        {renderSlot(BottomComponent, layout.bottom, bottomOffset, slotClassNames?.bottom)}
+        {renderSlot(TopComponent, layout.top, 0, slotClassNames?.top)}
+        {renderSlot(HeadComponent, layout.head, 0, slotClassNames?.head)}
       </g>
     </svg>
   );
