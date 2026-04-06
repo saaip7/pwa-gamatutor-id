@@ -27,9 +27,7 @@ export default function AccountPage() {
     fetchBadges();
   }, [fetchProfile, fetchPreferences, fetchBadges]);
 
-  const displayName = user
-    ? `${user.firstName} ${user.lastName}`.trim()
-    : "Mahasiswa";
+  const displayName = user?.name || "Mahasiswa";
 
   // Derive a title from unlocked badges count
   const unlockedCount = badges.filter((b) => b.unlocked).length;

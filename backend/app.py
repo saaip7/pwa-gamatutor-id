@@ -28,7 +28,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # CORS
-raw = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001")
+raw = os.getenv("CORS_ORIGINS", "http://localhost:3000, http://localhost:3001")
 origins = [o.strip() for o in raw.split(",")]
 CORS(app, resources={
     r"/*": {

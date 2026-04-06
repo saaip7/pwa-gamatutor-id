@@ -38,11 +38,10 @@ DEFAULT_PREFERENCES = {
 
 class User:
     @staticmethod
-    def create(first_name, last_name, email, username, password, role="user"):
+    def create(name, email, username, password, role="user"):
         hashed = generate_password_hash(password)
         doc = {
-            "first_name": first_name,
-            "last_name": last_name,
+            "name": name,
             "email": email,
             "username": username,
             "password": hashed,

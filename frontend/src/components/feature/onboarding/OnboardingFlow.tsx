@@ -22,13 +22,11 @@ export function OnboardingFlow() {
   };
 
   const handleComplete = () => {
-    console.log("Onboarding complete. Goal:", goal);
-    // router.push("/dashboard");
+    router.push("/dashboard");
   };
 
   const handleSkip = () => {
-    console.log("Onboarding skipped");
-    // router.push("/dashboard");
+    router.push("/dashboard");
   };
 
   return (

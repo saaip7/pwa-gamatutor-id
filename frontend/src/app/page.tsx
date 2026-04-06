@@ -12,10 +12,16 @@ export default function SplashPage() {
   const [isExiting, setIsExiting] = useState(false);
 
   useEffect(() => {
+    // If already logged in, go straight to dashboard
+    const token = localStorage.getItem("token");
+    if (token) {
+      router.replace("/dashboard");
+      return;
+    }
+
     // Check sessionStorage — if "splash_done" exists, this is a warm start
     const alreadyShown = sessionStorage.getItem(SPLASH_KEY);
     if (alreadyShown) {
-      // Warm start: redirect immediately, no splash
       router.replace("/login");
       return;
     }
@@ -23,12 +29,7 @@ export default function SplashPage() {
     // Cold start: show splash
     setShowSplash(true);
 
-    // After 2.5s, trigger exit animation
-    const exitTimer = setTimeout(() => {
-      setIsExiting(true);
-    }, 2500);
-
-    // After exit animation (0.6s), mark done & redirect
+    const exitTimer = setTimeout(() => setIsExiting(true), 2500);
     const redirectTimer = setTimeout(() => {
       sessionStorage.setItem(SPLASH_KEY, "1");
       router.replace("/login");

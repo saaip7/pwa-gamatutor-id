@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 import { AgentationWrapper } from "@/components/AgentationWrapper";
 import "./globals.css";
 
@@ -44,6 +45,21 @@ export default function RootLayout({
       >
         {children}
         <AgentationWrapper />
+        <Toaster
+          position="top-center"
+          richColors
+          closeButton
+          toastOptions={{
+            duration: 3000,
+            style: {
+              fontFamily: "var(--font-geist-sans)",
+              borderRadius: "12px",
+              fontSize: "14px",
+              padding: "12px 16px",
+              boxShadow: "0 8px 30px -4px rgba(0,0,0,0.08)",
+            },
+          }}
+        />
       </body>
     </html>
   );

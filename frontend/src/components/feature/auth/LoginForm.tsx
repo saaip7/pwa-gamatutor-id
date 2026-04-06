@@ -26,7 +26,6 @@ export function LoginForm() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      // BE expects username field, not email
       await login(email, password);
       router.push("/dashboard");
     } catch (err) {

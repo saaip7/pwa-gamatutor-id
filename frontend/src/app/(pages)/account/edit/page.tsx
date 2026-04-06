@@ -32,7 +32,7 @@ export default function EditProfilePage() {
 
   useEffect(() => {
     if (user) {
-      setName(`${user.firstName} ${user.lastName}`.trim());
+      setName(user.name);
       setEmail(user.email);
     }
   }, [user]);
@@ -66,13 +66,8 @@ export default function EditProfilePage() {
 
     setSaving(true);
     try {
-      // Split name back into firstName / lastName
-      const parts = name.trim().split(/\s+/);
-      const firstName = parts[0] ?? "";
-      const lastName = parts.slice(1).join(" ");
-
       // Update profile name
-      await updateProfile({ firstName, lastName });
+      await updateProfile({ name });
 
       // Update password if provided
       if (currentPassword) {

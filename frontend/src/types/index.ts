@@ -7,16 +7,9 @@ export interface AuthResponse {
 
 export interface User {
   _id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  created_at: string;
-}
-
-export interface UserProfile {
   name: string;
   email: string;
-  title?: string;
+  created_at: string;
 }
 
 // --- Board ---

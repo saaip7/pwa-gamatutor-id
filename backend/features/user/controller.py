@@ -24,16 +24,14 @@ def update_profile():
     if not data:
         return jsonify({"message": "No data provided"}), 400
 
-    allowed = {"first_name", "last_name", "email", "username"}
+    allowed = {"name", "email"}
     updates = {k: v for k, v in data.items() if k in allowed}
     if not updates:
         return jsonify({"message": "No valid fields to update"}), 400
 
-    # Check email/username uniqueness if changed
+    # Check email uniqueness if changed
     if "email" in updates and User.find_by_email(updates["email"]):
         return jsonify({"message": "Email already in use"}), 400
-    if "username" in updates and User.find_by_username(updates["username"]):
-        return jsonify({"message": "Username already in use"}), 400
 
     success = User.update(user_id, updates)
     if not success:

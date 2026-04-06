@@ -1,30 +1,21 @@
 import { create } from "zustand";
 import { api } from "@/lib/api";
 import type { User } from "@/types";
+import { toast } from "sonner";
 
 interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
   loading: boolean;
-  error: string | null;
 
   login: (email: string, password: string) => Promise<void>;
-  register: (data: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-  }) => Promise<void>;
+  register: (data: { name: string; email: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
   fetchProfile: () => Promise<void>;
-  updateProfile: (data: { firstName?: string; lastName?: string }) => Promise<void>;
-  updatePassword: (data: {
-    currentPassword: string;
-    newPassword: string;
-  }) => Promise<void>;
+  updateProfile: (data: { name?: string }) => Promise<void>;
+  updatePassword: (data: { currentPassword: string; newPassword: string }) => Promise<void>;
   deleteAccount: () => Promise<void>;
-  clearError: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -32,48 +23,44 @@ export const useAuthStore = create<AuthState>((set) => ({
   token: typeof window !== "undefined" ? localStorage.getItem("token") : null,
   isAuthenticated: false,
   loading: false,
-  error: null,
 
-  login: async (usernameOrEmail, password) => {
-    set({ loading: true, error: null });
+  login: async (email, password) => {
+    set({ loading: true });
     try {
-      const res = await api.post<{
-        token: string;
-        refreshToken?: string;
-        user: User;
-      }>("/api/login", {
-        username: usernameOrEmail,
- password
- });
-      set({
-        token: res.token,
-        user: res.user,
-        isAuthenticated: true,
-        loading: false,
-      });
+      const res = await api.post<{ token: string; refreshToken: string }>(
+        "/api/login",
+        { email, password }
+      );
+      localStorage.setItem("token", res.token);
+      // Fetch user profile after login
+      const user = await api.get<User>("/users/me");
+      set({ token: res.token, user, isAuthenticated: true, loading: false });
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Login gagal";
-      set({ error: msg, loading: false });
+      set({ loading: false });
+      const msg = e instanceof Error ? e.message : "Email atau password salah";
+      toast.error(msg);
       throw e;
     }
   },
 
   register: async (data) => {
-    set({ loading: true, error: null });
+    set({ loading: true });
     try {
-      const res = await api.post<{ token: string; user: User }>(
-        "/api/register",        data
+      // BE register returns { message, user_id } — no token
+      await api.post<{ message: string; user_id: string }>("/api/register", data);
+      toast.success("Registrasi berhasil!");
+      // Auto-login after register
+      const loginRes = await api.post<{ token: string; refreshToken: string }>(
+        "/api/login",
+        { email: data.email, password: data.password }
       );
-      localStorage.setItem("token", res.token);
-      set({
-        token: res.token,
-        user: res.user,
-        isAuthenticated: true,
-        loading: false,
-      });
+      localStorage.setItem("token", loginRes.token);
+      const user = await api.get<User>("/users/me");
+      set({ token: loginRes.token, user, isAuthenticated: true, loading: false });
     } catch (e: unknown) {
+      set({ loading: false });
       const msg = e instanceof Error ? e.message : "Registrasi gagal";
-      set({ error: msg, loading: false });
+      toast.error(msg);
       throw e;
     }
   },
@@ -89,7 +76,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   fetchProfile: async () => {
     try {
-      const user = await api.get<User>("/api/users/me");
+      const user = await api.get<User>("/users/me");
       set({ user, isAuthenticated: true });
     } catch {
       localStorage.removeItem("token");
@@ -98,19 +85,35 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   updateProfile: async (data) => {
-    const user = await api.put<User>("/api/users/profile", data);
-    set({ user });
+    try {
+      const user = await api.put<User>("/users/profile", data);
+      set({ user });
+      toast.success("Profil berhasil disimpan");
+    } catch (e: unknown) {
+      toast.error("Gagal menyimpan profil");
+      throw e;
+    }
   },
 
   updatePassword: async (data) => {
-    await api.put("/api/users/password", data);
+    try {
+      await api.put("/users/password", data);
+      toast.success("Password berhasil diubah");
+    } catch (e: unknown) {
+      toast.error("Gagal mengubah password");
+      throw e;
+    }
   },
 
   deleteAccount: async () => {
-    await api.delete("/api/users/account");
-    localStorage.removeItem("token");
-    set({ user: null, token: null, isAuthenticated: false });
+    try {
+      await api.delete("/users/me");
+      localStorage.removeItem("token");
+      set({ user: null, token: null, isAuthenticated: false });
+      toast.success("Akun berhasil dihapus");
+    } catch (e: unknown) {
+      toast.error("Gagal menghapus akun");
+      throw e;
+    }
   },
-
-  clearError: () => set({ error: null }),
 }));

@@ -107,7 +107,7 @@ export default function DashboardPage() {
   const isInitialLoading = !dashboard && !user;
 
   // Derived data
-  const userName = user ? `${user.firstName} ${user.lastName}`.trim() : "Student";
+  const userName = user?.name || "Student";
   const hasUnreadNotifications = unreadCount > 0;
 
   const stats = dashboard?.stats ?? DEFAULT_STATS;

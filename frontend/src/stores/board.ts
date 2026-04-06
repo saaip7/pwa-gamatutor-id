@@ -47,7 +47,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   fetchBoard: async () => {
     set({ loading: true });
     try {
-      const board = await api.get<Board>("/api/board");
+      const board = await api.get<Board>("/board");
 
       // Flatten cards and build column map
       const tasks: Record<string, BoardCard> = {};
@@ -76,7 +76,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   createBoard: async () => {
     set({ loading: true });
     try {
-      const board = await api.post<Board>("/api/board");
+      const board = await api.post<Board>("/board");
       const tasks: Record<string, BoardCard> = {};
       const columns: Record<ColumnKey, string[]> = {
         planning: [],
@@ -115,7 +115,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     });
 
     try {
-      await api.put("/api/board", { lists });
+      await api.put("/board", { lists });
       set({ columns, board: { ...board, lists } });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Gagal update board";
@@ -126,7 +126,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   updateCard: async (cardId, data) => {
     try {
       const updated = await api.put<BoardCard>(
-        `/api/board/card/${cardId}`,
+        `/board/card/${cardId}`,
         data
       );
       set((state) => ({
