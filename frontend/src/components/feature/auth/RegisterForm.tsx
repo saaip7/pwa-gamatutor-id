@@ -31,13 +31,8 @@ export function RegisterForm() {
 
     setIsLoading(true);
 
-    // Split full name into firstName and lastName for BE
-    const parts = name.trim().split(/\s+/);
-    const firstName = parts[0];
-    const lastName = parts.slice(1).join(" ") || firstName;
-
     try {
-      await register({ firstName, lastName, email, password });
+      await register({ name, email, password });
       router.push("/onboarding");
     } catch (err) {
       // Error handled in store

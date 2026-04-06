@@ -191,7 +191,7 @@ function KanbanBoardContent() {
   }, [boardTasks]);
 
   // Derived data for header
-  const userName = user ? `${user.firstName} ${user.lastName}`.trim() : "Student";
+  const userName = user?.name || "Student";
   const hasUnreadNotifications = unreadCount > 0;
 
   // Filtered columns

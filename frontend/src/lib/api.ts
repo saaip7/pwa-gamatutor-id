@@ -5,7 +5,14 @@ class ApiError extends Error {
   data: unknown;
 
   constructor(status: number, data: unknown) {
-    super(`API Error: ${status}`);
+    // Extract human-readable message from BE response
+    let message = `API Error: ${status}`;
+    if (data && typeof data === "object" && "message" in data) {
+      message = String((data as { message: string }).message);
+    } else if (typeof data === "string") {
+      message = data;
+    }
+    super(message);
     this.status = status;
     this.data = data;
   }
