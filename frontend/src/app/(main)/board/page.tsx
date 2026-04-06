@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -28,6 +28,10 @@ import { FilterBar } from "@/components/feature/board/FilterBar";
 import { BoardColumn } from "@/components/feature/board/BoardColumn";
 import { DraggableBoardCard } from "@/components/ui/DraggableBoardCard";
 import { Task } from "@/components/ui/TaskCard";
+import { useAuthStore } from "@/stores/auth";
+import { useBoardStore } from "@/stores/board";
+import { useNotificationsStore } from "@/stores/notifications";
+import type { BoardCard } from "@/types";
 
 // --- Types ---
 type ColumnKey = "planning" | "monitoring" | "controlling" | "reflection";
@@ -78,98 +82,43 @@ const COLUMN_CONFIG: Record<ColumnKey, ColumnConfig> = {
 
 const COLUMN_KEYS: ColumnKey[] = ["planning", "monitoring", "controlling", "reflection"];
 
-// --- Mock Data ---
-const INITIAL_TASKS: Task[] = [
-  {
-    id: "task-1",
-    title: "Implement BST Methods",
-    course: "CS101 - Data Structures",
-    description: "Implement insert, delete, and search logic.",
-    progressText: "2/5",
-    progressPercent: 40,
-    priority: "High",
-    difficulty: "Hard",
-    time: "Today",
-    subtasks: [
-      { id: "st-1", title: "Setup project structure", isCompleted: true },
-      { id: "st-2", title: "Write Node class", isCompleted: true },
-      { id: "st-3", title: "Implement insert method", isCompleted: false },
-    ],
-  },
-  {
-    id: "task-2",
-    title: "Review Lecture Slides",
-    course: "CS101 - Data Structures",
-    progressText: "0/0",
-    progressPercent: 0,
-    priority: "Low",
-    difficulty: "Easy",
-    time: "Fri",
-    subtasks: [],
-  },
-  {
-    id: "task-3",
-    title: "Draft Research Paper",
-    course: "ENG105 - Academic Writing",
-    progressText: "3/4",
-    progressPercent: 75,
-    priority: "Medium",
-    difficulty: "Medium",
-    time: "Tomorrow",
-    subtasks: [
-      { id: "st-4", title: "Outline structure", isCompleted: true },
-      { id: "st-5", title: "Write intro", isCompleted: true },
-      { id: "st-6", title: "Draft methodology", isCompleted: true },
-      { id: "st-7", title: "Write conclusion", isCompleted: false },
-    ],
-  },
-  {
-    id: "task-4",
-    title: "Read Chapter 5: Quantum Mechanics",
-    course: "PHY102 - Quantum Mechanics",
-    description: "Focus on the Heisenberg uncertainty principle and its derivation. Make sure to take notes on the corresponding examples given at the end of the chapter.",
-    progressText: "0/0",
-    progressPercent: 0,
-    priority: "Low",
-    difficulty: "Hard",
-    time: "Oct 26",
-    subtasks: [],
-  },
-  {
-    id: "task-5",
-    title: "Prepare Presentation",
-    course: "MATH201 - Calculus II",
-    progressText: "1/4",
-    progressPercent: 25,
-    priority: "High",
-    difficulty: "Medium",
-    time: "6:00 PM",
-    subtasks: [
-      { id: "st-8", title: "Draft slides", isCompleted: true },
-      { id: "st-9", title: "Add visuals", isCompleted: false },
-      { id: "st-10", title: "Rehearse timing", isCompleted: false },
-      { id: "st-11", title: "Review feedback", isCompleted: false },
-    ],
-  },
-  {
-    id: "task-6",
-    title: "Midterm Exam",
-    course: "CS101 - Data Structures",
-    progressText: "1/1",
-    progressPercent: 100,
-    priority: "High",
-    difficulty: "Easy",
-    time: "Completed",
-    subtasks: [],
-  },
-];
+// --- Helpers ---
 
-const INITIAL_COLUMNS: Record<ColumnKey, string[]> = {
-  planning: ["task-1", "task-2"],
-  monitoring: ["task-3", "task-4"],
-  controlling: ["task-5"],
-  reflection: ["task-6"],
-};
+function formatRelativeDeadline(deadline?: string): string {
+  if (!deadline) return "No deadline";
+  const d = new Date(deadline);
+  const now = new Date();
+  const diffMs = d.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) return "Overdue";
+  if (diffDays === 0) {
+    return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  }
+  if (diffDays === 1) return "Tomorrow";
+  if (diffDays <= 7) return d.toLocaleDateString("en-US", { weekday: "short" });
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function boardCardToTask(card: BoardCard): Task {
+  const subtasks = card.subtasks || [];
+  const completed = subtasks.filter((s) => s.isCompleted).length;
+  const total = subtasks.length;
+  const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  return {
+    id: card.id,
+    title: card.task_name,
+    course: card.course_name,
+    description: card.description,
+    progressText: total > 0 ? `${completed}/${total}` : "0/0",
+    progressPercent: percent,
+    priority: "Medium" as const,
+    difficulty: card.difficulty || "Medium",
+    time: formatRelativeDeadline(card.deadline),
+    subtasks,
+  };
+}
 
 function findColumn(taskId: string | number, columns: Record<ColumnKey, string[]>): ColumnKey | null {
   for (const col of COLUMN_KEYS) {
@@ -180,20 +129,43 @@ function findColumn(taskId: string | number, columns: Record<ColumnKey, string[]
 
 function KanbanBoardContent() {
   const [activeFilter, setActiveFilter] = useState("All");
-  const [tasks] = useState<Task[]>(INITIAL_TASKS);
-  const [columns, setColumns] = useState<Record<ColumnKey, string[]>>(INITIAL_COLUMNS);
   const [activeTaskId, setActiveTaskId] = useState<string | number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  // Store selectors
+  const { user } = useAuthStore();
+  const { tasks: boardTasks, columns: storeColumns, loading, fetchBoard, updateBoard } = useBoardStore();
+  const { unreadCount } = useNotificationsStore();
+
+  // Local columns state (synced from store, updated during drag, persisted on end)
+  const [columns, setColumns] = useState<Record<ColumnKey, string[]>>(storeColumns);
+
+  // Sync store columns into local state when store data changes (e.g. on initial load)
+  useEffect(() => {
+    setColumns(storeColumns);
+  }, [storeColumns]);
+
+  // Fetch board on mount
+  useEffect(() => {
+    fetchBoard();
+  }, [fetchBoard]);
+
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const currentVisibleCol = useRef(0);
-  const pointerXRef = useRef(0); // latest pointer X (viewport coords)
-  const snapCooldownRef = useRef(false); // prevent rapid snapping
-  const activeTaskIdRef = useRef<string | number | null>(null); // ref for auto-advance
-  const SNAP_COOLDOWN = 600; // ms pause before next auto-advance snap
-  const EDGE_ZONE = 0.10; // 10% from viewport edge triggers snap
+  const pointerXRef = useRef(0);
+  const snapCooldownRef = useRef(false);
+  const activeTaskIdRef = useRef<string | number | null>(null);
+  const SNAP_COOLDOWN = 600;
+  const EDGE_ZONE = 0.10;
 
-  const taskMap = Object.fromEntries(tasks.map((t) => [t.id, t]));
+  // Map BoardCard records to Task records for components
+  const taskMap: Record<string, Task> = useMemo(() => {
+    const map: Record<string, Task> = {};
+    for (const [id, card] of Object.entries(boardTasks)) {
+      map[id] = boardCardToTask(card);
+    }
+    return map;
+  }, [boardTasks]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -208,6 +180,19 @@ function KanbanBoardContent() {
   );
 
   const totalTasks = Object.values(columns).flat().length;
+
+  // Derive course filters from unique course_name values
+  const filters = useMemo(() => {
+    const courseNames = new Set<string>();
+    for (const card of Object.values(boardTasks)) {
+      if (card.course_name) courseNames.add(card.course_name);
+    }
+    return ["All", ...Array.from(courseNames).sort()];
+  }, [boardTasks]);
+
+  // Derived data for header
+  const userName = user ? `${user.firstName} ${user.lastName}`.trim() : "Student";
+  const hasUnreadNotifications = unreadCount > 0;
 
   // Filtered columns
   const filteredColumns: Record<ColumnKey, Task[]> = {} as Record<ColumnKey, Task[]>;
@@ -226,7 +211,6 @@ function KanbanBoardContent() {
   }
 
   // --- Snappy column-by-column scroll during drag ---
-  // Sync currentVisibleCol with actual scroll position (for when user scrolls without dragging)
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -242,7 +226,6 @@ function KanbanBoardContent() {
     return () => container.removeEventListener("scroll", updateVisibleCol);
   }, []);
 
-  // Lock scroll during drag, unlock on end
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -273,7 +256,6 @@ function KanbanBoardContent() {
     });
   }, []);
 
-  // Move active card from its current column to a target column
   const moveCardToColumn = useCallback((targetCol: ColumnKey) => {
     const taskId = activeTaskIdRef.current;
     if (!taskId) return;
@@ -295,7 +277,6 @@ function KanbanBoardContent() {
     });
   }, []);
 
-  // Auto-advance: when pointer is held at viewport edge, keep snapping
   useEffect(() => {
     if (!isDragging) return;
 
@@ -352,7 +333,6 @@ function KanbanBoardContent() {
     if (!isDragging) return;
     const activeRect = event.active.rect.current.translated;
     if (!activeRect) return;
-    // Track pointer position (card center ≈ finger position)
     pointerXRef.current = activeRect.left + activeRect.width / 2;
   }, [isDragging]);
 
@@ -392,7 +372,11 @@ function KanbanBoardContent() {
     setActiveTaskId(null);
     setIsDragging(false);
 
-    if (!over || active.id === over.id) return;
+    if (!over || active.id === over.id) {
+      // No actual move — still persist current column state
+      updateBoard(columns);
+      return;
+    }
 
     const activeId = active.id as string;
     const overId = over.id as string;
@@ -401,35 +385,43 @@ function KanbanBoardContent() {
 
     if (COLUMN_KEYS.includes(overId as ColumnKey)) {
       if (sourceCol && sourceCol !== (overId as ColumnKey)) {
-        setColumns((prev) => {
-          const sourceItems = [...prev[sourceCol]];
+        const newColumns = (() => {
+          const sourceItems = [...columns[sourceCol]];
           const sourceIndex = sourceItems.indexOf(activeId);
           sourceItems.splice(sourceIndex, 1);
 
           return {
-            ...prev,
+            ...columns,
             [sourceCol]: sourceItems,
-            [overId as ColumnKey]: [...prev[overId as ColumnKey], activeId],
+            [overId as ColumnKey]: [...columns[overId as ColumnKey], activeId],
           };
-        });
+        })();
+        setColumns(newColumns);
+        updateBoard(newColumns);
       }
       return;
     }
 
-    if (!sourceCol) return;
-    setColumns((prev) => {
-      const items = [...prev[sourceCol]];
+    if (!sourceCol) {
+      updateBoard(columns);
+      return;
+    }
+
+    const newColumns = (() => {
+      const items = [...columns[sourceCol]];
       const oldIndex = items.indexOf(activeId);
       const newIndex = items.indexOf(overId);
 
-      if (oldIndex === -1 || newIndex === -1) return prev;
+      if (oldIndex === -1 || newIndex === -1) return columns;
 
       items.splice(oldIndex, 1);
       items.splice(newIndex, 0, activeId);
 
-      return { ...prev, [sourceCol]: items };
-    });
-  }, [columns]);
+      return { ...columns, [sourceCol]: items };
+    })();
+    setColumns(newColumns);
+    updateBoard(newColumns);
+  }, [columns, updateBoard]);
 
   const handleDragCancel = useCallback(() => {
     activeTaskIdRef.current = null;
@@ -439,16 +431,65 @@ function KanbanBoardContent() {
 
   const activeTask = activeTaskId ? taskMap[activeTaskId as string] : null;
 
+  // Loading state
+  if (loading && totalTasks === 0) {
+    return (
+      <>
+        <BoardHeader
+          userName={userName}
+          activeTasksCount={0}
+          hasUnreadNotifications={hasUnreadNotifications}
+        />
+        <div className="flex-1 flex items-center justify-center px-6">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-neutral-500 font-medium">Memuat board...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Empty state: no tasks at all
+  if (!loading && totalTasks === 0) {
+    return (
+      <>
+        <BoardHeader
+          userName={userName}
+          activeTasksCount={0}
+          hasUnreadNotifications={hasUnreadNotifications}
+        />
+        <div className="flex-1 flex items-center justify-center px-6">
+          <div className="flex flex-col items-center gap-4 py-20">
+            <div className="w-16 h-16 rounded-full bg-neutral-100 flex items-center justify-center">
+              <Plus className="w-8 h-8 text-neutral-400" />
+            </div>
+            <div className="text-center">
+              <p className="text-base font-semibold text-neutral-700 mb-1">Board kosong</p>
+              <p className="text-sm text-neutral-500">Tambahkan tugas pertama untuk memulai.</p>
+            </div>
+            <Link
+              href="/task/new"
+              className="mt-2 px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary-hover transition-colors"
+            >
+              Buat Tugas
+            </Link>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <BoardHeader
-        userName="Student"
+        userName={userName}
         activeTasksCount={totalTasks}
-        hasUnreadNotifications={true}
+        hasUnreadNotifications={hasUnreadNotifications}
       />
 
       <FilterBar
-        filters={["All", "CS101", "MATH201", "ENG105", "PHY102"]}
+        filters={filters}
         activeFilter={activeFilter}
         onFilterChange={setActiveFilter}
       />

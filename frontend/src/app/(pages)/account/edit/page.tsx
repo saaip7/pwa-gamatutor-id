@@ -1,33 +1,46 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { SettingsHeader } from "@/components/feature/settings/SettingsHeader";
-
 import { Input } from "@/components/ui/Input";
 import { PasswordInput } from "@/components/ui/PasswordInput";
-
-// TODO: Fetch from API
-const MOCK_USER = {
-  name: "Alex Walker",
-  title: "The Strategist",
-  email: "alex.walker@university.edu",
-};
+import { useAuthStore } from "@/stores/auth";
 
 export default function EditProfilePage() {
+  const { user, fetchProfile, updateProfile, updatePassword } = useAuthStore();
+
   // Form State
-  const [name, setName] = useState(MOCK_USER.name);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Errors
+  // Errors & status
   const [nameError, setNameError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  // Populate form from store
+  useEffect(() => {
+    if (!user) {
+      fetchProfile();
+    }
+  }, [user, fetchProfile]);
+
+  useEffect(() => {
+    if (user) {
+      setName(`${user.firstName} ${user.lastName}`.trim());
+      setEmail(user.email);
+    }
+  }, [user]);
 
   const validateAndSave = async () => {
     setNameError("");
     setPasswordError("");
+    setSuccessMessage("");
 
     // Validate name
     if (!name.trim()) {
@@ -51,12 +64,34 @@ export default function EditProfilePage() {
       }
     }
 
-    // TODO: Call API — PUT /update-user for name
-    // TODO: Call API — PUT /update-password if currentPassword is filled
-    console.log("Saving profile:", {
-      name,
-      changePassword: !!currentPassword,
-    });
+    setSaving(true);
+    try {
+      // Split name back into firstName / lastName
+      const parts = name.trim().split(/\s+/);
+      const firstName = parts[0] ?? "";
+      const lastName = parts.slice(1).join(" ");
+
+      // Update profile name
+      await updateProfile({ firstName, lastName });
+
+      // Update password if provided
+      if (currentPassword) {
+        await updatePassword({
+          currentPassword,
+          newPassword,
+        });
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      }
+
+      setSuccessMessage("Profil berhasil disimpan");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Gagal menyimpan profil";
+      setPasswordError(msg);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -66,6 +101,16 @@ export default function EditProfilePage() {
 
       <main className="flex-1 overflow-y-auto no-scrollbar px-5 pt-6 pb-28 relative">
         <div className="space-y-6">
+
+          {successMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium px-4 py-3 rounded-xl"
+            >
+              {successMessage}
+            </motion.div>
+          )}
 
           {/* Informasi Pribadi Section */}
           <motion.div
@@ -93,7 +138,7 @@ export default function EditProfilePage() {
               <div className="mb-0">
                 <Input
                   label="Email"
-                  value={MOCK_USER.email}
+                  value={email}
                   disabled
                   className="opacity-60 cursor-not-allowed"
                 />

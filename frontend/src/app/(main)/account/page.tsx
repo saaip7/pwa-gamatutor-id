@@ -1,29 +1,67 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Moon, Bell, Globe, User, ShieldCheck, LogOut } from "lucide-react";
 import { AccountHeader } from "@/components/feature/account/AccountHeader";
 import { ProfileCard } from "@/components/feature/account/ProfileCard";
 import { SettingsGroup } from "@/components/feature/account/SettingsGroup";
 import { SettingItem } from "@/components/feature/account/SettingItem";
-
-// TODO: Fetch from API or Context
-const MOCK_USER = {
-  name: "Alex Walker",
-  title: "The Strategist",
-};
+import { useAuthStore } from "@/stores/auth";
+import { usePreferencesStore } from "@/stores/preferences";
+import { useBadgesStore } from "@/stores/badges";
 
 export default function AccountPage() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { user, fetchProfile, logout } = useAuthStore();
+  const { preferences, fetchPreferences, updateTheme } = usePreferencesStore();
+  const { badges, fetchBadges } = useBadgesStore();
+
   const [language, setLanguage] = useState("id");
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const isDarkMode = preferences?.theme === "dark";
+
+  useEffect(() => {
+    fetchProfile();
+    fetchPreferences();
+    fetchBadges();
+  }, [fetchProfile, fetchPreferences, fetchBadges]);
+
+  const displayName = user
+    ? `${user.firstName} ${user.lastName}`.trim()
+    : "Mahasiswa";
+
+  // Derive a title from unlocked badges count
+  const unlockedCount = badges.filter((b) => b.unlocked).length;
+  const title =
+    unlockedCount >= 10
+      ? "The Master"
+      : unlockedCount >= 5
+        ? "The Strategist"
+        : unlockedCount >= 1
+          ? "The Learner"
+          : "Pemula";
+
+  const handleDarkModeToggle = async () => {
+    const next = isDarkMode ? "light" : "dark";
+    await updateTheme(next);
+  };
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <>
       <AccountHeader />
 
       <div className="flex-1 overflow-y-auto relative z-0 pb-[100px] px-5 pt-6 space-y-6">
-        <ProfileCard name={MOCK_USER.name} title={MOCK_USER.title} />
+        <ProfileCard name={displayName} title={title} />
 
         <SettingsGroup title="PENGATURAN APLIKASI" delay={0.1}>
           <SettingItem
@@ -31,7 +69,7 @@ export default function AccountPage() {
             icon={Moon}
             label="Mode Gelap"
             isActive={isDarkMode}
-            onToggle={() => setIsDarkMode(!isDarkMode)}
+            onToggle={handleDarkModeToggle}
             iconBgClass="bg-neutral-100"
             iconColorClass="text-neutral-600"
           />
@@ -53,8 +91,8 @@ export default function AccountPage() {
               { label: "ID", value: "id" },
               { label: "EN", value: "en" },
             ]}
-            iconBgClass="bg-purple-100" // Closer to the design's purple-50
-            iconColorClass="text-purple-600" // Closer to the design's purple-500
+            iconBgClass="bg-purple-100"
+            iconColorClass="text-purple-600"
           />
         </SettingsGroup>
 
@@ -78,18 +116,21 @@ export default function AccountPage() {
         </SettingsGroup>
 
         {/* Logout Section */}
-        <motion.div 
+        <motion.div
           className="pt-2"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
         >
-          <button 
-            onClick={() => console.log("Logout clicked")}
-            className="bg-white border border-red-100 flex items-center justify-center w-full px-4 py-4 rounded-[20px] hover:bg-red-50 active:scale-[0.98] transition-all duration-200 gap-2 shadow-sm text-error"
+          <button
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="bg-white border border-red-100 flex items-center justify-center w-full px-4 py-4 rounded-[20px] hover:bg-red-50 active:scale-[0.98] transition-all duration-200 gap-2 shadow-sm text-error disabled:opacity-50"
           >
             <LogOut className="w-5 h-5" />
-            <span className="text-base font-bold">Keluar</span>
+            <span className="text-base font-bold">
+              {isLoggingOut ? "Keluar..." : "Keluar"}
+            </span>
           </button>
         </motion.div>
       </div>

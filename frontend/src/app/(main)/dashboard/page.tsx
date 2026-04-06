@@ -1,83 +1,85 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { DashboardHeader } from "@/components/feature/dashboard/DashboardHeader";
 import { CharacterShowcase } from "@/components/feature/dashboard/CharacterShowcase";
 import { StudyPatterns } from "@/components/feature/dashboard/StudyPatterns";
 import { TodayTasksList } from "@/components/feature/dashboard/TodayTasksList";
 import { Task } from "@/components/ui/TaskCard";
-import { StreakHub, StreakData } from "@/components/feature/streak/StreakHub";
+import { StreakHub } from "@/components/feature/streak/StreakHub";
+import type { StreakData as ComponentStreakData } from "@/components/feature/streak/StreakHub";
 import { StreakFreezeCelebration } from "@/components/feature/streak/StreakFreezeCelebration";
+import { useAuthStore } from "@/stores/auth";
+import { useAnalyticsStore } from "@/stores/analytics";
+import { useBoardStore } from "@/stores/board";
+import { useNotificationsStore } from "@/stores/notifications";
+import type { BoardCard } from "@/types";
 
-// TODO: Fetch from API
-const MOCK_USER_DATA = {
-  name: "Alex Walker",
-  hasUnreadNotifications: true,
-  stats: {
-    streak: 12,
-    focusHours: 42,
-    tasksCompleted: 156,
-    badgesUnlocked: 8,
-    totalBadges: 10,
-  },
-  patterns: {
-    productiveTime: "Malam hari (20:00 - 22:00)",
-    productiveDays: "Rabu & Kamis",
-  },
-  todayTasks: [
-    {
-      id: "task-1",
-      title: "Calculus Chapter 4 Review",
-      course: "MATH201 - Calculus II",
-      description: "Review all formulas and practice problems for the upcoming midterm.",
-      progressText: "3/5",
-      progressPercent: 60,
-      priority: "High",
-      difficulty: "Medium",
-      time: "2:00 PM",
-      tag: "Monitoring",
-      subtasks: [
-        { id: "st-1", title: "Read sections 4.1 - 4.3", isCompleted: true },
-        { id: "st-2", title: "Complete practice problems", isCompleted: true },
-        { id: "st-3", title: "Watch supplementary video", isCompleted: false },
-        { id: "st-4", title: "Make notes", isCompleted: false },
-        { id: "st-5", title: "Review formulas", isCompleted: false },
-      ],
-    } as Task,
-    {
-      id: "task-2",
-      title: "Write Physics Lab Report",
-      course: "PHY102 - Quantum Mechanics",
-      description: "Draft the introduction and format the data tables from yesterday's lab.",
-      progressText: "1/3",
-      progressPercent: 33,
-      priority: "Medium",
-      difficulty: "Hard",
-      time: "4:30 PM",
-      tag: "Planning",
-      subtasks: [
-        { id: "st-6", title: "Draft Introduction", isCompleted: true },
-        { id: "st-7", title: "Format Data Tables", isCompleted: false },
-        { id: "st-8", title: "Write Conclusion", isCompleted: false },
-      ],
-    } as Task,
-  ],
+// --- Helpers ---
+
+function formatRelativeDeadline(deadline?: string): string {
+  if (!deadline) return "No deadline";
+  const d = new Date(deadline);
+  const now = new Date();
+  const diffMs = d.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) return "Overdue";
+  if (diffDays === 0) {
+    return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  }
+  if (diffDays === 1) return "Tomorrow";
+  if (diffDays <= 7) return d.toLocaleDateString("en-US", { weekday: "short" });
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function boardCardToTask(card: BoardCard): Task {
+  const subtasks = card.subtasks || [];
+  const completed = subtasks.filter((s) => s.isCompleted).length;
+  const total = subtasks.length;
+  const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  return {
+    id: card.id,
+    title: card.task_name,
+    course: card.course_name,
+    description: card.description,
+    progressText: total > 0 ? `${completed}/${total}` : "0/0",
+    progressPercent: percent,
+    priority: "Medium" as const,
+    difficulty: card.difficulty || "Medium",
+    time: formatRelativeDeadline(card.deadline),
+    subtasks,
+  };
+}
+
+// Default data used while stores are loading
+const DEFAULT_STATS = {
+  streak: 0,
+  focusHours: 0,
+  tasksCompleted: 0,
+  badgesUnlocked: 0,
+  totalBadges: 0,
 };
 
-// TODO: Fetch from API — this would come from analytics endpoint
-const MOCK_STREAK_DATA: StreakData = {
-  current: 7,
-  longest: 12,
+const DEFAULT_PATTERNS = {
+  productiveTime: "-",
+  productiveDays: "-",
+};
+
+const DEFAULT_STREAK_DATA: ComponentStreakData = {
+  current: 0,
+  longest: 0,
   days: [
-    { label: "Sen", state: "completed" },
-    { label: "Sel", state: "completed" },
-    { label: "Rab", state: "freeze" },
-    { label: "Kam", state: "completed" },
-    { label: "Jum", state: "today" },
-    { label: "Sab", state: "future" },
-    { label: "Min", state: "future" },
+    { label: "Sen", state: "future" as const },
+    { label: "Sel", state: "future" as const },
+    { label: "Rab", state: "future" as const },
+    { label: "Kam", state: "future" as const },
+    { label: "Jum", state: "today" as const },
+    { label: "Sab", state: "future" as const },
+    { label: "Min", state: "future" as const },
   ],
-  freezesAvailable: 1,
+  freezesAvailable: 0,
 };
 
 const STREAK_SHOWN_KEY = "streak_hub_shown";
@@ -86,45 +88,115 @@ export default function DashboardPage() {
   const [isStreakHubOpen, setIsStreakHubOpen] = useState(false);
   const [isCelebrationOpen, setIsCelebrationOpen] = useState(false);
 
+  // Store selectors
+  const { user, fetchProfile } = useAuthStore();
+  const { dashboard, streak, fetchDashboard, fetchStreak } = useAnalyticsStore();
+  const { tasks: boardTasks, columns, fetchBoard } = useBoardStore();
+  const { unreadCount, fetchUnreadCount } = useNotificationsStore();
+
+  // Fetch data on mount
+  useEffect(() => {
+    fetchProfile();
+    fetchDashboard();
+    fetchStreak();
+    fetchBoard();
+    fetchUnreadCount();
+  }, [fetchProfile, fetchDashboard, fetchStreak, fetchBoard, fetchUnreadCount]);
+
+  // Determine if we're still loading core data
+  const isInitialLoading = !dashboard && !user;
+
+  // Derived data
+  const userName = user ? `${user.firstName} ${user.lastName}`.trim() : "Student";
+  const hasUnreadNotifications = unreadCount > 0;
+
+  const stats = dashboard?.stats ?? DEFAULT_STATS;
+  const patterns = dashboard?.patterns ?? DEFAULT_PATTERNS;
+  const streakData: ComponentStreakData = (streak as ComponentStreakData) ?? DEFAULT_STREAK_DATA;
+
+  // Today's tasks: cards from planning + monitoring columns
+  const todayTasks: Task[] = useMemo(() => {
+    const todayIds = [...(columns.planning || []), ...(columns.monitoring || [])];
+    return todayIds
+      .map((id) => boardTasks[id])
+      .filter(Boolean)
+      .map(boardCardToTask);
+  }, [boardTasks, columns]);
+
   // Auto-show streak hub on mount if streak >= 2 and not already shown this session
   useEffect(() => {
     const alreadyShown = sessionStorage.getItem(STREAK_SHOWN_KEY);
-    if (!alreadyShown && MOCK_STREAK_DATA.current >= 2) {
+    if (!alreadyShown && streakData.current >= 2) {
       const timer = setTimeout(() => {
         setIsStreakHubOpen(true);
         sessionStorage.setItem(STREAK_SHOWN_KEY, "1");
       }, 800);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [streakData.current]);
 
   const handleUseFreeze = () => {
-    // Close streak hub, then show celebration
     setIsStreakHubOpen(false);
     setTimeout(() => setIsCelebrationOpen(true), 300);
   };
 
+  // Loading skeleton
+  if (isInitialLoading) {
+    return (
+      <>
+        <DashboardHeader userName="..." hasUnreadNotifications={false} />
+        <div className="px-6 mb-8">
+          <div className="bg-white rounded-[24px] border border-neutral-100 p-8 animate-pulse">
+            <div className="flex justify-between mb-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex flex-col items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-neutral-200" />
+                  <div className="w-10 h-4 rounded bg-neutral-200" />
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-center py-6">
+              <div className="w-40 h-48 rounded-2xl bg-neutral-100" />
+            </div>
+          </div>
+        </div>
+        <div className="px-6 mb-8">
+          <div className="bg-white rounded-[24px] p-5 animate-pulse space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-neutral-200" />
+              <div className="w-32 h-4 rounded bg-neutral-200" />
+            </div>
+            <div className="flex gap-3">
+              <div className="flex-1 h-16 rounded-xl bg-neutral-100" />
+              <div className="flex-1 h-16 rounded-xl bg-neutral-100" />
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <DashboardHeader
-        userName={MOCK_USER_DATA.name}
-        hasUnreadNotifications={MOCK_USER_DATA.hasUnreadNotifications}
+        userName={userName}
+        hasUnreadNotifications={hasUnreadNotifications}
       />
 
       <CharacterShowcase
-        stats={MOCK_USER_DATA.stats}
+        stats={stats}
         onStreakTap={() => setIsStreakHubOpen(true)}
       />
 
-      <StudyPatterns patterns={MOCK_USER_DATA.patterns} />
+      <StudyPatterns patterns={patterns} />
 
-      <TodayTasksList tasks={MOCK_USER_DATA.todayTasks} />
+      <TodayTasksList tasks={todayTasks} />
 
       {/* Streak Hub Modal */}
       <StreakHub
         isOpen={isStreakHubOpen}
         onClose={() => setIsStreakHubOpen(false)}
-        data={MOCK_STREAK_DATA}
+        data={streakData}
         onUseFreeze={handleUseFreeze}
       />
 
