@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { Target, AlignLeft, Lightbulb, Calendar as CalendarIcon, Clock, ArrowRight, Check } from "lucide-react";
 import { NewTaskHeader } from "@/components/feature/task/NewTaskHeader";
 import { CourseSelector } from "@/components/feature/task/CourseSelector";
@@ -14,10 +13,15 @@ import { Drawer } from "@/components/ui/Drawer";
 import { Calendar } from "@/components/ui/Calendar";
 import { TimePicker } from "@/components/ui/TimePicker";
 import { cn } from "@/lib/utils";
+import { useBoardStore } from "@/stores/board";
+import { useGoalsStore } from "@/stores/goals";
 
 export default function NewTaskPage() {
   const router = useRouter();
-  
+  const fetchBoard = useBoardStore((s) => s.fetchBoard);
+  const boardLoading = useBoardStore((s) => s.loading);
+  const goalsStore = useGoalsStore();
+
   // Form State
   const [course, setCourse] = useState("");
   const [taskName, setTaskName] = useState("");
@@ -27,15 +31,25 @@ export default function NewTaskPage() {
   const [priority, setPriority] = useState<PriorityLevel>("Medium");
   const [dueDate, setDueDate] = useState<Date | null>(null);
   const [dueTime, setDueTime] = useState("");
+  const [saving, setSaving] = useState(false);
 
   // UI State for Drawers
   const [isDateDrawerOpen, setIsDateDrawerOpen] = useState(false);
   const [isTimeDrawerOpen, setIsTimeDrawerOpen] = useState(false);
 
-  const isValid = course.trim() !== "" && taskName.trim() !== "" && strategy !== "" && goal.trim() !== "";
+  const isValid = !saving && course.trim() !== "" && taskName.trim() !== "" && strategy !== "" && goal.trim() !== "";
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    setSaving(true);
+    // TODO: Replace with useBoardStore().createCard() once implemented in the store.
+    // The store currently has updateCard but no createCard action. When added,
+    // call it here with: { task_name, course_name, description, deadline, difficulty, subtasks }
     console.log("Saving Task:", { course, taskName, description, strategy, goal, priority, dueDate, dueTime });
+
+    // Refresh board data so the new card appears
+    await fetchBoard();
+
+    setSaving(false);
     router.back();
   };
 
