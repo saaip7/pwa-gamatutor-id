@@ -6,10 +6,14 @@ export function TopLv2({ gender }: { gender: Gender }) {
   if (gender === "male") {
     return (
 	<svg viewBox="0 0 132 130" preserveAspectRatio="xMidYMin meet" fill="none" xmlns="http://www.w3.org/2000/svg">
-	<path d="M36.8817 35.6387C25.8817 56.3716 16.8817 106.343 20.8817 118.039" stroke="#EBBAAA" strokeWidth="18.5" strokeLinecap="round" strokeLinejoin="bevel"/>
+		<g data-animate="armR">
 	<path d="M94.8818 35.6387C105.882 56.3716 114.882 106.343 110.882 118.039" stroke="#EBBAAA" strokeWidth="18.5" strokeLinecap="round" strokeLinejoin="bevel"/>
-	<rect width="42.6853" height="105.911" rx="21.25" transform="matrix(0.961733 0.273989 -0.244374 0.969681 27.8818 10.1211)" fill="#A1A1B7"/>
 	<rect width="42.6853" height="105.911" rx="21.25" transform="matrix(-0.961733 0.273989 0.244374 0.969681 103.882 10.1211)" fill="#A1A1B7"/>
+		</g>
+		<g data-animate="armL">
+	<path d="M36.8817 35.6387C25.8817 56.3716 16.8817 106.343 20.8817 118.039" stroke="#EBBAAA" strokeWidth="18.5" strokeLinecap="round" strokeLinejoin="bevel"/>
+	<rect width="42.6853" height="105.911" rx="21.25" transform="matrix(0.961733 0.273989 -0.244374 0.969681 27.8818 10.1211)" fill="#A1A1B7"/>
+		</g>
 	<path d="M27.6706 27.3102C28.0958 21.6349 31.8738 16.8778 37.0648 15.4813L65.8818 7.729L94.6988 15.4813C99.8898 16.8778 103.668 21.6349 104.093 27.3102L108.382 84.5471L104.632 112.191L102.857 115.399C102.408 116.211 101.588 116.71 100.702 116.71H29.6318L27.1318 112.191L23.3818 84.5471L27.6706 27.3102Z" fill="#BFBFCB"/>
 	<path d="M66.0493 30.7926C72.9528 30.7926 78.5493 24.8422 78.5493 17.5022C78.5493 10.162 72.9528 4.21191 66.0493 4.21191C59.1458 4.21191 53.5493 10.162 53.5493 17.5022C53.5493 24.8422 59.1458 30.7926 66.0493 30.7926Z" fill="#A1A1B7"/>
 	<path d="M30.882 116.709H100.882L102.784 126.82C103.093 128.465 101.91 130 100.333 130H31.4315C29.854 130 28.6708 128.465 28.98 126.82L30.882 116.709Z" fill="#A1A1B7"/>
