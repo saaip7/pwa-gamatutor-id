@@ -1,4 +1,5 @@
 import logging
+import random
 from datetime import datetime, timedelta
 from bson import ObjectId
 
@@ -12,6 +13,10 @@ logger = logging.getLogger(__name__)
 scheduler = BackgroundScheduler()
 
 
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
 def _is_quiet_hours(prefs):
     """Check if current time is within user's quiet hours."""
     quiet = prefs.get("notifications", {}).get("quiet_hours", {})
@@ -21,22 +26,101 @@ def _is_quiet_hours(prefs):
     start = quiet.get("start", "22:00")
     end = quiet.get("end", "07:00")
     current_time = now.strftime("%H:%M")
-    # Handle overnight quiet hours (e.g., 22:00 - 07:00)
     if start <= end:
         return start <= current_time < end
     else:
         return current_time >= start or current_time < end
 
 
-def _get_fcm_token(user_id):
-    """Get FCM token for a user."""
-    prefs = mongo.db.user_preferences.find_one({"user_id": ObjectId(user_id)})
-    if not prefs:
-        return None
-    return prefs.get("fcm_token")
+def _days_since_active(prefs):
+    """Return number of days since user's last meaningful activity. None if never active."""
+    streak = prefs.get("streak", {})
+    last_active = streak.get("last_active_date")
+    if not last_active:
+        return None  # Never active
+    if isinstance(last_active, str):
+        last_active = datetime.fromisoformat(last_active.replace("Z", "+00:00")).replace(tzinfo=None)
+    return (datetime.utcnow() - last_active).days
 
 
-# --- Job 1: Deadline Reminder ---
+def _classify_activity(prefs):
+    """Classify user into activity tier: A (active), B (medium), C (passive)."""
+    days = _days_since_active(prefs)
+    if days is None or days >= 3:
+        return "C"
+    if days >= 1:
+        return "B"
+    return "A"
+
+
+SMART_REMINDER_MESSAGES = {
+    "A": [
+        ("Jam Produktif Tiba!", "Pertahankan rutinitas belajar yang sudah kamu bangun."),
+        ("Rutinitas Belajarmu", "Kamu konsisten belajar beberapa hari terakhir. Teruskan!"),
+        ("Hari Produktif", "Rutinitas belajarmu sedang bagus. Hari ini punya potensi yang sama."),
+        ("Waktu Terbaik", "Momentum belajarmu sedang positif. Manfaatkan waktu produktifmu hari ini."),
+        ("Investasi Diri", "Setiap hari kamu belajar adalah investasi untuk dirimu sendiri. Teruskan!"),
+        ("Kedisiplinan", "Kamu sudah menunjukkan kedisiplinan yang baik. Pertahankan!"),
+        ("Di Jalur yang Benar", "Belajar teratur membawa hasil. Kamu sudah di jalur yang benar."),
+        ("Mulai Menghasilkan", "Rutinitas yang kamu bangun mulai menghasilkan. Tetap semangat!"),
+        ("Potensi Hari Ini", "Hari ini bisa jadi hari produktifmu lagi. Kamu sudah tahu caranya."),
+        ("Apresiasi", "Konsistensimu akhir-akhir ini patut diapresiasi."),
+    ],
+    "B": [
+        ("Waktunya Belajar!", "Jam produktifmu sudah tiba, yuk selesaikan rencanamu."),
+        ("Kembali ke Kanban", "Ada rencana belajar yang bisa dilanjutkan hari ini. Yuk kembali ke Kanban."),
+        ("Tugas Menunggu", "Tugasmu masih menunggu di Kanban. Satu langkah kecil hari ini cukup."),
+        ("Jam Produktifmu", "Jam produktifmu tiba. Kamu punya tugas yang bisa diselesaikan sekarang."),
+        ("Sebentar Saja", "Ada tugas yang menunggu. Yuk luangkan waktu sebentar untuk mengerjakannya."),
+        ("15 Menit Saja", "Belajar tidak harus lama. 15 menit saja sudah berarti. Yuk mulai!"),
+        ("Lanjutkan Progres", "Kanbanmu ada yang belum selesai. Yuk lanjutkan progresnya hari ini."),
+        ("Rencana Menunggu", "Rencana belajarmu sudah menunggu. Yuk kelola tugasmu."),
+        ("Kesempatan Baru", "Hari baru, kesempatan baru. Yuk lanjutkan progres belajarmu."),
+        ("Kembali Lagi", "Satu hari tanpa belajar tidak apa-apa. Hari ini bisa kembali lagi."),
+    ],
+    "C": [
+        ("Langkah Kecil", "Langkah besar dimulai dari hal kecil. Cicil satu tugas kecil saja hari ini."),
+        ("Buka Kanbanmu", "Belajar tidak harus sempurna. Buka Kanbanmu — itu sudah langkah awal."),
+        ("Lebih Baik dari Nol", "Satu tugas kecil hari ini lebih baik daripada nol. Yuk mulai dari yang termudah."),
+        ("Tidak Apa-apa", "Tidak apa-apa belum sempat belajar beberapa hari ini. Hari ini bisa mulai lagi."),
+        ("Kanban Menunggu", "Kanbanmu siap menantimu. Tidak perlu banyak, satu tugas saja."),
+        ("Proses Bukan Target", "Belajar itu proses, bukan target. Yuk mulai dari mana pun kamu berada."),
+        ("Buka Saja Dulu", "Kamu sudah punya rencana di Kanban. Buka saja dulu, selebihnya mengalir."),
+        ("Cukup Lihat", "Hari ini cukup buka dan lihat tugasmu. Tidak perlu langsung menyelesaikan semua."),
+        ("Tugas Termudah", "Setiap langkah kecil itu berarti. Yuk pilih satu tugas yang paling ringan."),
+        ("Waktu yang Tepat", "Belajar bisa dimulai kapan saja. Hari ini adalah waktu yang tepat."),
+    ],
+}
+
+STREAK_NUDGE_MESSAGES = [
+    "Kamu sudah konsisten belajar {n} hari! Yuk buka satu tugas untuk menjaganya.",
+    "{n} hari berturut-turut kamu belajar. Satu tugas kecil hari ini cukup!",
+    "Kamu sudah membangun kebiasaan belajar {n} hari. Hari ini, cukup buka saja.",
+    "Konsistensi {n} hari bukan hal kecil. Yuk pertahankan dengan satu tugas.",
+    "Belajar {n} hari berturut-turut itu pencapaian. Satu langkah lagi hari ini.",
+    "Jejak belajarmu sudah {n} hari. Hari ini bisa jadi hari ke-{n}.",
+    "Kamu sudah {n} hari konsisten. Buka Kanbanmu sebentar untuk menjaga momentum.",
+    "{n} hari terus belajar — itu sudah membuktikan kemampuanmu. Yuk lanjutkan!",
+    "Kamu sudah terbiasa belajar {n} hari. Satu tugas kecil untuk menjaganya.",
+    "Kebiasaan belajar {n} hari kamu sudah terbangun. Sayang kalau putus sekarang.",
+]
+
+
+def _already_sent_today(user_id, desc_pattern):
+    """Check if a notification with matching description was already sent today."""
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    return mongo.db.notifications.find_one({
+        "user_id": user_id,
+        "type": "reminder",
+        "description": {"$regex": desc_pattern},
+        "created_at": {"$gte": today_start},
+    })
+
+
+# ---------------------------------------------------------------------------
+# Job 1: Deadline Reminder
+# ---------------------------------------------------------------------------
+
 def job_deadline_reminder():
     """Check cards with upcoming deadlines (next 24h) and notify users."""
     logger.info("[Scheduler] Running deadline reminder job")
@@ -52,17 +136,12 @@ def job_deadline_reminder():
         prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
         if not prefs:
             continue
-
-        # Check if push notifications enabled
         if not prefs.get("notifications", {}).get("push_enabled", True):
             continue
-
-        # Check quiet hours
         if _is_quiet_hours(prefs):
             continue
 
         for lst in board.get("lists", []):
-            # Only check non-done lists (list1, list2, list3)
             if lst["id"] == "list4":
                 continue
             for card in lst.get("cards", []):
@@ -78,108 +157,150 @@ def job_deadline_reminder():
                 except Exception:
                     continue
 
-                # Deadline within next 24 hours and not yet passed
                 if now <= deadline <= deadline_threshold:
-                    # Check if already reminded recently (avoid spam)
-                    reminded_key = f"deadline_reminded_{card['id']}"
+                    # Dedup: max 1 per card per 12 hours
+                    task_name = card.get("task_name", card.get("title", "Tugas"))
                     existing = mongo.db.notifications.find_one({
                         "user_id": user_id,
                         "type": "reminder",
-                        "description": {"$regex": card.get("task_name", card.get("id", ""))},
+                        "description": {"$regex": task_name},
                         "created_at": {"$gte": now - timedelta(hours=12)},
                     })
                     if existing:
                         continue
 
-                    task_name = card.get("task_name", card.get("title", "Tugas"))
                     hours_left = int((deadline - now).total_seconds() / 3600)
-
                     title = "Deadline Mendekat!"
                     body = f'"{task_name}" — {hours_left} jam lagi'
 
-                    # Create in-app notification
                     Notification.create(
-                        user_id=str(user_id),
-                        type="reminder",
-                        title=title,
-                        description=body,
+                        user_id=str(user_id), type="reminder",
+                        title=title, description=body,
                     )
-
-                    # Send push notification
                     token = prefs.get("fcm_token")
                     if token:
                         send_push(token, title, body, {"type": "deadline", "card_id": card["id"]})
 
                     reminded += 1
 
-    logger.info(f"[Scheduler] Deadline reminder: {reminded} notifications sent")
+    logger.info(f"[Scheduler] Deadline reminder: {reminded} sent")
 
 
-# --- Job 2: Smart Reminder ---
+# ---------------------------------------------------------------------------
+# Job 2: Smart Reminder (A/B/C by activity)
+# ---------------------------------------------------------------------------
+
 def job_smart_reminder():
-    """Send personalized study reminders at user's productive hour."""
+    """Send personalized study reminders based on activity level.
+
+    Condition A (active):     last active today/yesterday → competence support
+    Condition B (medium):     inactive 1-2 days           → neutral nudge
+    Condition C (passive):    inactive 3+ days / never    → autonomy support (no productive hour required)
+    """
     logger.info("[Scheduler] Running smart reminder job")
 
     now = datetime.utcnow()
     current_hour = now.hour
 
-    # Find users whose productive hour matches current hour
     users = mongo.db.user_preferences.find({
         "notifications.smart_reminder_enabled": True,
     })
 
-    reminded = 0
+    counts = {"A": 0, "B": 0, "C": 0}
+
     for prefs in users:
         user_id = prefs["user_id"]
 
         if _is_quiet_hours(prefs):
             continue
 
-        # Determine productive hour from analytics data
-        # Fall back to 20:00 (8 PM) default if no data yet
-        productive_hour = prefs.get("analytics", {}).get("productive_hour", 20)
+        tier = _classify_activity(prefs)
+        title, body = random.choice(SMART_REMINDER_MESSAGES[tier])
 
-        if current_hour != productive_hour:
+        # Conditions A & B: only send at user's productive hour
+        # Condition C: send any hour (once per day) — no productive hour gate
+        if tier in ("A", "B"):
+            productive_hour = prefs.get("analytics", {}).get("productive_hour", 20)
+            if current_hour != productive_hour:
+                continue
+
+        # Condition A: skip if already active today (they're doing great)
+        if tier == "A":
+            days = _days_since_active(prefs)
+            if days is not None and days == 0:
+                continue
+
+        # Dedup: max 1 smart reminder per day per user
+        if _already_sent_today(user_id, "smart_reminder"):
             continue
-
-        # Check if user already studied today
-        streak = prefs.get("streak", {})
-        last_active = streak.get("last_active_date")
-        if last_active:
-            if isinstance(last_active, datetime) and (now - last_active).days == 0:
-                continue  # Already active today, skip
-
-        # Check if reminder already sent today
-        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        existing = mongo.db.notifications.find_one({
-            "user_id": user_id,
-            "type": "reminder",
-            "description": {"$regex": "Waktunya belajar"},
-            "created_at": {"$gte": today_start},
-        })
-        if existing:
-            continue
-
-        title = "Waktunya Belajar!"
-        body = "Jam produktifmu sudah tiba. Yuk mulai sesi belajar!"
 
         Notification.create(
-            user_id=str(user_id),
-            type="reminder",
-            title=title,
-            description=body,
+            user_id=str(user_id), type="reminder",
+            title=title, description=body,
         )
-
         token = prefs.get("fcm_token")
         if token:
-            send_push(token, title, body, {"type": "smart_reminder"})
+            send_push(token, title, body, {"type": "smart_reminder", "tier": tier})
 
-        reminded += 1
+        counts[tier] += 1
 
-    logger.info(f"[Scheduler] Smart reminder: {reminded} notifications sent")
+    logger.info(f"[Scheduler] Smart reminder: A={counts['A']} B={counts['B']} C={counts['C']}")
 
 
-# --- Job 3: Social Presence ---
+# ---------------------------------------------------------------------------
+# Job 3: Streak Nudge
+# ---------------------------------------------------------------------------
+
+def job_streak_nudge():
+    """Nudge users with active streak (>=2) who haven't studied today."""
+    logger.info("[Scheduler] Running streak nudge job")
+
+    now = datetime.utcnow()
+
+    users = mongo.db.user_preferences.find({
+        "streak.current": {"$gte": 2},
+    })
+
+    nudged = 0
+    for prefs in users:
+        user_id = prefs["user_id"]
+
+        if _is_quiet_hours(prefs):
+            continue
+
+        # Skip if already active today
+        days = _days_since_active(prefs)
+        if days is not None and days == 0:
+            continue
+
+        streak_count = prefs.get("streak", {}).get("current", 0)
+        if streak_count < 2:
+            continue
+
+        # Dedup: max 1 streak nudge per day
+        if _already_sent_today(user_id, "konsisten belajar"):
+            continue
+
+        title = "Jangan Putus Semangat!"
+        body = random.choice(STREAK_NUDGE_MESSAGES).replace("{n}", str(streak_count))
+
+        Notification.create(
+            user_id=str(user_id), type="reminder",
+            title=title, description=body,
+        )
+        token = prefs.get("fcm_token")
+        if token:
+            send_push(token, title, body, {"type": "streak_nudge"})
+
+        nudged += 1
+
+    logger.info(f"[Scheduler] Streak nudge: {nudged} sent")
+
+
+# ---------------------------------------------------------------------------
+# Job 4: Social Presence
+# ---------------------------------------------------------------------------
+
 def job_social_presence():
     """Notify users about peers who are currently studying."""
     logger.info("[Scheduler] Running social presence job")
@@ -187,7 +308,6 @@ def job_social_presence():
     now = datetime.utcnow()
     recent_window = now - timedelta(minutes=30)
 
-    # Find users with active study sessions
     active_sessions = mongo.db.study_sessions.find({
         "status": "active",
         "start_time": {"$gte": recent_window},
@@ -203,7 +323,6 @@ def job_social_presence():
 
     count = len(active_user_ids)
 
-    # Notify users who have social presence enabled
     users = mongo.db.user_preferences.find({
         "notifications.social_presence_enabled": True,
     })
@@ -212,14 +331,12 @@ def job_social_presence():
     for prefs in users:
         user_id = prefs["user_id"]
 
-        # Don't notify users who are already studying
         if user_id in active_user_ids:
             continue
-
         if _is_quiet_hours(prefs):
             continue
 
-        # Max 1 social presence notification per day
+        # Dedup: max 1 per day
         today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
         existing = mongo.db.notifications.find_one({
             "user_id": user_id,
@@ -233,50 +350,41 @@ def job_social_presence():
         body = f"{count} mahasiswa sedang belajar sekarang. Yuk ikut belajar!"
 
         Notification.create(
-            user_id=str(user_id),
-            type="social",
-            title=title,
-            description=body,
+            user_id=str(user_id), type="social",
+            title=title, description=body,
         )
-
         token = prefs.get("fcm_token")
         if token:
             send_push(token, title, body, {"type": "social_presence"})
 
         notified += 1
 
-    logger.info(f"[Scheduler] Social presence: {notified} notifications sent ({count} active users)")
+    logger.info(f"[Scheduler] Social presence: {notified} sent ({count} active users)")
 
+
+# ---------------------------------------------------------------------------
+# Init
+# ---------------------------------------------------------------------------
 
 def init_scheduler(app):
-    """Initialize and start the APScheduler with all cron jobs."""
+    """Initialize and start the APScheduler with all jobs."""
     with app.app_context():
-        # Deadline reminder: every 2 hours
         scheduler.add_job(
-            job_deadline_reminder,
-            "interval",
-            hours=2,
-            id="deadline_reminder",
-            replace_existing=True,
+            job_deadline_reminder, "interval", hours=2,
+            id="deadline_reminder", replace_existing=True,
         )
-
-        # Smart reminder: every hour (checks productive hour match)
         scheduler.add_job(
-            job_smart_reminder,
-            "interval",
-            hours=1,
-            id="smart_reminder",
-            replace_existing=True,
+            job_smart_reminder, "interval", hours=1,
+            id="smart_reminder", replace_existing=True,
         )
-
-        # Social presence: every 30 minutes
         scheduler.add_job(
-            job_social_presence,
-            "interval",
-            minutes=30,
-            id="social_presence",
-            replace_existing=True,
+            job_streak_nudge, "interval", hours=6,
+            id="streak_nudge", replace_existing=True,
+        )
+        scheduler.add_job(
+            job_social_presence, "interval", minutes=30,
+            id="social_presence", replace_existing=True,
         )
 
         scheduler.start()
-        logger.info("[Scheduler] Started with 3 jobs: deadline_reminder, smart_reminder, social_presence")
+        logger.info("[Scheduler] Started with 4 jobs: deadline_reminder, smart_reminder, streak_nudge, social_presence")
