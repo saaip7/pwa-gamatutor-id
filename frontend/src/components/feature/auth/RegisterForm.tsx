@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Input } from "@/components/ui/Input";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Button } from "@/components/ui/Button";
+import { useAuthStore } from "@/stores/auth";
 
 // Animation Variants
 const fadeInUp: Variants = {
@@ -22,18 +23,27 @@ export function RegisterForm() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const { register } = useAuthStore();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!termsAccepted) return;
-    
+
     setIsLoading(true);
 
-    // Simulate API call delay
-    setTimeout(() => {
+    // Split full name into firstName and lastName for BE
+    const parts = name.trim().split(/\s+/);
+    const firstName = parts[0];
+    const lastName = parts.slice(1).join(" ") || firstName;
+
+    try {
+      await register({ firstName, lastName, email, password });
+      router.push("/onboarding");
+    } catch (err) {
+      // Error handled in store
+    } finally {
       setIsLoading(false);
-      console.log("Registered:", { name, email, password });
-      // router.push("/onboarding");
-    }, 1500);
+    }
   };
 
   return (
