@@ -3,11 +3,11 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, Variants } from "framer-motion";
-import { Target } from "lucide-react";
 import Link from "next/link";
 import { Input } from "@/components/ui/Input";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Button } from "@/components/ui/Button";
+import { useAuthStore } from "@/stores/auth";
 
 // Animation Variants matching the CSS in the HTML
 const fadeInUp: Variants = {
@@ -17,6 +17,7 @@ const fadeInUp: Variants = {
 
 export function LoginForm() {
   const router = useRouter();
+  const { login } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -24,14 +25,15 @@ export function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
-    // Simulate API call delay
-    setTimeout(() => {
+    try {
+      // BE expects username field, not email
+      await login(email, password);
+      router.push("/dashboard");
+    } catch (err) {
+      // Error handled in store
+    } finally {
       setIsLoading(false);
-      // Route to next page (e.g., onboarding or dashboard)
-      // router.push("/onboarding");
-      console.log("Logged in:", { email, password });
-    }, 1500);
+    }
   };
 
   return (
