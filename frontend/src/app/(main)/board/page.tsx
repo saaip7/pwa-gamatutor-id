@@ -450,36 +450,6 @@ function KanbanBoardContent() {
     );
   }
 
-  // Empty state: no tasks at all
-  if (!loading && totalTasks === 0) {
-    return (
-      <>
-        <BoardHeader
-          userName={userName}
-          activeTasksCount={0}
-          hasUnreadNotifications={hasUnreadNotifications}
-        />
-        <div className="flex-1 flex items-center justify-center px-6">
-          <div className="flex flex-col items-center gap-4 py-20">
-            <div className="w-16 h-16 rounded-full bg-neutral-100 flex items-center justify-center">
-              <Plus className="w-8 h-8 text-neutral-400" />
-            </div>
-            <div className="text-center">
-              <p className="text-base font-semibold text-neutral-700 mb-1">Board kosong</p>
-              <p className="text-sm text-neutral-500">Tambahkan tugas pertama untuk memulai.</p>
-            </div>
-            <Link
-              href="/task/new"
-              className="mt-2 px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary-hover transition-colors"
-            >
-              Buat Tugas
-            </Link>
-          </div>
-        </div>
-      </>
-    );
-  }
-
   return (
     <>
       <BoardHeader
@@ -534,6 +504,15 @@ function KanbanBoardContent() {
                     />
                   ))}
                 </SortableContext>
+                {colTasks.length === 0 && (
+                  <Link
+                    href="/task/new"
+                    className="block border-2 border-dashed border-neutral-200 rounded-3xl p-5 flex flex-col items-center justify-center gap-2 hover:border-primary/40 hover:bg-primary/5 transition-all min-h-[120px]"
+                  >
+                    <Plus className="w-5 h-5 text-neutral-300" />
+                    <span className="text-xs font-medium text-neutral-300">Tambah tugas</span>
+                  </Link>
+                )}
               </BoardColumn>
             );
           })}

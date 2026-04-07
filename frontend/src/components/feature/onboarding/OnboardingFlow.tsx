@@ -4,9 +4,11 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 import { Step1Welcome } from "./Step1Welcome";
 import { Step2GoalSetting } from "./Step2GoalSetting";
 import { Step3FeatureIntro } from "./Step3FeatureIntro";
+import { api } from "@/lib/api";
 
 export function OnboardingFlow() {
   const router = useRouter();
@@ -18,14 +20,36 @@ export function OnboardingFlow() {
 
   const handleGoalSubmit = (selectedGoal: string) => {
     setGoal(selectedGoal);
+    // Save general goal to BE in background
+    api.put("/api/goals/general", {
+      textPre: "Aku ingin ",
+      textHighlight: selectedGoal,
+    }).catch(() => {
+      // Silent fail — will retry later
+    });
     handleNext();
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
+    try {
+      // Mark onboarding as completed
+      await api.put("/api/preferences/onboarding", {
+        completed: true,
+      });
+    } catch {
+      // Silent — non-blocking
+    }
     router.push("/dashboard");
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    try {
+      await api.put("/api/preferences/onboarding", {
+        completed: true,
+      });
+    } catch {
+      // Silent
+    }
     router.push("/dashboard");
   };
 

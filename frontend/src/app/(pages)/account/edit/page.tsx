@@ -32,8 +32,8 @@ export default function EditProfilePage() {
 
   useEffect(() => {
     if (user) {
-      setName(user.name);
-      setEmail(user.email);
+      setName(user.name ?? "");
+      setEmail(user.email ?? "");
     }
   }, [user]);
 
@@ -64,29 +64,40 @@ export default function EditProfilePage() {
       }
     }
 
-    setSaving(true);
-    try {
-      // Update profile name
-      await updateProfile({ name });
+    const nameChanged = name !== (user?.name ?? "");
+    const passwordChanged = !!currentPassword;
 
-      // Update password if provided
-      if (currentPassword) {
-        await updatePassword({
-          currentPassword,
-          newPassword,
-        });
+    if (!nameChanged && !passwordChanged) return;
+
+    setSaving(true);
+    let profileOk = true;
+    let passwordOk = true;
+
+    // Update profile name (only if changed)
+    if (nameChanged) {
+      try {
+        await updateProfile({ name });
+      } catch {
+        profileOk = false;
+      }
+    }
+
+    // Update password (independent)
+    if (passwordChanged) {
+      try {
+        await updatePassword({ currentPassword, newPassword });
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
+      } catch {
+        passwordOk = false;
       }
-
-      setSuccessMessage("Profil berhasil disimpan");
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Gagal menyimpan profil";
-      setPasswordError(msg);
-    } finally {
-      setSaving(false);
     }
+
+    if (profileOk && passwordOk) {
+      setSuccessMessage("Perubahan berhasil disimpan");
+    }
+    setSaving(false);
   };
 
   return (

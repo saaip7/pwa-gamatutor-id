@@ -86,9 +86,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   updateProfile: async (data) => {
     try {
-      const user = await api.put<User>("/users/profile", data);
+      await api.put("/users/profile", { name: data.name });
+      const user = await api.get<User>("/users/me");
       set({ user });
-      toast.success("Profil berhasil disimpan");
     } catch (e: unknown) {
       toast.error("Gagal menyimpan profil");
       throw e;
@@ -97,10 +97,12 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   updatePassword: async (data) => {
     try {
-      await api.put("/users/password", data);
-      toast.success("Password berhasil diubah");
+      await api.put("/users/password", {
+        current_password: data.currentPassword,
+        new_password: data.newPassword,
+      });
     } catch (e: unknown) {
-      toast.error("Gagal mengubah password");
+      toast.error(e instanceof Error ? e.message : "Gagal mengubah password");
       throw e;
     }
   },
