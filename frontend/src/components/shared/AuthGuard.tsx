@@ -3,19 +3,20 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth";
+import { usePreferencesStore } from "@/stores/preferences";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const token = useAuthStore((s) => s.token);
   const fetchProfile = useAuthStore((s) => s.fetchProfile);
+  const fetchPreferences = usePreferencesStore((s) => s.fetchPreferences);
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     if (token) {
-      // Verify token is still valid by fetching profile
       fetchProfile()
+        .then(() => fetchPreferences())
         .catch(() => {
-          // Token invalid — will be cleared in store
           router.replace("/login");
         })
         .finally(() => setChecking(false));
@@ -23,7 +24,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       router.replace("/login");
       setChecking(false);
     }
-  }, [token, fetchProfile, router]);
+  }, [token, fetchProfile, fetchPreferences, router]);
 
   if (checking) {
     return (

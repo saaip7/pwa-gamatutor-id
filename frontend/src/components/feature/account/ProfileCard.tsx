@@ -4,6 +4,8 @@ import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { CharacterComposer } from "@/components/feature/character/CharacterComposer";
+import type { SlotLevel } from "@/components/feature/character/item-registry";
+import { usePreferencesStore } from "@/stores/preferences";
 
 interface ProfileCardProps {
   name: string;
@@ -11,6 +13,8 @@ interface ProfileCardProps {
 }
 
 export function ProfileCard({ name, title }: ProfileCardProps) {
+  const character = usePreferencesStore((s) => s.preferences?.character);
+
   return (
     <motion.div
       className="bg-white rounded-3xl border border-neutral-100 shadow-sm p-5 flex flex-row items-center gap-5 relative overflow-hidden"
@@ -24,7 +28,10 @@ export function ProfileCard({ name, title }: ProfileCardProps) {
       {/* Left Column: Character Bust (head + shoulders) */}
       <div className="w-[96px] h-[96px] shrink-0 rounded-[24px] bg-blue-50 border border-blue-100 flex items-end justify-center overflow-hidden relative shadow-[inset_0_2px_8px_rgba(59,130,246,0.05)]">
         <CharacterComposer
-          gender="male"
+          gender={character?.gender ?? "male"}
+          head={(character?.equipped?.head as SlotLevel) ?? "base"}
+          top={(character?.equipped?.top as SlotLevel) ?? "base"}
+          bottom={(character?.equipped?.bottom as SlotLevel) ?? "base"}
           viewBox="0 25 120 150"
           className="w-full h-full drop-shadow-sm"
         />
