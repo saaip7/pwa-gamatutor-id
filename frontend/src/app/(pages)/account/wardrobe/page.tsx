@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { User, Shirt, Footprints, Sparkles, Check, Lock } from "lucide-react";
+import { toast } from "sonner";
 import { Gender } from "@/components/feature/character/types";
 import { SettingsHeader } from "@/components/feature/settings/SettingsHeader";
 import { CharacterComposer } from "@/components/feature/character/CharacterComposer";
+import { usePreferencesStore } from "@/stores/preferences";
 
 import { cn } from "@/lib/utils";
 import {
@@ -31,6 +33,7 @@ interface Equipped {
   head: SlotLevel;
   top: SlotLevel;
   bottom: SlotLevel;
+  special: SlotLevel | null;
 }
 
 // --- Sub-components ---
@@ -106,19 +109,44 @@ const CATEGORIES = [
 ];
 
 export default function WardrobePage() {
+  const fetchPrefs = usePreferencesStore((s) => s.fetchPreferences);
+  const preferences = usePreferencesStore((s) => s.preferences);
+  const updateCharacter = usePreferencesStore((s) => s.updateCharacter);
+
   const [activeTab, setActiveTab] = useState<"head" | "top" | "bottom" | "special">("head");
   const [gender, setGender] = useState<Gender>("male");
   const [equipped, setEquipped] = useState<Equipped>({
     head: "base",
     top: "base",
     bottom: "base",
+    special: null,
   });
+
+  // Fetch preferences on mount if not loaded (handles direct navigation)
+  useEffect(() => {
+    if (!preferences) {
+      fetchPrefs();
+    }
+  }, []);
+
+  // Sync local state from DB when preferences load
+  useEffect(() => {
+    if (preferences?.character) {
+      setGender(preferences.character.gender);
+      setEquipped({
+        head: preferences.character.equipped.head as SlotLevel,
+        top: preferences.character.equipped.top as SlotLevel,
+        bottom: preferences.character.equipped.bottom as SlotLevel,
+        special: (preferences.character.equipped.special as SlotLevel) ?? null,
+      });
+    }
+  }, [preferences]);
 
   const items = getItemsBySlot(activeTab);
 
   const handleSave = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    console.log("Saving character appearance...", equipped);
+    await updateCharacter({ gender, equipped });
+    toast.success("Karakter berhasil disimpan!");
   };
 
   return (

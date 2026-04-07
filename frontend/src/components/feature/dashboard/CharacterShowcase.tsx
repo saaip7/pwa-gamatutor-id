@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { Flame, Timer, CheckCircle2, ShieldCheck, Palette } from "lucide-react";
 import { AchievementBanner } from "@/components/feature/mastery/AchievementBanner";
 import { CharacterComposer } from "@/components/feature/character/CharacterComposer";
+import type { SlotLevel } from "@/components/feature/character/item-registry";
+import { usePreferencesStore } from "@/stores/preferences";
 import Link from "next/link";
 import styles from "./CharacterShowcase.module.css";
 
@@ -22,6 +24,8 @@ interface CharacterShowcaseProps {
 }
 
 export function CharacterShowcase({ stats, onStreakTap }: CharacterShowcaseProps) {
+  const character = usePreferencesStore((s) => s.preferences?.character);
+
   return (
     <motion.div
       className="px-6 mb-8"
@@ -98,10 +102,10 @@ export function CharacterShowcase({ stats, onStreakTap }: CharacterShowcaseProps
             {/* Character SVG */}
             <div className="relative z-10 h-[250px] drop-shadow-[0_16px_24px_rgba(0,0,0,0.15)] flex items-end justify-center mb-4">
               <CharacterComposer
-                gender="male"
-                head="base"
-                top="base"
-                bottom="base"
+                gender={character?.gender ?? "male"}
+                head={(character?.equipped?.head as SlotLevel) ?? "base"}
+                top={(character?.equipped?.top as SlotLevel) ?? "base"}
+                bottom={(character?.equipped?.bottom as SlotLevel) ?? "base"}
                 className="h-full w-auto"
                 slotClassNames={{
                   top: styles.torso,
