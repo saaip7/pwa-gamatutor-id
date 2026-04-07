@@ -25,17 +25,37 @@ export const useGoalsStore = create<GoalsState>((set) => ({
   fetchGoals: async () => {
     set({ loading: true });
     try {
-      const [goals, courses] = await Promise.all([
-        api.get<{ general: { textPre: string; textHighlight: string } | null; taskGoals: TaskGoal[] }>(
-          "/api/goals"
-        ),
-        api.get<{ courses: CourseProgress[] }>("/api/goals/course-progress"),
+      const [goalsRes, coursesRes] = await Promise.all([
+        api.get<{
+          general: { text_pre: string; text_highlight: string } | null;
+          taskGoals: TaskGoal[];
+        }>("/api/goals"),
+        api.get<{
+          courses: { course_name: string; completed: number; total: number }[];
+        }>("/api/goals/course-progress"),
       ]);
 
+      // Map BE snake_case → FE camelCase
+      const generalGoal = goalsRes.general
+        ? {
+            textPre: goalsRes.general.text_pre || "",
+            textHighlight: goalsRes.general.text_highlight || "",
+          }
+        : null;
+
+      const courses: CourseProgress[] = (coursesRes.courses || []).map(
+        (c, i) => ({
+          id: `course-${i}`,
+          name: c.course_name,
+          completedTasks: c.completed,
+          totalTasks: c.total,
+        })
+      );
+
       set({
-        generalGoal: goals.general || { textPre: "", textHighlight: "" },
-        taskGoals: goals.taskGoals || [],
-        courses: courses.courses || [],
+        generalGoal,
+        taskGoals: goalsRes.taskGoals || [],
+        courses,
         loading: false,
       });
     } catch (e: unknown) {
@@ -45,13 +65,16 @@ export const useGoalsStore = create<GoalsState>((set) => ({
   },
 
   updateGeneralGoal: async (data) => {
-    await api.put("/api/goals/general", data);
+    await api.put("/api/goals/general", {
+      textPre: data.textPre,
+      textHighlight: data.textHighlight,
+    });
     set({ generalGoal: data });
   },
 
   updateTaskGoal: async (cardId, goalText) => {
-    const taskGoal = await api.put<TaskGoal>(`/api/goals/${cardId}`, {
-      goal_text: goalText,
+    const taskGoal = await api.put<TaskGoal>(`/api/goals/task/${cardId}`, {
+      text: goalText,
     });
     set((state) => ({
       taskGoals: [
@@ -62,7 +85,7 @@ export const useGoalsStore = create<GoalsState>((set) => ({
   },
 
   deleteTaskGoal: async (cardId) => {
-    await api.delete(`/api/goals/${cardId}`);
+    await api.delete(`/api/goals/task/${cardId}`);
     set((state) => ({
       taskGoals: state.taskGoals.filter((tg) => tg.card_id !== cardId),
     }));
