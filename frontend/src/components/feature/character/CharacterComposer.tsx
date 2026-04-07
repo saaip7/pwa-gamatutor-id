@@ -10,6 +10,8 @@ interface CharacterComposerProps {
   top?: SlotLevel;
   bottom?: SlotLevel;
   className?: string;
+  /** Override the outer SVG viewBox (e.g. "0 0 120 175" for bust/head+shoulders crop). */
+  viewBox?: string;
   slotClassNames?: {
     head?: string;
     top?: string;
@@ -75,6 +77,7 @@ export function CharacterComposer({
   top = "base",
   bottom = "base",
   className,
+  viewBox,
   slotClassNames,
 }: CharacterComposerProps) {
   const HeadComponent = getHeadComponent(head);
@@ -112,7 +115,7 @@ export function CharacterComposer({
 
   return (
     <svg
-      viewBox={`0 0 ${COMPOSER_WIDTH} ${COMPOSER_HEIGHT}`}
+      viewBox={viewBox ?? `0 0 ${COMPOSER_WIDTH} ${COMPOSER_HEIGHT}`}
       className={className}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
