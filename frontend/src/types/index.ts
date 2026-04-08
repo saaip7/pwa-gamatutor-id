@@ -155,12 +155,14 @@ export interface StreakData {
 
 export interface Badge {
   _id: string;
-  badge_id: string;
+  type: string;
   name: string;
   category: string;
+  shape: string;
   description: string;
   unlocked: boolean;
   unlocked_at?: string;
+  displayed?: boolean;
 }
 
 export interface BadgesResponse {
