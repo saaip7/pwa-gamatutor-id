@@ -30,7 +30,7 @@ interface CharacterComposerProps {
  */
 
 const COMPOSER_WIDTH = 120;
-const COMPOSER_HEIGHT = 380;
+const COMPOSER_HEIGHT = 400;
 
 /** Single general scale per gender — applied uniformly to the whole character. */
 const GENDER_SCALE: Record<Gender, number> = {
@@ -65,7 +65,7 @@ const LAYOUT: Record<Gender, {
     bottom:  { x: 0, y: 238, maxH: 150 },
   },
   female: {
-    head:    { x: -1, y: 42,  maxH: 120 },
+    head:    { x: 0, y: 42,  maxH: 120 },
     top:     { x: 0, y: 110, maxH: 170 },
     bottom:  { x: 4, y: 238, maxH: 150 },
   },

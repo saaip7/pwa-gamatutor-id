@@ -28,7 +28,7 @@ export function HeadLv1({ gender }: { gender: Gender }) {
   }
   return (
     <svg viewBox="0 0 108 130" preserveAspectRatio="xMidYMax meet" fill="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">
-	<g transform="translate(0, 0)">
+	<g transform="translate(0,-5)">
 		<path d="M15.1694 60.6869C15.1694 39.8321 32.9441 22.9258 54.8703 22.9258C76.7966 22.9258 94.5713 39.8321 94.5713 60.6869V98.2451C91.3696 122.607 72.1594 136.007 54.8703 136.007C37.5813 136.007 17.5174 119.765 15.1694 98.2451V60.6869Z" fill="#F6DDD6"/>
 		<path fillRule="evenodd" clipRule="evenodd" d="M44.1971 107.36C44.1707 107.669 44.1572 107.982 44.1572 108.298V109.874C44.1572 115.86 49.0094 120.712 54.9951 120.712C60.9808 120.712 65.8329 115.86 65.8329 109.874V108.298C65.8329 107.982 65.8195 107.669 65.793 107.36H44.1971Z" fill="#393939"/>
 		<mask id="mask0_9628_1427" maskUnits="userSpaceOnUse" x="44" y="105" width="22" height="16">
