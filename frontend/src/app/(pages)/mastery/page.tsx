@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -17,7 +17,8 @@ import {
   Compass,
   Mountain,
   TrendingUp,
-  Award
+  Award,
+  LucideIcon,
 } from "lucide-react";
 import { motion, Variants } from "framer-motion";
 import { MasterySVGDefs } from "@/components/feature/mastery/MasterySVGDefs";
@@ -25,38 +26,77 @@ import { MasterySection } from "@/components/feature/mastery/MasterySection";
 import { MasteryBadgeCard } from "@/components/feature/mastery/MasteryBadgeCard";
 import { BadgeUnlockedCelebration } from "@/components/feature/mastery/BadgeUnlockedCelebration";
 import type { BadgeCelebrationData } from "@/components/feature/mastery/BadgeUnlockedCelebration";
+import { useBadgesStore } from "@/stores/badges";
+import type { Badge } from "@/types";
+import type { BadgeShape } from "@/components/feature/mastery/MasteryBadgeIcon";
+
+// Map badge type → icon
+const BADGE_ICON_MAP: Record<string, LucideIcon> = {
+  initiator: Sprout,
+  architect: Square,
+  deep_diver: Target,
+  marathoner: Timer,
+  ritualist: Flame,
+  reflector: BookOpen,
+  strategist: Compass,
+  explorer: Mountain,
+  improver: TrendingUp,
+  zenith: Award,
+};
+
+// Map category → section config
+const CATEGORY_CONFIG: Record<string, { title: string; icon: LucideIcon; iconColor: string }> = {
+  foundation: { title: "Foundation", icon: Layers, iconColor: "text-emerald-500" },
+  performance: { title: "Performance", icon: Zap, iconColor: "text-amber-500" },
+  mindset: { title: "Mindset", icon: Brain, iconColor: "text-indigo-500" },
+  mastery: { title: "Mastery", icon: Crown, iconColor: "text-blue-500" },
+};
+
+const CATEGORY_ORDER = ["foundation", "performance", "mindset", "mastery"];
 
 export default function MasteryPage() {
   const router = useRouter();
+  const { badges, fetchBadges } = useBadgesStore();
   const [celebrationOpen, setCelebrationOpen] = useState(false);
+  const [celebrationData, setCelebrationData] = useState<BadgeCelebrationData | null>(null);
 
-  const MOCK_CELEBRATION: BadgeCelebrationData = {
-    name: "Deep Diver",
-    subtitle: "Fokus mendalam tanpa distraksi achieved.",
-    icon: Target,
-    shape: "hexagon",
+  useEffect(() => {
+    fetchBadges();
+  }, [fetchBadges]);
+
+  // Group badges by category in defined order
+  const grouped = CATEGORY_ORDER.map((cat) => ({
+    ...CATEGORY_CONFIG[cat],
+    badges: badges.filter((b) => b.category === cat),
+  })).filter((g) => g.badges.length > 0);
+
+  const handleBadgeClick = (badge: Badge) => {
+    if (!badge.unlocked) return;
+    const icon = BADGE_ICON_MAP[badge.type] || Award;
+    setCelebrationData({
+      name: badge.name,
+      subtitle: badge.description,
+      icon,
+      shape: (badge.shape as BadgeShape) || "circle",
+    });
+    setCelebrationOpen(true);
   };
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.15
-      }
-    }
+      transition: { staggerChildren: 0.15 },
+    },
   };
 
   const itemVariants: Variants = {
     hidden: { opacity: 0, y: 16 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: {
-        duration: 0.6,
-        ease: [0.16, 1, 0.3, 1]
-      }
-    }
+      transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+    },
   };
 
   return (
@@ -65,7 +105,7 @@ export default function MasteryPage() {
 
       {/* Header */}
       <header className="shrink-0 pt-14 pb-4 px-5 flex items-center justify-between bg-white z-50 sticky top-0 border-b border-neutral-100">
-        <button 
+        <button
           onClick={() => router.back()}
           className="w-10 h-10 -ml-2 flex items-center justify-center text-neutral-500 hover:text-neutral-900 active:scale-95 transition-all"
         >
@@ -77,117 +117,40 @@ export default function MasteryPage() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto no-scrollbar bg-neutral-50/30">
-        <motion.div 
+        <motion.div
           className="px-5 py-6 flex flex-col gap-10 pb-32"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          
-          {/* 1. FOUNDATION */}
-          <motion.div variants={itemVariants}>
-            <MasterySection title="Foundation" icon={Layers} iconColor="text-emerald-500">
-              <MasteryBadgeCard 
-                title="Initiator" 
-                description="Memulai langkah pertama dengan percaya diri." 
-                shape="diamond" 
-                icon={Sprout} 
-                isUnlocked={true} 
-              />
-              <MasteryBadgeCard 
-                title="Architect" 
-                description="Membangun struktur belajar yang solid." 
-                shape="diamond" 
-                icon={Square} 
-                isUnlocked={true} 
-              />
-            </MasterySection>
-          </motion.div>
-
-          {/* 2. PERFORMANCE */}
-          <motion.div variants={itemVariants}>
-            <MasterySection title="Performance" icon={Zap} iconColor="text-amber-500">
-              <MasteryBadgeCard
-                title="Deep Diver"
-                description="Fokus mendalam tanpa distraksi."
-                shape="hexagon"
-                icon={Target}
-                isUnlocked={true}
-                onClick={() => setCelebrationOpen(true)}
-              />
-              <MasteryBadgeCard 
-                title="Marathoner" 
-                description="Konsistensi belajar jangka panjang." 
-                shape="hexagon" 
-                icon={Timer} 
-                isUnlocked={true} 
-              />
-              <MasteryBadgeCard
-                title="Ritualist"
-                description="Selesaikan 7 hari streak belajar."
-                shape="hexagon"
-                icon={Flame}
-                isUnlocked={false}
-              />
-            </MasterySection>
-          </motion.div>
-
-          {/* 3. MINDSET */}
-          <motion.div variants={itemVariants}>
-            <MasterySection title="Mindset" icon={Brain} iconColor="text-indigo-500">
-              <MasteryBadgeCard 
-                title="Reflector" 
-                description="Evaluasi diri pasca pembelajaran." 
-                shape="circle" 
-                icon={BookOpen} 
-                isUnlocked={true} 
-              />
-              <MasteryBadgeCard
-                title="Strategist"
-                description="Buat 5 rencana belajar detail."
-                shape="circle"
-                icon={Compass}
-                isUnlocked={false}
-              />
-              <MasteryBadgeCard
-                title="Explorer"
-                description="Selesaikan topik di luar zona nyaman."
-                shape="circle"
-                icon={Mountain}
-                isUnlocked={false}
-              />
-            </MasterySection>
-          </motion.div>
-
-          {/* 4. MASTERY */}
-          <motion.div variants={itemVariants}>
-            <MasterySection title="Mastery" icon={Crown} iconColor="text-blue-500">
-              <MasteryBadgeCard
-                title="Improver"
-                description="Tingkatkan skor di 3 kuis berturut."
-                shape="shield"
-                icon={TrendingUp}
-                isUnlocked={false}
-              />
-              <MasteryBadgeCard
-                title="Zenith"
-                description="Capaian tertinggi. Master 3 kategori."
-                shape="shield"
-                icon={Award}
-                isUnlocked={false}
-              />
-            </MasterySection>
-          </motion.div>
-
+          {grouped.map((group) => (
+            <motion.div key={group.title} variants={itemVariants}>
+              <MasterySection title={group.title} icon={group.icon} iconColor={group.iconColor}>
+                {group.badges.map((badge) => (
+                  <MasteryBadgeCard
+                    key={badge.type}
+                    title={badge.name}
+                    description={badge.description}
+                    shape={(badge.shape as BadgeShape) || "circle"}
+                    icon={BADGE_ICON_MAP[badge.type] || Award}
+                    isUnlocked={badge.unlocked}
+                    onClick={() => handleBadgeClick(badge)}
+                  />
+                ))}
+              </MasterySection>
+            </motion.div>
+          ))}
         </motion.div>
       </main>
 
       {/* Badge Unlocked Celebration Overlay */}
-      <BadgeUnlockedCelebration
-        isOpen={celebrationOpen}
-        onClose={() => setCelebrationOpen(false)}
-        data={MOCK_CELEBRATION}
-      />
+      {celebrationData && (
+        <BadgeUnlockedCelebration
+          isOpen={celebrationOpen}
+          onClose={() => setCelebrationOpen(false)}
+          data={celebrationData}
+        />
+      )}
     </div>
   );
 }
