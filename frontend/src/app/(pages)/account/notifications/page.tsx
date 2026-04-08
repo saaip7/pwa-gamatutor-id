@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Zap, Users, MoonStar, Clock } from "lucide-react";
-import { toast } from "sonner";
 import { SettingsHeader } from "@/components/feature/settings/SettingsHeader";
 import { SettingsGroup } from "@/components/feature/account/SettingsGroup";
 import { SettingItem } from "@/components/feature/account/SettingItem";
@@ -66,7 +65,6 @@ export default function NotificationSettingsPage() {
       },
     };
     await updateNotifications(data);
-    toast.success("Preferensi notifikasi disimpan!");
   };
 
   return (
