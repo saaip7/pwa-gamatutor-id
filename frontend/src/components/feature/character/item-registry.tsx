@@ -56,15 +56,15 @@ export interface ItemDef {
 export const ITEMS: ItemDef[] = [
   // HEAD (5 items: 1 base + 4 unlockable)
   { id: "base", slot: "head", names: { male: "Short Fade", female: "Chic Long Hair" }, badgeId: null,
-    preview: { female: { offsetY: -6, scale: 0.8 } } },
+    preview: { female: { offsetY: -7, scale: 0.85 } } },
   { id: "lv1", slot: "head", names: { male: "Textured Crop", female: "Cute Bangs" }, badgeId: "initiator",
-    preview: { female: { offsetY: -10, scale: 0.9 } } },
+    preview: { female: { offsetY: -5, scale: 0.9 } } },
   { id: "lv2", slot: "head", names: { male: "Messy Wavy", female: "Sweet Pink Bob" }, badgeId: "marathoner",
-    preview: { female: { offsetY: -25 } } },
+    preview: { female: { offsetY: 0 } } },
   { id: "lv3", slot: "head", names: { male: "Side Part", female: "Neat Ponytail" }, badgeId: "ritualist",
-    preview: { female: { offsetY: -30, scale: 1.15 } } },
+    preview: { female: { offsetY: -14, scale: 1.15 } } },
   { id: "lv4", slot: "head", names: { male: "Blue Spiky", female: "Messy Bun" }, badgeId: "explorer",
-    preview: { female: { offsetY: -28, scale: 1.1 } } },
+    preview: { female: { offsetY: -7, scale: 1.1 } } },
 
   // TOP (6 items: 1 base + 5 unlockable)
   { id: "base", slot: "top", names: { male: "Open Jacket", female: "Beige Parka" }, badgeId: null,
@@ -101,6 +101,8 @@ export function getItemsBySlot(slot: SlotType): ItemDef[] {
 }
 
 export function isItemUnlocked(item: ItemDef, unlockedBadges: string[]): boolean {
+  // TODO: During development, unlock all items. Replace with badge check for production.
+  //return true;
   if (!item.badgeId) return true; // base items always available
   return unlockedBadges.includes(item.badgeId);
 }
