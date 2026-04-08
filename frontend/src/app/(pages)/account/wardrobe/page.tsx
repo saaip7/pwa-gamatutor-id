@@ -8,6 +8,7 @@ import { Gender } from "@/components/feature/character/types";
 import { SettingsHeader } from "@/components/feature/settings/SettingsHeader";
 import { CharacterComposer } from "@/components/feature/character/CharacterComposer";
 import { usePreferencesStore } from "@/stores/preferences";
+import { useBadgesStore } from "@/stores/badges";
 
 import { cn } from "@/lib/utils";
 import {
@@ -113,6 +114,10 @@ export default function WardrobePage() {
   const preferences = usePreferencesStore((s) => s.preferences);
   const updateCharacter = usePreferencesStore((s) => s.updateCharacter);
 
+  const { badges } = useBadgesStore();
+  const fetchBadges = useBadgesStore((s) => s.fetchBadges);
+  const unlockedBadgeTypes = badges.filter((b) => b.unlocked).map((b) => b.type);
+
   const [activeTab, setActiveTab] = useState<"head" | "top" | "bottom" | "special">("head");
   const [gender, setGender] = useState<Gender>("male");
   const [equipped, setEquipped] = useState<Equipped>({
@@ -128,6 +133,11 @@ export default function WardrobePage() {
       fetchPrefs();
     }
   }, []);
+
+  // Fetch badges on mount
+  useEffect(() => {
+    fetchBadges();
+  }, [fetchBadges]);
 
   // Sync local state from DB when preferences load
   useEffect(() => {
@@ -214,7 +224,7 @@ export default function WardrobePage() {
           <div className="grid grid-cols-3 gap-4">
             {items.map((item) => {
               const isEquipped = equipped[activeTab as keyof Equipped] === item.id;
-              const isUnlocked = isItemUnlocked(item, []); // TODO: pass real unlockedBadges
+              const isUnlocked = isItemUnlocked(item, unlockedBadgeTypes);
               const slotKey = activeTab as "head" | "top" | "bottom";
               const getItemFn = SLOT_COMPONENT_FN[slotKey];
               if (!getItemFn) return null;
