@@ -8,7 +8,7 @@ interface PreferencesState {
   error: string | null;
 
   fetchPreferences: () => Promise<void>;
-  updateNotifications: (data: Partial<UserPreferences["notifications"]>) => Promise<void>;
+  updateNotifications: (data: Record<string, unknown>) => Promise<void>;
   updateTheme: (theme: "light" | "dark" | "auto") => Promise<void>;
   updateOnboarding: (data: { completed?: boolean; step?: number }) => Promise<void>;
   updateFcmToken: (token: string) => Promise<void>;
@@ -34,14 +34,9 @@ export const usePreferencesStore = create<PreferencesState>((set) => ({
 
   updateNotifications: async (data) => {
     await api.put("/api/preferences/notifications", data);
-    set((state) => ({
-      preferences: state.preferences
-        ? {
-            ...state.preferences,
-            notifications: { ...state.preferences.notifications, ...data },
-          }
-        : null,
-    }));
+    // Re-fetch to ensure state matches DB (field names differ FE vs BE)
+    const updated = await api.get<UserPreferences>("/api/preferences");
+    set({ preferences: updated });
   },
 
   updateTheme: async (theme) => {
