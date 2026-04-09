@@ -25,6 +25,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api";
 import { useAdminStore } from "@/stores/admin";
 import type {
   AdminUser,
@@ -37,7 +38,7 @@ import type {
 } from "@/stores/admin";
 
 // --- Types ---
-type TabKey = "profile" | "board" | "goals" | "badges" | "sessions" | "streak" | "prefs";
+type TabKey = "profile" | "board" | "goals" | "badges" | "sessions" | "analytics" | "streak" | "prefs";
 
 const TABS: { key: TabKey; label: string; icon: React.ElementType }[] = [
   { key: "profile", label: "Profil", icon: User },
@@ -45,6 +46,7 @@ const TABS: { key: TabKey; label: string; icon: React.ElementType }[] = [
   { key: "goals", label: "Goals", icon: Target },
   { key: "badges", label: "Badges", icon: Award },
   { key: "sessions", label: "Sessions", icon: Clock },
+  { key: "analytics", label: "Analytics", icon: BarChart3 },
   { key: "streak", label: "Streak", icon: Flame },
   { key: "prefs", label: "Prefs", icon: Settings },
 ];
@@ -426,6 +428,332 @@ function SessionsTab({ sessions }: { sessions: AdminStudySession[] }) {
   );
 }
 
+// ========== ANALYTICS TAB ==========
+
+interface AnalyticsData {
+  dashboard: {
+    streak: number;
+    focus_hours: number;
+    tasks_completed: number;
+    badges_unlocked: number;
+    total_badges: number;
+  } | null;
+  progress: {
+    total_cards: number;
+    completed_cards: number;
+    completion_rate: number;
+    personal_best: string;
+    task_distribution: {
+      todo_percent: number;
+      in_progress_percent: number;
+      review_percent: number;
+      done_percent: number;
+    };
+  } | null;
+  strategy_effectiveness: {
+    strategies: {
+      name: string;
+      task_count: number;
+      subjective: { avg_rating: number; total_rated: number; positive_percent: number };
+      objective: { avg_improvement: number; total_tracked: number; is_data_insufficient: boolean };
+    }[];
+  } | null;
+  confidence_trend: {
+    course_name: string;
+    available_courses: { name: string; data_points: number }[];
+    data_points: { date: string; confidence: number; learning_gain: number }[];
+    trend: string;
+  } | null;
+}
+
+function AnalyticsTab({ userId }: { userId: string }) {
+  const [data, setData] = useState<AnalyticsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = React.useCallback(() => {
+    setLoading(true);
+    setError(null);
+    api.get<AnalyticsData>(`/admin/analytics/${userId}`)
+      .then((res) => setData(res))
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : "Gagal memuat data"))
+      .finally(() => setLoading(false));
+  }, [userId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 animate-spin text-neutral-400" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20" style={{ gap: "12px" }}>
+        <p className="text-sm text-neutral-500">{error}</p>
+        <button
+          onClick={fetchData}
+          className="text-sm font-medium px-4 py-2 rounded-lg"
+          style={{ background: "#3B82F6", color: "#fff" }}
+        >
+          Coba Lagi
+        </button>
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
+  const db = data.dashboard;
+  const prog = data.progress;
+  const strat = data.strategy_effectiveness;
+  const conf = data.confidence_trend;
+
+  return (
+    <div style={col(20)}>
+      {/* --- 1. Dashboard Stats --- */}
+      <SectionLabel>Dashboard</SectionLabel>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
+        <Card>
+          <div className="flex items-center gap-3 p-4">
+            <div
+              className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: "rgba(245,158,11,0.12)" }}
+            >
+              <Flame className="w-5 h-5" style={{ color: "#f59e0b" }} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-2xl font-bold text-neutral-800">{db?.streak ?? 0}</p>
+              <p className="text-sm text-neutral-400">Streak</p>
+            </div>
+          </div>
+        </Card>
+        <Card>
+          <div className="flex items-center gap-3 p-4">
+            <div
+              className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: "rgba(59,130,246,0.12)" }}
+            >
+              <Clock className="w-5 h-5" style={{ color: "#3B82F6" }} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-2xl font-bold text-neutral-800">{db?.focus_hours ?? 0}</p>
+              <p className="text-sm text-neutral-400">Focus Hours</p>
+            </div>
+          </div>
+        </Card>
+        <Card>
+          <div className="flex items-center gap-3 p-4">
+            <div
+              className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: "rgba(16,185,129,0.12)" }}
+            >
+              <CheckCircle2 className="w-5 h-5" style={{ color: "#10b981" }} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-2xl font-bold text-neutral-800">{db?.tasks_completed ?? 0}</p>
+              <p className="text-sm text-neutral-400">Tasks Done</p>
+            </div>
+          </div>
+        </Card>
+        <Card>
+          <div className="flex items-center gap-3 p-4">
+            <div
+              className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: "rgba(217,119,6,0.12)" }}
+            >
+              <Award className="w-5 h-5" style={{ color: "#d97706" }} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-2xl font-bold text-neutral-800">{db?.badges_unlocked ?? 0}<span className="text-sm font-normal text-neutral-400">/{db?.total_badges ?? 0}</span></p>
+              <p className="text-sm text-neutral-400">Badges</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* --- 2. Task Distribution --- */}
+      {prog && (
+        <>
+          <SectionLabel>Distribusi Tugas</SectionLabel>
+          <Card>
+            <div className="p-4" style={col(14)}>
+              {/* Completion rate */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-neutral-500">Completion Rate</span>
+                <span className="text-sm font-semibold" style={{ color: "#10b981" }}>
+                  {Math.round((prog.completion_rate ?? 0) * 100)}%
+                </span>
+              </div>
+              {prog.personal_best && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-neutral-500">Personal Best</span>
+                  <span className="text-sm font-semibold" style={{ color: "#3B82F6" }}>{prog.personal_best}</span>
+                </div>
+              )}
+
+              {/* Stacked bar */}
+              <div
+                className="rounded-lg overflow-hidden"
+                style={{ height: "28px", display: "flex", background: "#f3f4f6" }}
+              >
+                {[
+                  { pct: prog.task_distribution?.todo_percent ?? 0, color: "#94a3b8" },
+                  { pct: prog.task_distribution?.in_progress_percent ?? 0, color: "#3B82F6" },
+                  { pct: prog.task_distribution?.review_percent ?? 0, color: "#f59e0b" },
+                  { pct: prog.task_distribution?.done_percent ?? 0, color: "#10b981" },
+                ].map((seg, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      width: `${seg.pct}%`,
+                      background: seg.color,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      color: "#fff",
+                      minWidth: seg.pct > 5 ? "0" : "0px",
+                    }}
+                  >
+                    {seg.pct > 8 ? `${seg.pct}%` : ""}
+                  </div>
+                ))}
+              </div>
+
+              {/* Legend */}
+              <div className="flex flex-wrap items-center" style={{ gap: "16px" }}>
+                {[
+                  { label: "To Do", pct: prog.task_distribution?.todo_percent ?? 0, color: "#94a3b8" },
+                  { label: "In Progress", pct: prog.task_distribution?.in_progress_percent ?? 0, color: "#3B82F6" },
+                  { label: "Review", pct: prog.task_distribution?.review_percent ?? 0, color: "#f59e0b" },
+                  { label: "Done", pct: prog.task_distribution?.done_percent ?? 0, color: "#10b981" },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center" style={{ gap: "6px" }}>
+                    <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: item.color }} />
+                    <span className="text-sm text-neutral-500">{item.label}</span>
+                    <span className="text-sm font-medium text-neutral-700">{item.pct}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Card>
+        </>
+      )}
+
+      {/* --- 3. Strategy Effectiveness --- */}
+      <SectionLabel>Efektivitas Strategi</SectionLabel>
+      <Card>
+        {!strat?.strategies || strat.strategies.length === 0 ? (
+          <div className="px-4 py-8 text-center text-sm text-neutral-400">Belum ada data strategi</div>
+        ) : (
+          strat.strategies.map((s, i) => (
+            <ListRow key={s.name} last={i === strat.strategies.length - 1}>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-neutral-800">{s.name}</p>
+                <p className="text-sm text-neutral-400 mt-0.5">{s.task_count} tugas</p>
+              </div>
+              <div className="shrink-0 flex items-center" style={{ gap: "16px" }}>
+                {/* Avg rating */}
+                {s.subjective && s.subjective.total_rated > 0 && (
+                  <div className="text-center">
+                    <p className="text-sm font-semibold text-neutral-800">
+                      {s.subjective.avg_rating?.toFixed(1) ?? "—"}
+                    </p>
+                    <p className="text-xs text-neutral-400">Rating</p>
+                  </div>
+                )}
+                {/* Positive % */}
+                {s.subjective && s.subjective.total_rated > 0 && (
+                  <div className="text-center">
+                    <p className="text-sm font-semibold" style={{ color: "#10b981" }}>
+                      {Math.round(s.subjective.positive_percent ?? 0)}%
+                    </p>
+                    <p className="text-xs text-neutral-400">Positif</p>
+                  </div>
+                )}
+                {/* Avg improvement */}
+                {s.objective && !s.objective.is_data_insufficient && (
+                  <div className="text-center">
+                    <p className="text-sm font-semibold" style={{ color: "#3B82F6" }}>
+                      +{Math.round(s.objective.avg_improvement ?? 0)}%
+                    </p>
+                    <p className="text-xs text-neutral-400">Improvement</p>
+                  </div>
+                )}
+              </div>
+            </ListRow>
+          ))
+        )}
+      </Card>
+
+      {/* --- 4. Confidence Trend --- */}
+      <SectionLabel>Confidence Trend</SectionLabel>
+      <Card>
+        {!conf || !conf.data_points || conf.data_points.length === 0 ? (
+          <div className="px-4 py-8 text-center text-sm text-neutral-400">Belum ada data confidence</div>
+        ) : (
+          <div className="p-4" style={col(12)}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center" style={{ gap: "8px" }}>
+                {conf.course_name && (
+                  <span className="text-sm font-medium text-neutral-800">{conf.course_name}</span>
+                )}
+                {(() => {
+                  const t = conf.trend;
+                  const isUp = t === "improving" || t === "meningkat";
+                  const isDown = t === "declining" || t === "menurun";
+                  const bgColor = isUp ? "rgba(16,185,129,0.12)" : isDown ? "rgba(239,68,68,0.12)" : "rgba(59,130,246,0.12)";
+                  const textColor = isUp ? "#059669" : isDown ? "#dc2626" : "#3B82F6";
+                  const label = isUp ? "Meningkat" : isDown ? "Menurun" : "Stabil";
+                  return (
+                    <span
+                      className="text-xs font-semibold px-2 py-0.5 rounded"
+                      style={{ background: bgColor, color: textColor }}
+                    >
+                      {label}
+                    </span>
+                  );
+                })()}
+              </div>
+              {conf.data_points.length > 0 && (
+                <span className="text-sm text-neutral-500">
+                  Latest: <span className="font-semibold text-neutral-800">{conf.data_points[conf.data_points.length - 1].confidence?.toFixed(1)}</span>
+                </span>
+              )}
+            </div>
+
+            {/* Recent data points */}
+            {conf.data_points.length > 0 && (
+              <div style={col(4)}>
+                {conf.data_points.slice(-5).map((dp, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <span className="text-sm text-neutral-400">{fmtDate(dp.date)}</span>
+                    <div className="flex items-center" style={{ gap: "12px" }}>
+                      <span className="text-sm font-medium text-neutral-700">Confidence: {dp.confidence?.toFixed(1)}</span>
+                      {dp.learning_gain != null && (
+                        <span className="text-sm" style={{ color: dp.learning_gain >= 0 ? "#10b981" : "#dc2626" }}>
+                          {dp.learning_gain >= 0 ? "+" : ""}{(dp.learning_gain * 100)?.toFixed(0)}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}
+
 // ========== STREAK TAB ==========
 
 function StreakTab({ streak, currentStreak }: { streak: AdminUserDetail["streak"]; currentStreak: number }) {
@@ -750,6 +1078,7 @@ export default function UserDetailPage({
       {activeTab === "goals" && <GoalsTab goals={goals} />}
       {activeTab === "badges" && <BadgesTab badges={badges} />}
       {activeTab === "sessions" && <SessionsTab sessions={recent_study_sessions} />}
+      {activeTab === "analytics" && <AnalyticsTab userId={user._id} />}
       {activeTab === "streak" && (
         <StreakTab streak={streak} currentStreak={streak?.current ?? 0} />
       )}
