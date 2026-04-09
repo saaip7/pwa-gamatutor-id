@@ -7,6 +7,7 @@ import { AchievementBanner } from "@/components/feature/mastery/AchievementBanne
 import { CharacterComposer } from "@/components/feature/character/CharacterComposer";
 import type { SlotLevel } from "@/components/feature/character/item-registry";
 import { usePreferencesStore } from "@/stores/preferences";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./CharacterShowcase.module.css";
 
@@ -25,6 +26,7 @@ interface CharacterShowcaseProps {
 
 export function CharacterShowcase({ stats, onStreakTap }: CharacterShowcaseProps) {
   const character = usePreferencesStore((s) => s.preferences?.character);
+  const router = useRouter();
 
   return (
     <motion.div
@@ -40,7 +42,7 @@ export function CharacterShowcase({ stats, onStreakTap }: CharacterShowcaseProps
           <div className="flex flex-col items-center">
             <button
               type="button"
-              onClick={onStreakTap}
+              onClick={() => router.push("/account/streak")}
               className="flex items-center gap-1 mb-1 group cursor-pointer bg-transparent border-none p-0"
             >
               <Flame className="text-error w-[18px] h-[18px] group-active:scale-110 transition-transform" />

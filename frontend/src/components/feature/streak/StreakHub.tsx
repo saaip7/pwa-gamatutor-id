@@ -1,10 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Flame } from "lucide-react";
+import { toast } from "sonner";
 import { StreakCalendar, StreakDay } from "./StreakCalendar";
 import { StreakFreezeCard } from "./StreakFreezeCard";
+import { usePreferencesStore } from "@/stores/preferences";
+import { useAnalyticsStore } from "@/stores/analytics";
 
 export interface StreakData {
   current: number;
@@ -21,10 +24,22 @@ interface StreakHubProps {
 }
 
 export function StreakHub({ isOpen, onClose, data, onUseFreeze }: StreakHubProps) {
-  const handleUseFreeze = () => {
-    // TODO: Call API to use streak freeze
-    console.log("Streak freeze used");
-    onUseFreeze?.();
+  const useStreakFreeze = usePreferencesStore((s) => s.useStreakFreeze);
+  const fetchStreak = useAnalyticsStore((s) => s.fetchStreak);
+  const [freezeLoading, setFreezeLoading] = useState(false);
+
+  const handleUseFreeze = async () => {
+    setFreezeLoading(true);
+    try {
+      await useStreakFreeze();
+      await fetchStreak();
+      onUseFreeze?.();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Gagal menggunakan streak freeze";
+      toast.error(msg);
+    } finally {
+      setFreezeLoading(false);
+    }
   };
 
   return (
@@ -95,6 +110,7 @@ export function StreakHub({ isOpen, onClose, data, onUseFreeze }: StreakHubProps
                   <StreakFreezeCard
                     available={data.freezesAvailable}
                     onUse={handleUseFreeze}
+                    loading={freezeLoading}
                   />
                 </div>
               </div>

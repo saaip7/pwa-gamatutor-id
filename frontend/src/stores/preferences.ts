@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { api } from "@/lib/api";
 import type { UserPreferences, CharacterData } from "@/types";
+import { useAnalyticsStore } from "./analytics";
 
 interface PreferencesState {
   preferences: UserPreferences | null;
@@ -74,6 +75,9 @@ export const usePreferencesStore = create<PreferencesState>((set) => ({
     // Refresh preferences to get updated freeze count
     const data = await api.get<UserPreferences>("/api/preferences");
     set({ preferences: data });
+    // Also refresh streak history so heatmap updates
+    useAnalyticsStore.getState().fetchStreakHistory();
+    useAnalyticsStore.getState().fetchStreak();
   },
 
   updateCharacter: async (data) => {

@@ -151,6 +151,13 @@ export interface StreakData {
   days: StreakDay[];
 }
 
+export interface StreakHistoryData {
+  active_dates: string[];
+  current: number;
+  longest: number;
+  freezes_available: number;
+}
+
 // --- Badges ---
 
 export interface Badge {
