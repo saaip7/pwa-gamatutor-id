@@ -376,6 +376,41 @@ class Analytics:
             "freezesAvailable": freezes_available,
         }
 
+    @staticmethod
+    def get_streak_history(user_id):
+        """Full streak history for GitHub-style contribution heatmap."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+
+        prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
+        if not prefs:
+            return {"active_dates": [], "current": 0, "longest": 0, "freezes_available": 0}
+
+        streak = prefs.get("streak", {})
+        active_dates = streak.get("active_dates", [])
+        active_dates = sorted(set(active_dates))
+
+        current = streak.get("current", 0)
+        longest = streak.get("longest", 0)
+        freezes_used = streak.get("freezes_used_this_week", 0)
+        week_start = streak.get("week_start_date")
+
+        now = datetime.utcnow()
+        current_week_start = now - timedelta(days=now.weekday())
+        current_week_start = current_week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        if not week_start or week_start < current_week_start:
+            freezes_used = 0
+
+        freezes_available = 1 if freezes_used < 1 else 0
+
+        return {
+            "active_dates": active_dates,
+            "current": current,
+            "longest": longest,
+            "freezes_available": freezes_available,
+        }
+
     # --- Private helpers ---
 
     @staticmethod

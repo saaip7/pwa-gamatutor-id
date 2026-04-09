@@ -57,3 +57,14 @@ def streak():
         return jsonify(data), 200
     except Exception as e:
         return jsonify({"message": "An error occurred", "error": str(e)}), 500
+
+
+@jwt_required()
+def streak_history():
+    """Full streak history for GitHub-style contribution heatmap."""
+    user_id = get_jwt_identity()
+    try:
+        data = Analytics.get_streak_history(user_id)
+        return jsonify(data), 200
+    except Exception as e:
+        return jsonify({"message": "An error occurred", "error": str(e)}), 500
