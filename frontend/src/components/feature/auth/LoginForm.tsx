@@ -27,7 +27,8 @@ export function LoginForm() {
     setIsLoading(true);
     try {
       await login(email, password);
-      router.push("/dashboard");
+      const user = useAuthStore.getState().user;
+      router.push(user?.role === "admin" ? "/admin/users" : "/dashboard");
     } catch (err) {
       // Error handled in store
     } finally {

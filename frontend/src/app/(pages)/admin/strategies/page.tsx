@@ -1,0 +1,235 @@
+"use client";
+
+import React, { useEffect, useMemo, useState } from "react";
+import { Search, Plus, Lightbulb, Loader2, AlertCircle, Trash2 } from "lucide-react";
+import { api } from "@/lib/api";
+
+interface Strategy {
+  _id: string;
+  learning_strat_name: string;
+  description: string;
+  created_at: string;
+}
+
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+}
+
+export default function AdminStrategiesPage() {
+  const [search, setSearch] = useState("");
+  const [strategies, setStrategies] = useState<Strategy[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [newName, setNewName] = useState("");
+  const [newDesc, setNewDesc] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchStrategies();
+  }, []);
+
+  async function fetchStrategies() {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await api.get<Strategy[]>("/learningstrats");
+      setStrategies(data);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Gagal memuat strategies";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleAdd(e: React.FormEvent) {
+    e.preventDefault();
+    const name = newName.trim();
+    if (!name) return;
+    setAdding(true);
+    try {
+      await api.post("/learningstrats", {
+        learning_strat_name: name,
+        description: newDesc.trim() || undefined,
+      });
+      setNewName("");
+      setNewDesc("");
+      // Re-fetch to get accurate data from BE
+      await fetchStrategies();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Gagal menambah strategi";
+      setError(message);
+    } finally {
+      setAdding(false);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    setDeleting(id);
+    try {
+      await api.delete(`/learningstrats/${id}`);
+      setStrategies((prev) => prev.filter((s) => s._id !== id));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Gagal menghapus strategi";
+      setError(message);
+    } finally {
+      setDeleting(null);
+    }
+  }
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    if (!q) return strategies;
+    return strategies.filter(
+      (s) =>
+        s.learning_strat_name.toLowerCase().includes(q) ||
+        (s.description && s.description.toLowerCase().includes(q))
+    );
+  }, [strategies, search]);
+
+  return (
+    <div className="mx-auto" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      {/* Header */}
+      <div>
+        <h1 className="text-lg font-semibold text-neutral-800">Learning Strategies</h1>
+        <p className="text-sm text-neutral-500 mt-0.5">Kelola daftar strategi belajar</p>
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-50 text-red-600 text-sm">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{error}</span>
+          <button onClick={() => setError(null)} className="ml-auto underline text-red-700 hover:text-red-800 text-xs">
+            Tutup
+          </button>
+        </div>
+      )}
+
+      {/* Add form */}
+      <div
+        className="rounded-lg border border-neutral-200 p-4"
+        style={{ background: "#fff" }}
+      >
+        <form onSubmit={handleAdd}>
+          <div className="flex items-end gap-3">
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <label className="block text-sm font-medium text-neutral-700 mb-1.5">Strategy Name</label>
+              <input
+                type="text"
+                placeholder="Nama strategi..."
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                disabled={adding}
+                className="w-full px-3 py-2.5 rounded-lg border border-neutral-200 text-sm outline-none disabled:opacity-50"
+                style={{ background: "#f9fafb" }}
+              />
+            </div>
+            <div style={{ flex: 2, minWidth: 0 }}>
+              <label className="block text-sm font-medium text-neutral-700 mb-1.5">Description <span className="text-neutral-400 font-normal">(opsional)</span></label>
+              <input
+                type="text"
+                placeholder="Deskripsi singkat..."
+                value={newDesc}
+                onChange={(e) => setNewDesc(e.target.value)}
+                disabled={adding}
+                className="w-full px-3 py-2.5 rounded-lg border border-neutral-200 text-sm outline-none disabled:opacity-50"
+                style={{ background: "#f9fafb" }}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={adding}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-white shrink-0 disabled:opacity-50"
+              style={{ background: "#3B82F6" }}
+              onMouseEnter={(e) => { if (!adding) e.currentTarget.style.background = "#2563eb"; }}
+              onMouseLeave={(e) => { if (!adding) e.currentTarget.style.background = "#3B82F6"; }}
+            >
+              {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+              Tambah
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+        <input
+          type="text"
+          placeholder="Cari nama strategi..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full pr-4 py-2.5 bg-white border border-neutral-200 rounded-lg text-sm outline-none"
+          style={{ paddingLeft: "36px" }}
+        />
+      </div>
+
+      {/* Loading */}
+      {loading && (
+        <div className="flex items-center justify-center gap-2 py-16 text-sm text-neutral-400">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          Memuat strategies...
+        </div>
+      )}
+
+      {/* Strategy list */}
+      {!loading && (
+        <div
+          className="rounded-lg border border-neutral-200 overflow-hidden"
+          style={{ background: "#fff" }}
+        >
+          {filtered.map((strategy, i) => (
+            <div
+              key={strategy._id}
+              className="flex items-start justify-between px-4 py-3.5"
+              style={{ borderBottom: i < filtered.length - 1 ? "1px solid #f3f4f6" : "none" }}
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-7 h-7 rounded flex items-center justify-center shrink-0"
+                    style={{ background: "rgba(245,158,11,0.1)" }}
+                  >
+                    <Lightbulb className="w-3.5 h-3.5" style={{ color: "#d97706" }} />
+                  </div>
+                  <p className="text-sm font-medium text-neutral-800">{strategy.learning_strat_name}</p>
+                </div>
+                {strategy.description && (
+                  <p className="text-sm text-neutral-500 mt-1.5" style={{ marginLeft: "36px" }}>
+                    {strategy.description}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-2 shrink-0 ml-3">
+                <span className="text-sm text-neutral-400">{fmtDate(strategy.created_at)}</span>
+                <button
+                  onClick={() => handleDelete(strategy._id)}
+                  disabled={deleting === strategy._id}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
+                  title="Hapus strategi"
+                >
+                  {deleting === strategy._id ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              </div>
+            </div>
+          ))}
+          {filtered.length === 0 && (
+            <div className="px-4 py-10 text-center text-sm text-neutral-400">
+              Tidak ada strategi ditemukan
+            </div>
+          )}
+        </div>
+      )}
+
+      <p className="text-sm text-neutral-400 text-center">
+        {filtered.length} strategi
+      </p>
+    </div>
+  );
+}
