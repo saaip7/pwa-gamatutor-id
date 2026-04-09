@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth";
 import { usePreferencesStore } from "@/stores/preferences";
+import { registerFcm, listenForegroundMessages } from "@/lib/fcm";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -16,6 +17,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     if (token) {
       fetchProfile()
         .then(() => fetchPreferences())
+        .then(() => {
+          // Register FCM after auth & preferences loaded
+          registerFcm().catch((e) => console.error("[FCM] registerFcm failed:", e));
+          listenForegroundMessages().catch((e) => console.error("[FCM] listenForegroundMessages failed:", e));
+        })
         .catch(() => {
           router.replace("/login");
         })
