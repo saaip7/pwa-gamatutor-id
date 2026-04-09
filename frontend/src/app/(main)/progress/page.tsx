@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ProgressHeader } from "@/components/feature/progress/ProgressHeader";
 import { InsightCard } from "@/components/feature/progress/InsightCard";
 import { PeriodSelector } from "@/components/feature/progress/PeriodSelector";
@@ -8,20 +8,34 @@ import { ProgressSummary, SummaryData } from "@/components/feature/progress/Prog
 import { MasteryTrendChart } from "@/components/feature/progress/MasteryTrendChart";
 import { TaskDistributionChart, TaskDistributionData } from "@/components/feature/progress/TaskDistributionChart";
 import { LearningStrategies, StrategyItem } from "@/components/feature/progress/LearningStrategies";
+
 import { AchievementBanner } from "@/components/feature/mastery/AchievementBanner";
 import { useAnalyticsStore } from "@/stores/analytics";
 import { useBadgesStore } from "@/stores/badges";
+import type { ConfidenceDataPoint } from "@/types";
 
 export default function ProgressPage() {
   const [activePeriod, setActivePeriod] = useState<"week" | "month" | "all">("week");
-  const { progress, strategies, loading, fetchProgress, fetchStrategies } = useAnalyticsStore();
+  const {
+    progress,
+    strategies,
+    dashboard,
+    confidenceTrend,
+    loading,
+    fetchProgress,
+    fetchStrategies,
+    fetchDashboard,
+    fetchConfidenceTrend,
+  } = useAnalyticsStore();
   const { unlockedCount, badges, fetchBadges } = useBadgesStore();
 
   useEffect(() => {
     fetchProgress();
     fetchStrategies();
+    fetchDashboard();
+    fetchConfidenceTrend();
     fetchBadges();
-  }, [fetchProgress, fetchStrategies, fetchBadges]);
+  }, [fetchProgress, fetchStrategies, fetchDashboard, fetchConfidenceTrend, fetchBadges]);
 
   const totalBadges = badges.length || 1; // avoid divide-by-zero
 
@@ -65,6 +79,25 @@ export default function ProgressPage() {
     };
   });
 
+  // Derive insight text from dashboard patterns
+  const insightText = useMemo(() => {
+    const patterns = dashboard?.patterns;
+    if (!patterns || (patterns.productiveTime === "-" && patterns.productiveDays === "-")) {
+      return null;
+    }
+    const parts: string[] = [];
+    if (patterns.productiveTime && patterns.productiveTime !== "-") {
+      parts.push(`Waktu produktif: ${patterns.productiveTime}`);
+    }
+    if (patterns.productiveDays && patterns.productiveDays !== "-") {
+      parts.push(`Hari produktif: ${patterns.productiveDays}`);
+    }
+    return parts.length > 0 ? parts.join(" | ") : null;
+  }, [dashboard]);
+
+  // Confidence trend data points for chart
+  const trendDataPoints: ConfidenceDataPoint[] = confidenceTrend?.dataPoints ?? [];
+
   if (loading && !progress) {
     return (
       <>
@@ -81,7 +114,11 @@ export default function ProgressPage() {
       <ProgressHeader />
 
       <div className="px-6 pt-4 pb-28">
-        <InsightCard insightText="Best productivity: Wednesday, 9:00 PM" />
+        {insightText ? (
+          <InsightCard insightText={insightText} />
+        ) : (
+          <InsightCard insightText="Mulai selesaikan tugas untuk mendapatkan insight personal!" />
+        )}
 
         <PeriodSelector
           activePeriod={activePeriod}
@@ -95,14 +132,27 @@ export default function ProgressPage() {
           className="mt-4"
         />
 
-        {summaryData && <ProgressSummary data={summaryData} />}
+        {summaryData ? (
+          <ProgressSummary data={summaryData} />
+        ) : (
+          <div className="bg-white border border-neutral-200 rounded-xl p-5 mt-4 shadow-sm text-center">
+            <p className="text-sm text-neutral-400">Belum ada data progress. Mulai selesaikan tugas untuk melihat perkembanganmu!</p>
+          </div>
+        )}
 
-        <MasteryTrendChart />
+        <MasteryTrendChart dataPoints={trendDataPoints} trend={confidenceTrend?.trend ?? null} />
 
         {/* Full-width Stacked Components */}
         <div className="flex flex-col gap-1">
-          {taskDistData && <TaskDistributionChart data={taskDistData} />}
-          {strategyItems.length > 0 && <LearningStrategies strategies={strategyItems} />}
+          {taskDistData ? (
+            <TaskDistributionChart data={taskDistData} />
+          ) : (
+            <div className="bg-white border border-neutral-200 rounded-xl p-5 shadow-sm mt-4 w-full text-center">
+              <p className="text-sm text-neutral-400">Belum ada distribusi tugas. Buat tugas di kanban board untuk melihat datanya.</p>
+            </div>
+          )}
+
+          <LearningStrategies strategies={strategyItems.length > 0 ? strategyItems : []} />
         </div>
       </div>
     </>
