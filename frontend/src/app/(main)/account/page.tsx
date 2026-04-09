@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Moon, Bell, Globe, User, ShieldCheck, LogOut } from "lucide-react";
+import { Moon, Bell, Globe, User, ShieldCheck, LogOut, Flame } from "lucide-react";
 import { AccountHeader } from "@/components/feature/account/AccountHeader";
 import { ProfileCard } from "@/components/feature/account/ProfileCard";
 import { SettingsGroup } from "@/components/feature/account/SettingsGroup";
@@ -97,11 +97,19 @@ export default function AccountPage() {
         <SettingsGroup title="TENTANG AKUN" delay={0.2}>
           <SettingItem
             type="link"
+            icon={Flame}
+            label="Streak Saya"
+            href="/account/streak"
+            iconBgClass="bg-amber-100"
+            iconColorClass="text-amber-600"
+          />
+          <SettingItem
+            type="link"
             icon={User}
             label="Edit Profil"
             href="/account/edit"
-            iconBgClass="bg-amber-100"
-            iconColorClass="text-amber-600"
+            iconBgClass="bg-blue-100"
+            iconColorClass="text-blue-600"
           />
           <SettingItem
             type="link"

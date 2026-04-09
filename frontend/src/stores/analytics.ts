@@ -6,6 +6,7 @@ import type {
   StrategyEffectivenessResponse,
   ConfidenceTrendResponse,
   StreakData,
+  StreakHistoryData,
 } from "@/types";
 
 interface AnalyticsState {
@@ -14,6 +15,7 @@ interface AnalyticsState {
   strategies: StrategyEffectivenessResponse | null;
   confidenceTrend: ConfidenceTrendResponse | null;
   streak: StreakData | null;
+  streakHistory: StreakHistoryData | null;
   loading: boolean;
   error: string | null;
 
@@ -22,6 +24,7 @@ interface AnalyticsState {
   fetchStrategies: () => Promise<void>;
   fetchConfidenceTrend: (courseName?: string) => Promise<void>;
   fetchStreak: () => Promise<void>;
+  fetchStreakHistory: () => Promise<void>;
   fetchAll: () => Promise<void>;
 }
 
@@ -31,6 +34,7 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
   strategies: null,
   confidenceTrend: null,
   streak: null,
+  streakHistory: null,
   loading: false,
   error: null,
 
@@ -85,6 +89,16 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
       set({ streak: data });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Gagal memuat streak";
+      set({ error: msg });
+    }
+  },
+
+  fetchStreakHistory: async () => {
+    try {
+      const data = await api.get<StreakHistoryData>("/api/analytics/streak/history");
+      set({ streakHistory: data });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Gagal memuat riwayat streak";
       set({ error: msg });
     }
   },
