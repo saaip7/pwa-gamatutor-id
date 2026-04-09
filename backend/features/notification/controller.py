@@ -1,6 +1,9 @@
 from flask import jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from features.notification.model import Notification
+from shared.db import mongo
+from shared.fcm import send_push
+from bson import ObjectId
 
 
 @jwt_required()
@@ -57,3 +60,23 @@ def mark_all_read():
         return jsonify({"message": f"{count} notifications marked as read"}), 200
     except Exception as e:
         return jsonify({"message": "An error occurred", "error": str(e)}), 500
+
+
+@jwt_required()
+def test_push():
+    """Send a test push notification to the current user's device."""
+    user_id = get_jwt_identity()
+    title = request.json.get("title", "Test GamaTutor")
+    body = request.json.get("body", "Push notification berhasil!")
+
+    prefs = mongo.db.user_preferences.find_one({"user_id": ObjectId(user_id)})
+    if not prefs or not prefs.get("fcm_token"):
+        return jsonify({"message": "No FCM token found for this user"}), 404
+
+    token = prefs["fcm_token"]
+    ok = send_push(token, title, body, {"type": "test"})
+
+    if ok:
+        return jsonify({"message": "Push sent", "token_preview": token[:20] + "..."}), 200
+    else:
+        return jsonify({"message": "Push failed (token may be invalid)"}), 500

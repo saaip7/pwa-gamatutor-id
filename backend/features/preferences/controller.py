@@ -74,7 +74,7 @@ def update_fcm_token():
     """Update FCM token for push notifications."""
     user_id = get_jwt_identity()
     data = request.json
-    token = data.get("token")
+    token = data.get("fcm_token")
     if not token:
         return jsonify({"message": "token is required"}), 400
     try:
