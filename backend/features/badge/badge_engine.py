@@ -62,21 +62,22 @@ class BadgeEngine:
             Badge.unlock(user_id, "initiator")
             return "initiator"
 
+        card_query = {"user_id": user_id, "deleted": {"$ne": True}}
+
         # Condition 2: At least 1 task in Done (list4)
-        board = mongo.db.boards.find_one({"user_id": user_id})
-        if board:
-            for lst in board.get("lists", []):
-                if lst.get("id") == "list4" and len(lst.get("cards", [])) >= 1:
-                    Badge.unlock(user_id, "initiator")
-                    return "initiator"
+        done_count = mongo.db.cards.count_documents({**card_query, "column": "list4"})
+        if done_count >= 1:
+            Badge.unlock(user_id, "initiator")
+            return "initiator"
 
         # Condition 3: Any card has reflection data
-        if board:
-            for lst in board.get("lists", []):
-                for card in lst.get("cards", []):
-                    if card.get("reflection") and card["reflection"].get("q2_confidence"):
-                        Badge.unlock(user_id, "initiator")
-                        return "initiator"
+        reflected = mongo.db.cards.find_one({
+            **card_query,
+            "reflection.q2_confidence": {"$exists": True, "$ne": None},
+        })
+        if reflected:
+            Badge.unlock(user_id, "initiator")
+            return "initiator"
 
         return None
 
@@ -129,15 +130,16 @@ class BadgeEngine:
 
         # Check if any of these sessions' cards have personal_best set
         card_ids = [s["card_id"] for s in long_sessions]
-        board = mongo.db.boards.find_one({"user_id": user_id})
-        if not board:
-            return None
 
-        for lst in board.get("lists", []):
-            for card in lst.get("cards", []):
-                if card.get("id") in card_ids and card.get("personal_best"):
-                    Badge.unlock(user_id, "deep_diver")
-                    return "deep_diver"
+        matching = mongo.db.cards.find_one({
+            "user_id": user_id,
+            "card_id": {"$in": card_ids},
+            "personal_best": {"$exists": True, "$ne": None},
+            "deleted": {"$ne": True},
+        })
+        if matching:
+            Badge.unlock(user_id, "deep_diver")
+            return "deep_diver"
 
         return None
 
@@ -207,22 +209,13 @@ class BadgeEngine:
         if existing:
             return None
 
-        board = mongo.db.boards.find_one({"user_id": user_id})
-        if not board:
-            return None
-
-        # Get cards in Done (list4) that have reflection data
-        done_cards = []
-        for lst in board.get("lists", []):
-            if lst.get("id") == "list4":
-                done_cards = lst.get("cards", [])
-                break
-
-        # Count cards with completed reflection
-        reflected_count = sum(
-            1 for card in done_cards
-            if card.get("reflection") and card["reflection"].get("q2_confidence")
-        )
+        # Count cards in Done (list4) that have completed reflection
+        reflected_count = mongo.db.cards.count_documents({
+            "user_id": user_id,
+            "column": "list4",
+            "reflection.q2_confidence": {"$exists": True, "$ne": None},
+            "deleted": {"$ne": True},
+        })
 
         if reflected_count >= 10:
             Badge.unlock(user_id, "reflector")
@@ -237,30 +230,27 @@ class BadgeEngine:
         if existing:
             return None
 
-        board = mongo.db.boards.find_one({"user_id": user_id})
-        if not board:
-            return None
+        # Group cards by learning_strategy using aggregation
+        pipeline = [
+            {"$match": {
+                "user_id": user_id,
+                "learning_strategy": {"$exists": True, "$ne": None},
+                "reflection.q1_strategy": {"$exists": True, "$ne": None},
+                "deleted": {"$ne": True},
+            }},
+            {"$group": {
+                "_id": "$learning_strategy",
+                "high_effective": {
+                    "$sum": {"$cond": [{"$gte": ["$reflection.q1_strategy", 4]}, 1, 0]},
+                },
+            }},
+            {"$match": {"high_effective": {"$gte": 3}}},
+        ]
+        result = list(mongo.db.cards.aggregate(pipeline))
 
-        # Group cards by learning_strategy
-        strategy_cards = {}
-        for lst in board.get("lists", []):
-            for card in lst.get("cards", []):
-                strat = card.get("learning_strategy")
-                if not strat:
-                    continue
-                if strat not in strategy_cards:
-                    strategy_cards[strat] = []
-                strategy_cards[strat].append(card)
-
-        # Check if any strategy has ≥3 cards with high effectiveness (Q1 ≥ 4)
-        for strat, cards in strategy_cards.items():
-            high_effective = [
-                c for c in cards
-                if c.get("reflection", {}).get("q1_strategy", 0) >= 4
-            ]
-            if len(high_effective) >= 3:
-                Badge.unlock(user_id, "strategist")
-                return "strategist"
+        if result:
+            Badge.unlock(user_id, "strategist")
+            return "strategist"
 
         return None
 
@@ -271,19 +261,15 @@ class BadgeEngine:
         if existing:
             return None
 
-        board = mongo.db.boards.find_one({"user_id": user_id})
-        if not board:
-            return None
-
         required = {"Video", "Latihan", "Baca", "Diskusi"}
-        found = set()
-        for lst in board.get("lists", []):
-            for card in lst.get("cards", []):
-                strat = card.get("learning_strategy")
-                if strat in required:
-                    found.add(strat)
 
-        if found >= required:
+        found_strategies = mongo.db.cards.distinct("learning_strategy", {
+            "user_id": user_id,
+            "learning_strategy": {"$in": list(required)},
+            "deleted": {"$ne": True},
+        })
+
+        if set(found_strategies) >= required:
             Badge.unlock(user_id, "explorer")
             return "explorer"
 
@@ -298,19 +284,31 @@ class BadgeEngine:
         if existing:
             return None
 
-        board = mongo.db.boards.find_one({"user_id": user_id})
-        if not board:
-            return None
+        # Use aggregation to find any card with >20% grade improvement
+        pipeline = [
+            {"$match": {
+                "user_id": user_id,
+                "pre_test_grade": {"$exists": True, "$gt": 0},
+                "post_test_grade": {"$exists": True, "$gt": 0},
+                "deleted": {"$ne": True},
+            }},
+            {"$project": {
+                "improvement": {"$multiply": [
+                    {"$divide": [
+                        {"$subtract": ["$post_test_grade", "$pre_test_grade"]},
+                        "$pre_test_grade",
+                    ]},
+                    100,
+                ]},
+            }},
+            {"$match": {"improvement": {"$gt": 20}}},
+            {"$limit": 1},
+        ]
+        result = list(mongo.db.cards.aggregate(pipeline))
 
-        for lst in board.get("lists", []):
-            for card in lst.get("cards", []):
-                pre = card.get("pre_test_grade")
-                post = card.get("post_test_grade")
-                if pre and post and pre > 0:
-                    improvement = ((post - pre) / pre) * 100
-                    if improvement > 20:
-                        Badge.unlock(user_id, "improver")
-                        return "improver"
+        if result:
+            Badge.unlock(user_id, "improver")
+            return "improver"
 
         return None
 
@@ -321,18 +319,17 @@ class BadgeEngine:
         if existing:
             return None
 
-        board = mongo.db.boards.find_one({"user_id": user_id})
-        if not board:
-            return None
-
         # Card must be in Done (list4) with difficulty Hard + confidence 5
-        for lst in board.get("lists", []):
-            if lst.get("id") == "list4":
-                for card in lst.get("cards", []):
-                    is_hard = card.get("difficulty") == "Hard"
-                    confidence_5 = card.get("reflection", {}).get("q2_confidence") == 5
-                    if is_hard and confidence_5:
-                        Badge.unlock(user_id, "zenith")
-                        return "zenith"
+        matching = mongo.db.cards.find_one({
+            "user_id": user_id,
+            "column": "list4",
+            "difficulty": "Hard",
+            "reflection.q2_confidence": 5,
+            "deleted": {"$ne": True},
+        })
+
+        if matching:
+            Badge.unlock(user_id, "zenith")
+            return "zenith"
 
         return None

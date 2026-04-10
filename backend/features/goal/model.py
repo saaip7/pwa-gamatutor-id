@@ -89,24 +89,31 @@ class Goal:
 
     @staticmethod
     def get_course_progress(user_id):
-        """Derive course progress from board data. Returns list of {course_name, completed, total}."""
+        """Derive course progress from cards collection. Returns list of {course_name, completed, total}."""
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
-        board = mongo.db.boards.find_one({"user_id": user_id})
-        if not board:
+
+        card_query = {"user_id": user_id, "course_name": {"$exists": True, "$ne": None}, "deleted": {"$ne": True}}
+
+        # Get total cards per course
+        total_pipeline = [
+            {"$match": card_query},
+            {"$group": {"_id": "$course_name", "total": {"$sum": 1}}},
+        ]
+        totals = {r["_id"]: r["total"] for r in mongo.db.cards.aggregate(total_pipeline)}
+
+        if not totals:
             return []
 
+        # Get done cards per course (column == list4)
+        done_pipeline = [
+            {"$match": {**card_query, "column": "list4"}},
+            {"$group": {"_id": "$course_name", "completed": {"$sum": 1}}},
+        ]
+        dones = {r["_id"]: r["completed"] for r in mongo.db.cards.aggregate(done_pipeline)}
+
         courses = {}
-        for lst in board.get("lists", []):
-            for card in lst.get("cards", []):
-                course = card.get("course_name")
-                if not course:
-                    continue
-                if course not in courses:
-                    courses[course] = {"completed": 0, "total": 0}
-                courses[course]["total"] += 1
-                # Card is "done" if it's in the last list (Reflection/Done)
-                if lst.get("id") == "list4":
-                    courses[course]["completed"] += 1
+        for name, total in totals.items():
+            courses[name] = {"completed": dones.get(name, 0), "total": total}
 
         return [{"course_name": name, "completed": data["completed"], "total": data["total"]} for name, data in courses.items()]

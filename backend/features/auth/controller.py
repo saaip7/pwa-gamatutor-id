@@ -46,7 +46,7 @@ def register():
 
         # Create initial board
         try:
-            Board.create_initial_board(str(user_id), name)
+            Board.create(str(user_id), name)
         except Exception as e:
             print(f"Warning: Board creation failed for {name}: {e}")
 
