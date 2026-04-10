@@ -46,6 +46,7 @@ interface BoardState {
     column?: string;
   }) => Promise<BoardCard>;
   deleteCard: (cardId: string) => Promise<void>;
+  fetchCardDetail: (cardId: string) => Promise<BoardCard & { list_title: string; board_id: string }>;
   getColumnKey: (listId: string) => ColumnKey;
   getListId: (columnKey: ColumnKey) => string;
 }
@@ -228,6 +229,17 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       }
       return { tasks: newTasks, columns: newColumns };
     });
+  },
+
+  fetchCardDetail: async (cardId) => {
+    const res = await api.get<{ card: BoardCard; list_title: string; board_id: string }>(
+      `/board/card/${cardId}`
+    );
+    // Update the card in local tasks cache
+    set((state) => ({
+      tasks: { ...state.tasks, [cardId]: res.card },
+    }));
+    return { ...res.card, list_title: res.list_title, board_id: res.board_id };
   },
 
   getColumnKey: (listId) => LIST_MAP[listId] || "planning",
