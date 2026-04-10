@@ -34,7 +34,7 @@ origins = [o.strip() for o in raw.split(",")]
 CORS(app, resources={
     r"/*": {
         "origins": origins,
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"],
         "expose_headers": ["Content-Type", "Authorization"],
     }
