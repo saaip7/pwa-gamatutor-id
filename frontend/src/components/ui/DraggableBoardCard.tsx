@@ -4,7 +4,7 @@ import React, { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Check, Clock, Link2 } from "lucide-react";
+import { Check, Clock, Link2, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Task } from "./TaskCard";
 import { GripVertical } from "lucide-react";
@@ -15,6 +15,7 @@ interface DraggableBoardCardProps {
   progressBgClass: string;
   isCompleted?: boolean;
   isDragOverlay?: boolean;
+  showFocusButton?: boolean;
 }
 
 export function DraggableBoardCard({
@@ -23,6 +24,7 @@ export function DraggableBoardCard({
   progressBgClass,
   isCompleted = false,
   isDragOverlay = false,
+  showFocusButton = false,
 }: DraggableBoardCardProps) {
   const router = useRouter();
   const [isLongPress, setIsLongPress] = useState(false);
@@ -235,6 +237,24 @@ export function DraggableBoardCard({
           <span>{task.subtasks?.length || 0}</span>
         </div>
       </div>
+
+      {showFocusButton && (
+        <div
+          className="px-4 pb-4 pt-0 bg-neutral-50 border-t border-neutral-100"
+          onClick={(e) => {
+            e.stopPropagation();
+            router.push(`/task/${task.id}/focus`);
+          }}
+          onTouchEnd={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          <button className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold text-sm rounded-xl shadow-md flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+            <Play className="w-4 h-4" />
+            Mulai Fokus
+          </button>
+        </div>
+      )}
     </div>
   );
 

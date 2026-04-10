@@ -509,6 +509,7 @@ function KanbanBoardContent() {
                       statusColorClass={config.statusColorClass}
                       progressBgClass={config.progressBgClass}
                       isCompleted={config.isCompleted}
+                      showFocusButton={colKey === "monitoring"}
                     />
                   ))}
                 </SortableContext>
