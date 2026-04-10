@@ -19,6 +19,7 @@ import { useGoalsStore } from "@/stores/goals";
 export default function NewTaskPage() {
   const router = useRouter();
   const fetchBoard = useBoardStore((s) => s.fetchBoard);
+  const createCard = useBoardStore((s) => s.createCard);
   const boardLoading = useBoardStore((s) => s.loading);
   const goalsStore = useGoalsStore();
 
@@ -41,13 +42,15 @@ export default function NewTaskPage() {
 
   const handleSave = async () => {
     setSaving(true);
-    // TODO: Replace with useBoardStore().createCard() once implemented in the store.
-    // The store currently has updateCard but no createCard action. When added,
-    // call it here with: { task_name, course_name, description, deadline, difficulty, subtasks }
-    console.log("Saving Task:", { course, taskName, description, strategy, goal, priority, dueDate, dueTime });
 
-    // Refresh board data so the new card appears
-    await fetchBoard();
+    await createCard({
+      task_name: taskName,
+      course_name: course,
+      description: description || undefined,
+      learning_strategy: strategy || undefined,
+      priority: priority || undefined,
+      deadline: dueDate ? new Date(dueDate.getTime() - dueDate.getTimezoneOffset() * 60000).toISOString() : undefined,
+    });
 
     setSaving(false);
     router.back();

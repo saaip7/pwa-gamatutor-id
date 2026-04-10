@@ -218,7 +218,7 @@ function BoardTab({ board }: { board: AdminBoard | null }) {
             ) : (
               <div style={col(8)}>
                 {colCards.map((card) => (
-                  <Card key={card.id}>
+                  <Card key={card.card_id}>
                     <div className="p-4" style={col(10)}>
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
