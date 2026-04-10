@@ -156,6 +156,7 @@ function KanbanBoardContent() {
   const snapCooldownRef = useRef(false);
   const activeTaskIdRef = useRef<string | number | null>(null);
   const originalColumnRef = useRef<ColumnKey | null>(null);
+  const columnsRef = useRef(columns);
   const SNAP_COOLDOWN = 600;
   const EDGE_ZONE = 0.10;
 
@@ -270,11 +271,13 @@ function KanbanBoardContent() {
       if (sourceIndex === -1) return prev;
       sourceItems.splice(sourceIndex, 1);
 
-      return {
+      const next = {
         ...prev,
         [sourceCol]: sourceItems,
         [targetCol]: [...prev[targetCol], taskId as string],
       };
+      columnsRef.current = next;
+      return next;
     });
   }, []);
 
@@ -345,28 +348,29 @@ function KanbanBoardContent() {
     const activeId = active.id as string;
     const overId = over.id as string;
 
-    const sourceCol = findColumn(activeId, columns);
-    const destCol = findColumn(overId, columns);
-
-    if (!sourceCol || !destCol || sourceCol === destCol) return;
-
     setColumns((prev) => {
+      const sourceCol = findColumn(activeId, prev);
+      // overId can be a ColumnKey (column container) or a card ID
+      const destCol: ColumnKey | null = COLUMN_KEYS.includes(overId as ColumnKey)
+        ? (overId as ColumnKey)
+        : findColumn(overId, prev);
+
+      if (!sourceCol || !destCol || sourceCol === destCol) return prev;
+
       const sourceItems = [...prev[sourceCol]];
       const destItems = [...prev[destCol]];
-
       const activeIndex = sourceItems.indexOf(activeId);
-      sourceItems.splice(activeIndex, 1);
+      if (activeIndex === -1) return prev;
 
+      sourceItems.splice(activeIndex, 1);
       const overIndex = destItems.indexOf(overId);
       destItems.splice(overIndex >= 0 ? overIndex : destItems.length, 0, activeId);
 
-      return {
-        ...prev,
-        [sourceCol]: sourceItems,
-        [destCol]: destItems,
-      };
+      const next = { ...prev, [sourceCol]: sourceItems, [destCol]: destItems };
+      columnsRef.current = next;
+      return next;
     });
-  }, [columns]);
+  }, []);
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
@@ -376,31 +380,41 @@ function KanbanBoardContent() {
     setActiveTaskId(null);
     setIsDragging(false);
 
-    if (!over || active.id === over.id) {
-      // No actual move — revert optimistic handleDragOver changes
+    const activeId = active.id as string;
+    const latest = columnsRef.current;
+
+    // Case: no over target (collision detection missed)
+    if (!over) {
+      const currentCol = findColumn(activeId, latest);
+      if (origCol && currentCol && origCol !== currentCol) {
+        // handleDragOver already moved card to different column — persist it
+        const position = latest[currentCol].indexOf(activeId);
+        moveCard(activeId, currentCol, Math.max(0, position));
+        return;
+      }
+      // No move happened — revert
       if (origCol) setColumns(storeColumns);
       return;
     }
 
-    const activeId = active.id as string;
-    const overId = over.id as string;
+    if (active.id === over.id) return;
 
-    const sourceCol = origCol || findColumn(activeId, columns);
+    const overId = over.id as string;
+    const sourceCol = origCol || findColumn(activeId, latest);
     if (!sourceCol) return;
 
-    // Determine the final column and position from current local state
-    const finalCol = findColumn(activeId, columns) || sourceCol;
+    const finalCol = findColumn(activeId, latest) || sourceCol;
 
     if (sourceCol !== finalCol) {
-      // Cross-column move: card is now in a different column
-      const finalIndex = columns[finalCol].indexOf(activeId);
-      const position = finalIndex >= 0 ? finalIndex : columns[finalCol].length - 1;
+      // Cross-column move
+      const finalIndex = latest[finalCol].indexOf(activeId);
+      const position = finalIndex >= 0 ? finalIndex : latest[finalCol].length - 1;
       moveCard(activeId, finalCol, position);
       return;
     }
 
     // Same-column reorder
-    const items = [...columns[sourceCol]];
+    const items = [...latest[sourceCol]];
     const oldIndex = items.indexOf(activeId);
     const newIndex = items.indexOf(overId);
 
@@ -411,11 +425,11 @@ function KanbanBoardContent() {
     items.splice(oldIndex, 1);
     items.splice(newIndex, 0, activeId);
 
-    const newColumns = { ...columns, [sourceCol]: items };
+    const newColumns = { ...latest, [sourceCol]: items };
+    columnsRef.current = newColumns;
     setColumns(newColumns);
-
     reorderColumn(sourceCol, items);
-  }, [columns, storeColumns, moveCard, reorderColumn]);
+  }, [storeColumns, moveCard, reorderColumn]);
 
   const handleDragCancel = useCallback(() => {
     activeTaskIdRef.current = null;
