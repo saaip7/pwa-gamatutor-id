@@ -128,11 +128,30 @@ def job_deadline_reminder():
     now = datetime.utcnow()
     deadline_threshold = now + timedelta(hours=24)
 
-    boards = mongo.db.boards.find()
+    # Find all cards with deadlines that are not in Done column and not deleted
+    cards_with_deadlines = list(mongo.db.cards.find({
+        "deadline": {"$exists": True, "$ne": None},
+        "column": {"$ne": "list4"},
+        "deleted": {"$ne": True},
+    }))
+
     reminded = 0
 
-    for board in boards:
-        user_id = board["user_id"]
+    for card in cards_with_deadlines:
+        user_id = card["user_id"]
+        deadline_str = card.get("deadline")
+
+        try:
+            if isinstance(deadline_str, str):
+                deadline = datetime.fromisoformat(deadline_str.replace("Z", "+00:00")).replace(tzinfo=None)
+            else:
+                deadline = deadline_str
+        except Exception:
+            continue
+
+        if not (now <= deadline <= deadline_threshold):
+            continue
+
         prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
         if not prefs:
             continue
@@ -141,47 +160,30 @@ def job_deadline_reminder():
         if _is_quiet_hours(prefs):
             continue
 
-        for lst in board.get("lists", []):
-            if lst["id"] == "list4":
-                continue
-            for card in lst.get("cards", []):
-                deadline_str = card.get("deadline")
-                if not deadline_str:
-                    continue
+        # Dedup: max 1 per card per 12 hours
+        task_name = card.get("task_name", "Tugas")
+        existing = mongo.db.notifications.find_one({
+            "user_id": user_id,
+            "type": "reminder",
+            "description": {"$regex": task_name},
+            "created_at": {"$gte": now - timedelta(hours=12)},
+        })
+        if existing:
+            continue
 
-                try:
-                    if isinstance(deadline_str, str):
-                        deadline = datetime.fromisoformat(deadline_str.replace("Z", "+00:00")).replace(tzinfo=None)
-                    else:
-                        deadline = deadline_str
-                except Exception:
-                    continue
+        hours_left = int((deadline - now).total_seconds() / 3600)
+        title = "Deadline Mendekat!"
+        body = f'"{task_name}" — {hours_left} jam lagi'
 
-                if now <= deadline <= deadline_threshold:
-                    # Dedup: max 1 per card per 12 hours
-                    task_name = card.get("task_name", card.get("title", "Tugas"))
-                    existing = mongo.db.notifications.find_one({
-                        "user_id": user_id,
-                        "type": "reminder",
-                        "description": {"$regex": task_name},
-                        "created_at": {"$gte": now - timedelta(hours=12)},
-                    })
-                    if existing:
-                        continue
+        Notification.create(
+            user_id=str(user_id), type="reminder",
+            title=title, description=body,
+        )
+        token = prefs.get("fcm_token")
+        if token:
+            send_push(token, title, body, {"type": "deadline", "card_id": card.get("card_id", str(card["_id"]))})
 
-                    hours_left = int((deadline - now).total_seconds() / 3600)
-                    title = "Deadline Mendekat!"
-                    body = f'"{task_name}" — {hours_left} jam lagi'
-
-                    Notification.create(
-                        user_id=str(user_id), type="reminder",
-                        title=title, description=body,
-                    )
-                    token = prefs.get("fcm_token")
-                    if token:
-                        send_push(token, title, body, {"type": "deadline", "card_id": card["id"]})
-
-                    reminded += 1
+        reminded += 1
 
     logger.info(f"[Scheduler] Deadline reminder: {reminded} sent")
 

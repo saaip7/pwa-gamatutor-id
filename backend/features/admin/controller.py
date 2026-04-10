@@ -2,9 +2,40 @@ from flask import jsonify, request
 from bson import ObjectId
 from shared.db import mongo
 from features.analytics.model import Analytics
-from features.board.model import Board
+from features.board.model import Board, Card
 from features.badge.model import Badge
 import re
+
+
+def _build_board_with_cards(board_doc, user_id):
+    """Merge board metadata + cards from separate collection,
+    grouped by column to match FE expected shape."""
+    if not board_doc:
+        return None
+
+    board_id = board_doc["_id"]
+    cards = Card.find_by_board(user_id, board_id)
+
+    groups = {"list1": [], "list2": [], "list3": [], "list4": []}
+    for card in cards:
+        col = card.get("column", "list1")
+        if col in groups:
+            card["_id"] = str(card["_id"])
+            card["user_id"] = str(card["user_id"])
+            card["board_id"] = str(card["board_id"])
+            groups[col].append(card)
+
+    return {
+        "_id": str(board_doc["_id"]),
+        "user_id": str(board_doc["user_id"]),
+        "name": board_doc.get("name", ""),
+        "lists": [
+            {"id": "list1", "title": "Planning", "cards": groups["list1"]},
+            {"id": "list2", "title": "Monitoring", "cards": groups["list2"]},
+            {"id": "list3", "title": "Controlling", "cards": groups["list3"]},
+            {"id": "list4", "title": "Reflection", "cards": groups["list4"]},
+        ],
+    }
 
 
 def list_users():
@@ -75,11 +106,9 @@ def get_user_detail(user_id):
         g["_id"] = str(g["_id"])
         g["user_id"] = str(g["user_id"])
 
-    # Board
-    board = mongo.db.boards.find_one({"user_id": oid})
-    if board:
-        board["_id"] = str(board["_id"])
-        board["user_id"] = str(board["user_id"])
+    # Board (metadata + cards from separate collection)
+    board_doc = mongo.db.boards.find_one({"user_id": oid})
+    board = _build_board_with_cards(board_doc, user_id)
 
     # Recent study sessions (last 20)
     study_sessions = list(
@@ -175,16 +204,11 @@ def list_boards():
         user = mongo.db.users.find_one({"_id": ObjectId(board["user_id"])}, {"name": 1, "email": 1})
         board["user_name"] = user["name"] if user else "Unknown"
         board["user_email"] = user.get("email", "") if user else ""
-        # Card counts
-        total = 0
-        done = 0
-        for lst in board.get("lists", []):
-            count = len(lst.get("cards", []))
-            total += count
-            if lst.get("id") == "list4":
-                done += count
-        board["total_cards"] = total
-        board["done_cards"] = done
+        # Card counts from separate cards collection
+        board_id = ObjectId(board["_id"])
+        uid = ObjectId(board["user_id"])
+        board["total_cards"] = mongo.db.cards.count_documents({"user_id": uid, "board_id": board_id, "deleted": {"$ne": True}})
+        board["done_cards"] = mongo.db.cards.count_documents({"user_id": uid, "board_id": board_id, "column": "list4", "deleted": {"$ne": True}})
 
     return jsonify({"data": boards, "total": len(boards)}), 200
 
@@ -201,10 +225,8 @@ def get_user_board(user_id):
         return jsonify({"message": "User not found"}), 404
     user["_id"] = str(user["_id"])
 
-    board = Board.find_by_user_id(user_id)
-    if board:
-        board["_id"] = str(board["_id"])
-        board["user_id"] = str(board["user_id"])
+    board_doc = Board.find_by_user_id(user_id)
+    board = _build_board_with_cards(board_doc, user_id)
 
     return jsonify({"user": user, "board": board}), 200
 

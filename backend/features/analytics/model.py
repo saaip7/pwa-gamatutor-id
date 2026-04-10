@@ -13,17 +13,11 @@ class Analytics:
             user_id = ObjectId(user_id)
 
         # --- Stats ---
-        board = mongo.db.boards.find_one({"user_id": user_id})
         prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
 
-        total_tasks = 0
-        tasks_completed = 0
-        if board:
-            for lst in board.get("lists", []):
-                cards = lst.get("cards", [])
-                total_tasks += len(cards)
-                if lst.get("id") == "list4":
-                    tasks_completed = len(cards)
+        card_query = {"user_id": user_id, "deleted": {"$ne": True}}
+        total_tasks = mongo.db.cards.count_documents(card_query)
+        tasks_completed = mongo.db.cards.count_documents({**card_query, "column": "list4"})
 
         streak_current = 0
         if prefs:
@@ -63,21 +57,16 @@ class Analytics:
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
 
-        board = mongo.db.boards.find_one({"user_id": user_id})
+        card_query = {"user_id": user_id, "deleted": {"$ne": True}}
 
-        total_cards = 0
-        completed_cards = 0
-        dist = {"list1": 0, "list2": 0, "list3": 0, "list4": 0}
-
-        if board:
-            for lst in board.get("lists", []):
-                count = len(lst.get("cards", []))
-                total_cards += count
-                lid = lst.get("id", "")
-                if lid in dist:
-                    dist[lid] = count
-                if lid == "list4":
-                    completed_cards = count
+        total_cards = mongo.db.cards.count_documents(card_query)
+        dist = {
+            "list1": mongo.db.cards.count_documents({**card_query, "column": "list1"}),
+            "list2": mongo.db.cards.count_documents({**card_query, "column": "list2"}),
+            "list3": mongo.db.cards.count_documents({**card_query, "column": "list3"}),
+            "list4": mongo.db.cards.count_documents({**card_query, "column": "list4"}),
+        }
+        completed_cards = dist["list4"]
 
         completion_rate = round((completed_cards / total_cards) * 100) if total_cards > 0 else 0
 
@@ -126,36 +115,40 @@ class Analytics:
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
 
-        board = mongo.db.boards.find_one({"user_id": user_id})
-        if not board:
+        cards = list(mongo.db.cards.find({
+            "user_id": user_id,
+            "learning_strategy": {"$exists": True, "$ne": None},
+            "deleted": {"$ne": True},
+        }))
+
+        if not cards:
             return {"strategies": []}
 
         # Collect all cards grouped by learning_strategy
         strategy_data = {}
-        for lst in board.get("lists", []):
-            for card in lst.get("cards", []):
-                strat = card.get("learning_strategy")
-                if not strat:
-                    continue
-                if strat not in strategy_data:
-                    strategy_data[strat] = {
-                        "cards": [],
-                        "q1_ratings": [],
-                        "improvements": [],
-                    }
-                strategy_data[strat]["cards"].append(card)
+        for card in cards:
+            strat = card.get("learning_strategy")
+            if not strat:
+                continue
+            if strat not in strategy_data:
+                strategy_data[strat] = {
+                    "cards": [],
+                    "q1_ratings": [],
+                    "improvements": [],
+                }
+            strategy_data[strat]["cards"].append(card)
 
-                # Subjective: Q1 effectiveness rating
-                q1 = card.get("reflection", {}).get("q1_strategy")
-                if q1 is not None:
-                    strategy_data[strat]["q1_ratings"].append(q1)
+            # Subjective: Q1 effectiveness rating
+            q1 = card.get("reflection", {}).get("q1_strategy")
+            if q1 is not None:
+                strategy_data[strat]["q1_ratings"].append(q1)
 
-                # Objective: grade improvement
-                pre = card.get("pre_test_grade")
-                post = card.get("post_test_grade")
-                if pre is not None and post is not None and pre > 0:
-                    imp = ((post - pre) / pre) * 100
-                    strategy_data[strat]["improvements"].append(imp)
+            # Objective: grade improvement
+            pre = card.get("pre_test_grade")
+            post = card.get("post_test_grade")
+            if pre is not None and post is not None and pre > 0:
+                imp = ((post - pre) / pre) * 100
+                strategy_data[strat]["improvements"].append(imp)
 
         strategies = []
         for name, data in strategy_data.items():
@@ -211,14 +204,11 @@ class Analytics:
         if not logs:
             return {"courseName": None, "availableCourses": [], "dataPoints": [], "trend": "stable"}
 
-        board = mongo.db.boards.find_one({"user_id": user_id})
-
-        # Build a lookup: card_id -> card data
+        # Build a lookup: card_id -> card data from separate cards collection
+        user_cards = list(mongo.db.cards.find({"user_id": user_id, "deleted": {"$ne": True}}))
         card_map = {}
-        if board:
-            for lst in board.get("lists", []):
-                for card in lst.get("cards", []):
-                    card_map[card.get("id")] = card
+        for card in user_cards:
+            card_map[card.get("card_id")] = card
 
         # Extract data points from logs, grouped by course
         # Structure: {course_name: {date_str: {confidences: [], gains: []}}}
