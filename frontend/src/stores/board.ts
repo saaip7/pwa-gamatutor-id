@@ -17,6 +17,9 @@ const REVERSE_LIST_MAP: Record<ColumnKey, string> = {
   reflection: "list4",
 };
 
+// Reverse lookup from BE list ID string to FE column key (for createCard)
+const LIST_ID_TO_COL: Record<string, ColumnKey> = LIST_MAP;
+
 interface BoardState {
   board: Board | null;
   tasks: Record<string, BoardCard>; // keyed by card id
@@ -26,8 +29,23 @@ interface BoardState {
 
   fetchBoard: () => Promise<void>;
   createBoard: () => Promise<void>;
-  updateBoard: (columns: Record<ColumnKey, string[]>) => Promise<void>;
+  moveCard: (
+    cardId: string,
+    column: ColumnKey,
+    position?: number
+  ) => Promise<{
+    message: string;
+    newlyUnlocked: unknown[];
+    streak: unknown;
+  } | void>;
+  reorderColumn: (column: ColumnKey, cardIds: string[]) => Promise<void>;
   updateCard: (cardId: string, data: Partial<BoardCard>) => Promise<void>;
+  createCard: (data: {
+    task_name: string;
+    course_name?: string;
+    column?: string;
+  }) => Promise<BoardCard>;
+  deleteCard: (cardId: string) => Promise<void>;
   getColumnKey: (listId: string) => ColumnKey;
   getListId: (columnKey: ColumnKey) => string;
 }
@@ -76,7 +94,22 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   createBoard: async () => {
     set({ loading: true });
     try {
-      const board = await api.post<Board>("/board");
+      const res = await api.post<{
+        message: string;
+        board_id: string;
+        id: string;
+        name: string;
+        lists: Board["lists"];
+      }>("/board");
+
+      // Build the Board object from the response
+      const board: Board = {
+        _id: res.id,
+        user_id: "",
+        name: res.name,
+        lists: res.lists,
+      };
+
       const tasks: Record<string, BoardCard> = {};
       const columns: Record<ColumnKey, string[]> = {
         planning: [],
@@ -84,6 +117,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         controlling: [],
         reflection: [],
       };
+
       for (const list of board.lists) {
         const colKey = LIST_MAP[list.id] || "planning";
         columns[colKey] = list.cards.map((card) => {
@@ -91,6 +125,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
           return card.id;
         });
       }
+
       set({ board, tasks, columns, loading: false });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Gagal membuat board";
@@ -98,27 +133,52 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     }
   },
 
-  updateBoard: async (columns) => {
-    const { board } = get();
-    if (!board) return;
-
-    // Convert FE columns back to BE lists format
-    const lists = board.lists.map((list) => {
-      const colKey = LIST_MAP[list.id] || "planning";
-      const cardIds = columns[colKey] || [];
-      return {
-        ...list,
-        cards: cardIds
-          .map((id) => get().tasks[id])
-          .filter(Boolean),
-      };
-    });
-
+  moveCard: async (cardId, column, position = 0) => {
+    const listId = REVERSE_LIST_MAP[column];
     try {
-      await api.put("/board", { lists });
-      set({ columns, board: { ...board, lists } });
+      const res = await api.patch<{
+        message: string;
+        newlyUnlocked: unknown[];
+        streak: unknown;
+      }>(`/board/card/${cardId}/move`, { column: listId, position });
+
+      // Optimistically update local state
+      set((state) => {
+        const newColumns = { ...state.columns };
+        // Remove from all columns
+        for (const key of Object.keys(newColumns)) {
+          newColumns[key as ColumnKey] = newColumns[key as ColumnKey].filter(
+            (id) => id !== cardId
+          );
+        }
+        // Add to target column at position
+        const target = [...newColumns[column]];
+        const insertPos = Math.min(position, target.length);
+        target.splice(insertPos, 0, cardId);
+        newColumns[column] = target;
+
+        return { columns: newColumns };
+      });
+
+      return res;
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Gagal update board";
+      const msg = e instanceof Error ? e.message : "Gagal memindahkan card";
+      set({ error: msg });
+    }
+  },
+
+  reorderColumn: async (column, cardIds) => {
+    const listId = REVERSE_LIST_MAP[column];
+    try {
+      await api.put("/board/column/reorder", {
+        column: listId,
+        card_ids: cardIds,
+      });
+      set((state) => ({
+        columns: { ...state.columns, [column]: cardIds },
+      }));
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Gagal mengurutkan kolom";
       set({ error: msg });
     }
   },
@@ -136,6 +196,38 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       const msg = e instanceof Error ? e.message : "Gagal update card";
       set({ error: msg });
     }
+  },
+
+  createCard: async (data) => {
+    const res = await api.post<{ message: string; card: BoardCard }>(
+      "/board/card",
+      data
+    );
+    const card = res.card;
+    const colKey = LIST_ID_TO_COL[data.column || "list1"] || "planning";
+    set((state) => ({
+      tasks: { ...state.tasks, [card.id]: card },
+      columns: {
+        ...state.columns,
+        [colKey]: [...state.columns[colKey], card.id],
+      },
+    }));
+    return card;
+  },
+
+  deleteCard: async (cardId) => {
+    await api.delete(`/board/card/${cardId}`);
+    set((state) => {
+      const newTasks = { ...state.tasks };
+      delete newTasks[cardId];
+      const newColumns = { ...state.columns };
+      for (const key of Object.keys(newColumns)) {
+        newColumns[key as ColumnKey] = newColumns[key as ColumnKey].filter(
+          (id) => id !== cardId
+        );
+      }
+      return { tasks: newTasks, columns: newColumns };
+    });
   },
 
   getColumnKey: (listId) => LIST_MAP[listId] || "planning",

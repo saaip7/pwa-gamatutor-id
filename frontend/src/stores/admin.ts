@@ -49,7 +49,7 @@ export interface AdminBoardList {
 }
 
 export interface AdminBoardCard {
-  id: string;
+  card_id: string;
   task_name: string;
   course_name?: string;
   description?: string;
@@ -62,7 +62,7 @@ export interface AdminBoardCard {
     q3_alignment?: string;
     notes?: string;
   };
-  subtasks?: { id: string; title: string; isCompleted: boolean }[];
+  checklists?: { id: string; title: string; isCompleted: boolean }[];
   created_at?: string;
 }
 
