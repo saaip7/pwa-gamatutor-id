@@ -20,19 +20,34 @@ export type ColumnKey = "planning" | "monitoring" | "controlling" | "reflection"
 export interface BoardCard {
   id: string;
   task_name: string;
+  sub_title?: string;
   course_name?: string;
   description?: string;
   deadline?: string;
   difficulty?: "Hard" | "Medium" | "Easy";
-  personal_best?: string;
+  priority?: "High" | "Medium" | "Low";
+  learning_strategy?: string;
+  column?: string;
+  position?: number;
+  pre_test_grade?: number;
+  post_test_grade?: number;
+  satisfaction_rating?: number;
+  notes?: string;
+  personal_best?: { duration_ms?: number; date?: string } | string;
+  goal_check?: { goal_text?: string; helpful?: boolean };
   reflection?: {
-    q1_strategy?: number;
+    q1_strategy?: string;
     q2_confidence?: number;
-    q3_alignment?: string;
-    notes?: string;
+    q3_improvement?: string;
+    q4_value?: string;
+    completed_at?: string;
   };
-  subtasks?: { id: string; title: string; isCompleted: boolean }[];
+  checklists?: { id: string; title: string; isCompleted: boolean }[];
+  links?: { id?: string; title: string; url: string }[];
+  column_movements?: { from: string; to: string; timestamp: string }[];
+  archived?: boolean;
   created_at: string;
+  updated_at?: string;
 }
 
 export interface BoardList {
