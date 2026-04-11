@@ -34,6 +34,17 @@ class StudySession:
         return sessions
 
     @staticmethod
+    def cleanup_orphan_sessions(max_age_hours=24):
+        """End orphan sessions that have been running longer than max_age_hours."""
+        from datetime import timedelta
+        cutoff = datetime.utcnow() - timedelta(hours=max_age_hours)
+        result = mongo.db.study_sessions.update_many(
+            {"end_time": None, "start_time": {"$lt": cutoff}},
+            {"$set": {"end_time": cutoff, "orphan": True}},
+        )
+        return result.modified_count
+
+    @staticmethod
     def get_total_time(card_id):
         pipeline = [
             {"$match": {"card_id": card_id, "end_time": {"$ne": None}}},
