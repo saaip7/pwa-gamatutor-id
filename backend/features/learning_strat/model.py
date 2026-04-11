@@ -5,10 +5,11 @@ from datetime import datetime
 
 class LearningStrat:
     @staticmethod
-    def create(name, description=None):
+    def create(name, description=None, tips=None):
         doc = {
             "learning_strat_name": name,
             "description": description,
+            "tips": tips or [],
             "created_at": datetime.utcnow(),
         }
         result = mongo.db.learning_strats.insert_one(doc)

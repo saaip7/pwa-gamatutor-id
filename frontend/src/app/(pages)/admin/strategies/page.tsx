@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { Search, Plus, Lightbulb, Loader2, AlertCircle, Trash2 } from "lucide-react";
+import { Search, Plus, Lightbulb, Loader2, AlertCircle, Trash2, ChevronDown } from "lucide-react";
 import { api } from "@/lib/api";
 
 interface Strategy {
   _id: string;
   learning_strat_name: string;
   description: string;
+  tips?: string[];
   created_at: string;
 }
 
@@ -22,8 +23,10 @@ export default function AdminStrategiesPage() {
   const [error, setError] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
+  const [newTips, setNewTips] = useState("");
   const [adding, setAdding] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchStrategies();
@@ -49,12 +52,19 @@ export default function AdminStrategiesPage() {
     if (!name) return;
     setAdding(true);
     try {
+      const parsedTips = newTips
+        .split("\n")
+        .map((t) => t.trim())
+        .filter((t) => t.length > 0);
+
       await api.post("/learningstrats", {
         learning_strat_name: name,
         description: newDesc.trim() || undefined,
+        tips: parsedTips.length > 0 ? parsedTips : undefined,
       });
       setNewName("");
       setNewDesc("");
+      setNewTips("");
       // Re-fetch to get accurate data from BE
       await fetchStrategies();
     } catch (err: unknown) {
@@ -150,6 +160,18 @@ export default function AdminStrategiesPage() {
               Tambah
             </button>
           </div>
+          <div style={{ marginTop: "12px" }}>
+            <label className="block text-sm font-medium text-neutral-700 mb-1.5">Tips <span className="text-neutral-400 font-normal">(opsional, satu per baris)</span></label>
+            <textarea
+              placeholder="Masukkan tips, satu per baris..."
+              value={newTips}
+              onChange={(e) => setNewTips(e.target.value)}
+              disabled={adding}
+              rows={3}
+              className="w-full px-3 py-2.5 rounded-lg border border-neutral-200 text-sm outline-none resize-y disabled:opacity-50"
+              style={{ background: "#f9fafb", minHeight: "72px" }}
+            />
+          </div>
         </form>
       </div>
 
@@ -200,6 +222,77 @@ export default function AdminStrategiesPage() {
                   <p className="text-sm text-neutral-500 mt-1.5" style={{ marginLeft: "36px" }}>
                     {strategy.description}
                   </p>
+                )}
+                {strategy.tips && strategy.tips.length > 0 && (
+                  <div style={{ marginLeft: "36px", marginTop: "6px" }}>
+                    <button
+                      onClick={() => setExpandedId(expandedId === strategy._id ? null : strategy._id)}
+                      className="inline-flex items-center gap-1"
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 500,
+                        color: "#7c3aed",
+                        background: "rgba(124,58,237,0.08)",
+                        padding: "2px 8px",
+                        borderRadius: "9999px",
+                        lineHeight: "18px",
+                        border: "none",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <Lightbulb style={{ width: "12px", height: "12px" }} />
+                      {strategy.tips.length} tips
+                      <ChevronDown
+                        style={{
+                          width: "12px",
+                          height: "12px",
+                          transition: "transform 0.15s",
+                          transform: expandedId === strategy._id ? "rotate(180deg)" : "rotate(0deg)",
+                        }}
+                      />
+                    </button>
+                    {expandedId === strategy._id && (
+                      <div
+                        style={{
+                          marginTop: "8px",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "4px",
+                        }}
+                      >
+                        {strategy.tips.map((tip, ti) => (
+                          <div
+                            key={ti}
+                            className="flex items-start gap-2"
+                            style={{
+                              fontSize: "12px",
+                              color: "#6b7280",
+                              lineHeight: "18px",
+                            }}
+                          >
+                            <span
+                              style={{
+                                width: "18px",
+                                height: "18px",
+                                borderRadius: "50%",
+                                background: "rgba(124,58,237,0.1)",
+                                color: "#7c3aed",
+                                fontSize: "10px",
+                                fontWeight: 600,
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexShrink: 0,
+                              }}
+                            >
+                              {ti + 1}
+                            </span>
+                            <span>{tip}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
               <div className="flex items-center gap-2 shrink-0 ml-3">
