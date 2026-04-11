@@ -166,7 +166,7 @@ export default function NewTaskPage() {
               className="text-sm font-semibold text-neutral-900 flex items-center gap-2"
             >
               <Lightbulb className="w-[18px] h-[18px] text-amber-500" /> Tujuan
-              Task <span className="text-error">*</span>
+              Tugas <span className="text-error">*</span>
             </label>
 
             <Input

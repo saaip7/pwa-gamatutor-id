@@ -32,13 +32,15 @@ const COLUMN_STATUS_MAP: Record<string, string> = {
 };
 
 function formatDeadline(deadline?: string): string {
-  if (!deadline) return "No deadline";
+  if (!deadline) return "Belum ada deadline";
   const d = new Date(deadline);
   if (isNaN(d.getTime())) return deadline;
-  return d.toLocaleDateString("en-US", {
+  return d.toLocaleDateString("id-ID", {
     day: "numeric",
     month: "short",
     year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -103,7 +105,7 @@ export default function TaskDetailPage() {
   if (!card) {
     return (
       <div className="w-full h-screen flex flex-col items-center justify-center bg-white max-w-md mx-auto gap-3">
-        <p className="text-sm text-neutral-500 font-medium">Task tidak ditemukan</p>
+        <p className="text-sm text-neutral-500 font-medium">Tugas tidak ditemukan</p>
         <button
           onClick={() => router.back()}
           className="text-sm text-primary font-bold"
@@ -151,10 +153,10 @@ export default function TaskDetailPage() {
         {/* Section 2: Strategy & Records */}
         <section className="flex flex-wrap gap-2.5">
           <Badge variant="purple" icon={Zap}>
-            {card.learning_strategy || "No strategy"}
+            {card.learning_strategy || "Belum ada strategi"}
           </Badge>
           <Badge variant="emerald" icon={Trophy}>
-            Best: {formatPersonalBest(card.personal_best) || "—"}
+            Terbaik: {formatPersonalBest(card.personal_best) || "—"}
           </Badge>
         </section>
 
@@ -162,7 +164,7 @@ export default function TaskDetailPage() {
         <section className="grid grid-cols-2 gap-3">
           <div className="bg-neutral-50 border border-neutral-100 rounded-2xl p-4 flex flex-col gap-1.5 shadow-sm">
             <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5" /> Due Date
+              <Calendar className="w-3.5 h-3.5" /> Deadline
             </span>
             <span className="text-sm font-bold text-neutral-900">
               {formatDeadline(card.deadline)}
@@ -170,7 +172,7 @@ export default function TaskDetailPage() {
           </div>
           <div className="bg-neutral-50 border border-neutral-100 rounded-2xl p-4 flex flex-col gap-1.5 shadow-sm">
             <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-              <Flag className="w-3.5 h-3.5" /> Priority
+              <Flag className="w-3.5 h-3.5" /> Prioritas
             </span>
             <span
               className={cn(
@@ -182,7 +184,7 @@ export default function TaskDetailPage() {
                     : "text-neutral-600"
               )}
             >
-              {card.priority || "Medium"} Priority
+              {card.priority || "Medium"}
             </span>
           </div>
         </section>
@@ -192,7 +194,7 @@ export default function TaskDetailPage() {
           <section className="space-y-3">
             <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
               <AlignLeft className="w-4 h-4 text-neutral-400" />
-              Description
+              Deskripsi
             </h3>
             <div className="bg-neutral-50 rounded-2xl p-5 border border-neutral-100 leading-relaxed text-sm text-neutral-600 font-medium">
               {card.description}
@@ -205,7 +207,7 @@ export default function TaskDetailPage() {
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
               <CheckSquare className="w-4 h-4 text-neutral-400" />
-              Subtasks
+              Subtask
             </h3>
             {checklists.length > 0 && (
               <div className="flex items-center gap-3">
@@ -270,7 +272,7 @@ export default function TaskDetailPage() {
         <section className="space-y-3">
           <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
             <LinkIcon className="w-4 h-4 text-neutral-400" />
-            References
+            Referensi
           </h3>
           {card.links && card.links.length > 0 ? (
             <div className="grid gap-3">
@@ -320,7 +322,7 @@ export default function TaskDetailPage() {
         </section>
       </main>
 
-      <TaskDetailActionBar taskId={id} status={status} />
+      <TaskDetailActionBar taskId={id} status={status} taskName={card.task_name} />
     </div>
   );
 }
