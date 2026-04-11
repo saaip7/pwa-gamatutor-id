@@ -365,6 +365,18 @@ def job_social_presence():
 
 
 # ---------------------------------------------------------------------------
+# Job 5: Orphan Session Cleanup
+# ---------------------------------------------------------------------------
+
+def job_cleanup_orphan_sessions():
+    """End study sessions that have been running for over 24 hours without ending."""
+    from features.study_session.model import StudySession
+    cleaned = StudySession.cleanup_orphan_sessions(max_age_hours=24)
+    if cleaned:
+        logger.info(f"[Scheduler] Orphan session cleanup: {cleaned} sessions ended")
+
+
+# ---------------------------------------------------------------------------
 # Init
 # ---------------------------------------------------------------------------
 
@@ -387,6 +399,10 @@ def init_scheduler(app):
             job_social_presence, "interval", minutes=30,
             id="social_presence", replace_existing=True,
         )
+        scheduler.add_job(
+            job_cleanup_orphan_sessions, "interval", hours=6,
+            id="orphan_cleanup", replace_existing=True,
+        )
 
         scheduler.start()
-        logger.info("[Scheduler] Started with 4 jobs: deadline_reminder, smart_reminder, streak_nudge, social_presence")
+        logger.info("[Scheduler] Started with 5 jobs: deadline_reminder, smart_reminder, streak_nudge, social_presence, orphan_cleanup")

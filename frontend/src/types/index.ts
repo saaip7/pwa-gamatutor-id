@@ -32,7 +32,6 @@ export interface BoardCard {
   pre_test_grade?: number;
   post_test_grade?: number;
   satisfaction_rating?: number;
-  notes?: string;
   personal_best?: { duration_ms?: number; date?: string } | string;
   goal_check?: { goal_text?: string; helpful?: boolean };
   reflection?: {

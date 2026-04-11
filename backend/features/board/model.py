@@ -53,7 +53,6 @@ class Card:
             "pre_test_grade": data.get("pre_test_grade"),
             "post_test_grade": data.get("post_test_grade"),
             "satisfaction_rating": data.get("satisfaction_rating"),
-            "notes": data.get("notes"),
             "reflection": data.get("reflection"),
             "personal_best": data.get("personal_best"),
             "goal_check": data.get("goal_check"),
