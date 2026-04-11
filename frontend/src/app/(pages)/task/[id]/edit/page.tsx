@@ -19,9 +19,9 @@ import { Drawer } from "@/components/ui/Drawer";
 import { Calendar } from "@/components/ui/Calendar";
 import { TimePicker } from "@/components/ui/TimePicker";
 import { CourseSelector } from "@/components/feature/task/CourseSelector";
-import { StrategySelector, LearningStrategy } from "@/components/feature/task/StrategySelector";
+import { StrategySelector } from "@/components/feature/task/StrategySelector";
 import { PrioritySelector, PriorityLevel } from "@/components/feature/task/PrioritySelector";
-import { AdvancedOptions } from "@/components/feature/task/AdvancedOptions";
+import { AdvancedOptions, AdvancedOptionsData } from "@/components/feature/task/AdvancedOptions";
 import { TaskStatusStepper, TaskStatus } from "@/components/feature/task/TaskStatusStepper";
 import { cn } from "@/lib/utils";
 import { useBoardStore } from "@/stores/board";
@@ -79,7 +79,7 @@ export default function EditTaskPage() {
   const [course, setCourse] = useState(card?.course_name ?? "");
   const [taskName, setTaskName] = useState(card?.task_name ?? "");
   const [description, setDescription] = useState(card?.description ?? "");
-  const [strategy, setStrategy] = useState<LearningStrategy | "">("");
+  const [strategy, setStrategy] = useState(card?.learning_strategy ?? "");
   const [goal, setGoal] = useState("");
   const [priority, setPriority] = useState<PriorityLevel>(
     card?.difficulty ? difficultyToPriority(card.difficulty) : "Medium"
@@ -93,6 +93,11 @@ export default function EditTaskPage() {
       : ""
   );
   const [saving, setSaving] = useState(false);
+  const [advanced, setAdvanced] = useState<AdvancedOptionsData>({
+    difficulty: card?.difficulty ? (card.difficulty as "Easy" | "Medium" | "Hard") : "Medium",
+    checklists: card?.checklists ?? [],
+    links: (card?.links ?? []).map((l) => ({ ...l, id: l.id || "" })),
+  });
 
   // Sync form when card loads
   useEffect(() => {
@@ -212,7 +217,6 @@ export default function EditTaskPage() {
           <CourseSelector
             value={course}
             onChange={setCourse}
-            suggestions={["Algoritma & Pemrograman", "Basis Data", "Kalkulus"]}
           />
 
           <div className="flex flex-col gap-2">
@@ -270,7 +274,7 @@ export default function EditTaskPage() {
           </div>
 
           {/* Opsi Lanjutan - Now will work perfectly with -mx-5 */}
-          <AdvancedOptions />
+          <AdvancedOptions onChange={setAdvanced} />
 
           {/* Meta & Danger Zone */}
           <section className="flex flex-col items-center gap-8 pt-4 pb-10">
