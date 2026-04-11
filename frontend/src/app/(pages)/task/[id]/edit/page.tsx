@@ -60,6 +60,7 @@ export default function EditTaskPage() {
   const loading = useBoardStore((s) => s.loading);
   const fetchBoard = useBoardStore((s) => s.fetchBoard);
   const updateCard = useBoardStore((s) => s.updateCard);
+  const deleteCard = useBoardStore((s) => s.deleteCard);
 
   // Derived task data
   const card = tasks[id] ?? null;
@@ -80,7 +81,7 @@ export default function EditTaskPage() {
   const [taskName, setTaskName] = useState(card?.task_name ?? "");
   const [description, setDescription] = useState(card?.description ?? "");
   const [strategy, setStrategy] = useState(card?.learning_strategy ?? "");
-  const [goal, setGoal] = useState("");
+  const [goal, setGoal] = useState(card?.goal_check?.goal_text ?? "");
   const [priority, setPriority] = useState<PriorityLevel>(
     card?.difficulty ? difficultyToPriority(card.difficulty) : "Medium"
   );
@@ -93,6 +94,9 @@ export default function EditTaskPage() {
       : ""
   );
   const [saving, setSaving] = useState(false);
+  const [showDeleteDrawer, setShowDeleteDrawer] = useState(false);
+  const [showArchiveDrawer, setShowArchiveDrawer] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [advanced, setAdvanced] = useState<AdvancedOptionsData>({
     difficulty: card?.difficulty ? (card.difficulty as "Easy" | "Medium" | "Hard") : "Medium",
     checklists: card?.checklists ?? [],
@@ -111,6 +115,8 @@ export default function EditTaskPage() {
       setDueDate(d);
       setDueTime(`${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`);
     }
+    setStrategy(card.learning_strategy ?? "");
+    setGoal(card.goal_check?.goal_text ?? "");
   }, [card]);
 
   useEffect(() => {
@@ -141,16 +147,46 @@ export default function EditTaskPage() {
       deadline = d.toISOString();
     }
 
-    await updateCard(id, {
-      task_name: taskName,
-      course_name: course,
-      description: description || undefined,
-      difficulty: priorityToDifficulty(priority),
-      deadline,
-    });
+    try {
+      await updateCard(id, {
+        task_name: taskName,
+        course_name: course,
+        description: description || undefined,
+        learning_strategy: strategy || undefined,
+        priority: priority,
+        difficulty: priorityToDifficulty(priority),
+        deadline,
+        goal_check: goal.trim()
+          ? { goal_text: goal.trim(), ...(card.goal_check?.helpful !== undefined ? { helpful: card.goal_check.helpful } : {}) }
+          : undefined,
+        checklists: advanced.checklists.length > 0 ? advanced.checklists : undefined,
+        links: advanced.links.length > 0 ? advanced.links : undefined,
+        pre_test_grade: advanced.preTestGrade,
+      });
+    } finally {
+      setSaving(false);
+      router.back();
+    }
+  };
 
-    setSaving(false);
-    router.back();
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await deleteCard(id);
+      router.push("/board");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleArchive = async () => {
+    setDeleting(true);
+    try {
+      await updateCard(id, { archived: true });
+      router.push("/board");
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const formatDateDisplay = (date: Date | null) => {
@@ -242,7 +278,7 @@ export default function EditTaskPage() {
 
           <div className="flex flex-col gap-2">
             <label className="text-sm font-bold text-neutral-900 flex items-center gap-2">
-              <Lightbulb className="w-[18px] h-[18px] text-amber-500" /> Tujuan Task
+              <Lightbulb className="w-[18px] h-[18px] text-amber-500" /> Tujuan Tugas <span className="text-error">*</span>
             </label>
             <Input value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="Tulis tujuanmu..." />
           </div>
@@ -284,10 +320,16 @@ export default function EditTaskPage() {
             </div>
 
             <div className="w-full space-y-3.5">
-              <button className="w-full py-4 rounded-2xl border border-red-100 bg-red-50 text-red-600 font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all">
+              <button
+                onClick={() => setShowDeleteDrawer(true)}
+                className="w-full py-4 rounded-2xl border border-red-100 bg-red-50 text-red-600 font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+              >
                 <Trash2 className="w-5 h-5" /> Hapus Tugas
               </button>
-              <button className="w-full py-4 rounded-2xl border border-neutral-200 bg-white text-neutral-700 font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-sm">
+              <button
+                onClick={() => setShowArchiveDrawer(true)}
+                className="w-full py-4 rounded-2xl border border-neutral-200 bg-white text-neutral-700 font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-sm"
+              >
                 <Archive className="w-5 h-5" /> Arsipkan Tugas
               </button>
             </div>
@@ -304,6 +346,54 @@ export default function EditTaskPage() {
         <button onClick={() => setIsTimeDrawerOpen(false)} className="w-full mt-6 py-4 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/20 active:scale-95 transition-transform">
           Selesai
         </button>
+      </Drawer>
+
+      {/* Delete Confirmation Drawer */}
+      <Drawer isOpen={showDeleteDrawer} onClose={() => setShowDeleteDrawer(false)} title="Hapus Tugas?">
+        <div className="space-y-6 pt-2">
+          <p className="text-sm text-neutral-600 font-medium leading-relaxed">
+            Tugas <strong>"{card?.task_name}"</strong> akan dihapus secara permanen. Tindakan ini tidak bisa dibatalkan.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowDeleteDrawer(false)}
+              className="flex-1 py-4 bg-white border border-neutral-200 text-neutral-700 rounded-2xl font-bold text-sm active:scale-95 transition-all"
+            >
+              Batal
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="flex-1 py-4 bg-red-500 text-white rounded-2xl font-bold text-sm active:scale-95 transition-all disabled:opacity-50"
+            >
+              {deleting ? "Menghapus..." : "Ya, Hapus"}
+            </button>
+          </div>
+        </div>
+      </Drawer>
+
+      {/* Archive Confirmation Drawer */}
+      <Drawer isOpen={showArchiveDrawer} onClose={() => setShowArchiveDrawer(false)} title="Arsipkan Tugas?">
+        <div className="space-y-6 pt-2">
+          <p className="text-sm text-neutral-600 font-medium leading-relaxed">
+            Tugas <strong>"{card?.task_name}"</strong> akan dipindahkan ke arsip. Tugas tidak akan muncul di board lagi.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowArchiveDrawer(false)}
+              className="flex-1 py-4 bg-white border border-neutral-200 text-neutral-700 rounded-2xl font-bold text-sm active:scale-95 transition-all"
+            >
+              Batal
+            </button>
+            <button
+              onClick={handleArchive}
+              disabled={deleting}
+              className="flex-1 py-4 bg-primary text-white rounded-2xl font-bold text-sm active:scale-95 transition-all disabled:opacity-50"
+            >
+              {deleting ? "Mengarsipkan..." : "Ya, Arsipkan"}
+            </button>
+          </div>
+        </div>
       </Drawer>
     </div>
   );
