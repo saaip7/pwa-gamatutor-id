@@ -43,6 +43,15 @@ interface BoardState {
   createCard: (data: {
     task_name: string;
     course_name?: string;
+    description?: string;
+    learning_strategy?: string;
+    priority?: string;
+    difficulty?: string;
+    deadline?: string;
+    goal_check?: { goal_text: string };
+    checklists?: { id: string; title: string; isCompleted: boolean }[];
+    links?: { id: string; title: string; url: string }[];
+    pre_test_grade?: number;
     column?: string;
   }) => Promise<BoardCard>;
   deleteCard: (cardId: string) => Promise<void>;
