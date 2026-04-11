@@ -44,7 +44,7 @@ CORS(app, resources={
 app.config["MONGO_URI"] = os.getenv("MONGO_URI")
 app.config["JWT_SECRET_KEY"] = Config.JWT_SECRET_KEY
 app.config["JWT_TOKEN_LOCATION"] = ["headers"]  # PWA/mobile: headers only, no cookies
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 10800  # 3 hours
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 86400  # 24 hours
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = 86400 * 7  # 7 days
 
 # Init DB

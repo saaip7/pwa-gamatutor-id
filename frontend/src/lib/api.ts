@@ -53,6 +53,19 @@ async function request<T>(
     } catch {
       data = await res.text();
     }
+
+    // Handle 401 globally — clear token, redirect to login
+    if (res.status === 401 && typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      import("sonner").then(({ toast }) => {
+        toast.error("Sesi berakhir", { description: "Silakan login kembali" });
+      });
+      // Redirect to login if not already there
+      if (!window.location.pathname.includes("/login")) {
+        window.location.href = "/login";
+      }
+    }
+
     throw new ApiError(res.status, data);
   }
 
