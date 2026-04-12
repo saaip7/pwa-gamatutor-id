@@ -19,25 +19,6 @@ import { useFocusSessionStore } from "@/stores/focusSession";
 import { api } from "@/lib/api";
 import type { BoardCard } from "@/types";
 
-// Map strategy names to tips
-const STRATEGY_TIPS: Record<string, { tip: string }> = {
-  "Practice Questions": {
-    tip: "Kerjakan soal secara bertahap. Cek jawaban setiap 3-5 soal.",
-  },
-  "Video Tutorial": {
-    tip: "Catat poin penting & putar ulang bagian yang sulit.",
-  },
-  Reading: {
-    tip: "Baca section per section. Buat ringkasan singkat setiap section.",
-  },
-  "Note Taking": {
-    tip: "Tulis dengan kata-kata sendiri. Gunakan diagram untuk konsep kompleks.",
-  },
-  "Group Study": {
-    tip: "Bagi topik, diskusi bergantian. Ajukan pertanyaan ke teman.",
-  },
-};
-
 const DEFAULT_TIP =
   "Kerjakan satu langkah pada satu waktu. Fokus pada apa yang ada di depanmu.";
 
@@ -64,6 +45,7 @@ export default function FocusModePage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [showEndDrawer, setShowEndDrawer] = useState(false);
   const [ending, setEnding] = useState(false);
+  const [strategyTip, setStrategyTip] = useState(DEFAULT_TIP);
 
   const sessionStartRef = useRef<Date | null>(null);
   const sessionStartedRef = useRef(false);
@@ -78,6 +60,21 @@ export default function FocusModePage() {
       .catch(() => setCard(null))
       .finally(() => setLoading(false));
   }, [id, fetchCardDetail]);
+
+  // Fetch learning strategies from BE and pick a random tip
+  useEffect(() => {
+    if (!card?.learning_strategy) return;
+    api
+      .get<{ learning_strat_name: string; tips: string[] }[]>("/learningstrats")
+      .then((strategies) => {
+        const match = strategies.find((s) => s.learning_strat_name === card.learning_strategy);
+        if (match?.tips?.length) {
+          const randomIndex = Math.floor(Math.random() * match.tips.length);
+          setStrategyTip(match.tips[randomIndex]);
+        }
+      })
+      .catch(() => {});
+  }, [card?.learning_strategy]);
 
   // Start study session — only ONCE, or resume from store
   useEffect(() => {
@@ -114,7 +111,6 @@ export default function FocusModePage() {
 
   // Derive strategy info from card
   const strategyName = card?.learning_strategy || "Fokus Mandiri";
-  const strategyTip = STRATEGY_TIPS[strategyName]?.tip ?? DEFAULT_TIP;
   const strategyIcon = Video;
 
   // Personal best display

@@ -102,9 +102,9 @@ function formatRelativeDeadline(deadline?: string): string {
 }
 
 function boardCardToTask(card: BoardCard): Task {
-  const subtasks = card.subtasks || [];
-  const completed = subtasks.filter((s) => s.isCompleted).length;
-  const total = subtasks.length;
+  const checklists = card.checklists || [];
+  const completed = checklists.filter((s: { isCompleted: boolean }) => s.isCompleted).length;
+  const total = checklists.length;
   const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
 
   return {
@@ -117,7 +117,11 @@ function boardCardToTask(card: BoardCard): Task {
     priority: "Medium" as const,
     difficulty: card.difficulty || "Medium",
     time: formatRelativeDeadline(card.deadline),
-    subtasks,
+    subtasks: checklists.map((c: { id: string; title: string; isCompleted: boolean }) => ({
+      id: c.id,
+      title: c.title,
+      isCompleted: c.isCompleted,
+    })),
   };
 }
 
