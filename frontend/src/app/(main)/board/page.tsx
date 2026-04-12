@@ -31,6 +31,7 @@ import { Task } from "@/components/ui/TaskCard";
 import { useAuthStore } from "@/stores/auth";
 import { useBoardStore } from "@/stores/board";
 import { useNotificationsStore } from "@/stores/notifications";
+import { api } from "@/lib/api";
 import type { BoardCard } from "@/types";
 
 // --- Types ---
@@ -132,6 +133,20 @@ function KanbanBoardContent() {
   const [activeTaskId, setActiveTaskId] = useState<string | number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  // Fetch courses for name→code mapping
+  const [courseMap, setCourseMap] = useState<Record<string, string>>({});
+  useEffect(() => {
+    api.get<{ course_name: string; course_code: string }[]>("/courses")
+      .then((courses) => {
+        const map: Record<string, string> = {};
+        for (const c of courses) {
+          map[c.course_name] = c.course_code;
+        }
+        setCourseMap(map);
+      })
+      .catch(() => {});
+  }, []);
+
   // Store selectors
   const { user } = useAuthStore();
   const { tasks: boardTasks, columns: storeColumns, loading, fetchBoard, moveCard, reorderColumn } = useBoardStore();
@@ -183,14 +198,18 @@ function KanbanBoardContent() {
 
   const totalTasks = Object.values(columns).flat().length;
 
-  // Derive course filters from unique course_name values
+  // Derive course filters — labels show course_code, filtering is by course_name
   const filters = useMemo(() => {
     const courseNames = new Set<string>();
     for (const card of Object.values(boardTasks)) {
       if (card.course_name) courseNames.add(card.course_name);
     }
-    return ["All", ...Array.from(courseNames).sort()];
-  }, [boardTasks]);
+    // Map to course_code if available, otherwise fall back to course_name
+    const labels = Array.from(courseNames)
+      .sort()
+      .map((name) => courseMap[name] || name);
+    return ["All", ...labels];
+  }, [boardTasks, courseMap]);
 
   // Derived data for header
   const userName = user?.name || "Student";
@@ -204,8 +223,12 @@ function KanbanBoardContent() {
       .filter(Boolean);
 
     if (activeFilter !== "All") {
+      // activeFilter is course_code — find matching course_name
+      const targetName = Object.entries(courseMap).find(
+        ([, code]) => code === activeFilter
+      )?.[0];
       filteredColumns[col] = colTasks.filter((t) =>
-        t.course?.toLowerCase().includes(activeFilter.toLowerCase())
+        t.course === targetName
       );
     } else {
       filteredColumns[col] = colTasks;
@@ -382,36 +405,30 @@ function KanbanBoardContent() {
 
     const activeId = active.id as string;
     const latest = columnsRef.current;
+    const currentCol = findColumn(activeId, latest);
 
-    // Case: no over target (collision detection missed)
+    // Priority 1: If card moved to a different column (via handleDragOver), persist it
+    // This check comes FIRST because active.id === over.id can be true even for cross-column moves
+    if (origCol && currentCol && origCol !== currentCol) {
+      const position = Math.max(0, latest[currentCol].indexOf(activeId));
+      moveCard(activeId, currentCol, position).catch(() => {
+        setColumns(storeColumns);
+      });
+      return;
+    }
+
+    // No over target and no column change — revert
     if (!over) {
-      const currentCol = findColumn(activeId, latest);
-      if (origCol && currentCol && origCol !== currentCol) {
-        // handleDragOver already moved card to different column — persist it
-        const position = latest[currentCol].indexOf(activeId);
-        moveCard(activeId, currentCol, Math.max(0, position));
-        return;
-      }
-      // No move happened — revert
       if (origCol) setColumns(storeColumns);
       return;
     }
 
+    // Same item dropped on itself in same column — no move
     if (active.id === over.id) return;
 
     const overId = over.id as string;
-    const sourceCol = origCol || findColumn(activeId, latest);
+    const sourceCol = origCol || currentCol;
     if (!sourceCol) return;
-
-    const finalCol = findColumn(activeId, latest) || sourceCol;
-
-    if (sourceCol !== finalCol) {
-      // Cross-column move
-      const finalIndex = latest[finalCol].indexOf(activeId);
-      const position = finalIndex >= 0 ? finalIndex : latest[finalCol].length - 1;
-      moveCard(activeId, finalCol, position);
-      return;
-    }
 
     // Same-column reorder
     const items = [...latest[sourceCol]];
@@ -428,7 +445,9 @@ function KanbanBoardContent() {
     const newColumns = { ...latest, [sourceCol]: items };
     columnsRef.current = newColumns;
     setColumns(newColumns);
-    reorderColumn(sourceCol, items);
+    reorderColumn(sourceCol, items).catch(() => {
+      setColumns(storeColumns);
+    });
   }, [storeColumns, moveCard, reorderColumn]);
 
   const handleDragCancel = useCallback(() => {

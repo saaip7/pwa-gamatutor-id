@@ -174,6 +174,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Gagal memindahkan card";
       set({ error: msg });
+      throw e; // Re-throw so caller can revert optimistic update
     }
   },
 
@@ -190,6 +191,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Gagal mengurutkan kolom";
       set({ error: msg });
+      throw e;
     }
   },
 

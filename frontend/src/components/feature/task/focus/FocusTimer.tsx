@@ -1,32 +1,35 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface FocusTimerProps {
   personalBest: string;
+  startTime: number; // Date.now() timestamp — wall clock
 }
 
-export function FocusTimer({ personalBest }: FocusTimerProps) {
-  const [seconds, setSeconds] = useState(0);
+function formatTime(ms: number): string {
+  const totalSec = Math.floor(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  return [h, m, s].map((v) => v.toString().padStart(2, "0")).join(":");
+}
+
+export function FocusTimer({ personalBest, startTime }: FocusTimerProps) {
+  const [elapsed, setElapsed] = useState(() => Date.now() - startTime);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setSeconds((prev) => prev + 1);
-    }, 1000);
+    const update = () => setElapsed(Date.now() - startTime);
+    update();
+    const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, []);
-
-  const formatTime = (totalSeconds: number) => {
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = totalSeconds % 60;
-    return [h, m, s].map((v) => v.toString().padStart(2, "0")).join(":");
-  };
+  }, [startTime]);
 
   // Progress ring (one full cycle per hour)
-  const progress = (seconds % 3600) / 3600;
+  const totalSec = Math.floor(elapsed / 1000);
+  const progress = (totalSec % 3600) / 3600;
   const circumference = 2 * Math.PI * 47;
   const strokeDashoffset = circumference - progress * circumference;
 
@@ -60,7 +63,7 @@ export function FocusTimer({ personalBest }: FocusTimerProps) {
         </svg>
 
         <div className="text-[52px] font-black text-neutral-900 tracking-tighter tabular-nums leading-none z-10">
-          {formatTime(seconds)}
+          {formatTime(elapsed)}
         </div>
       </div>
 
