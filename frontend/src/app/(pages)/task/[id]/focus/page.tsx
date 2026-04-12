@@ -15,6 +15,7 @@ import { FocusTimer } from "@/components/feature/task/focus/FocusTimer";
 import { FocusStrategyTip } from "@/components/feature/task/focus/FocusStrategyTip";
 import { Drawer } from "@/components/ui/Drawer";
 import { useBoardStore } from "@/stores/board";
+import { useFocusSessionStore } from "@/stores/focusSession";
 import { api } from "@/lib/api";
 import type { BoardCard } from "@/types";
 
@@ -49,6 +50,14 @@ export default function FocusModePage() {
   const updateCard = useBoardStore((s) => s.updateCard);
   const moveCard = useBoardStore((s) => s.moveCard);
 
+  // Global focus session store
+  const {
+    isActive: storeHasSession,
+    sessionId: storeSessionId,
+    startSession,
+    endSession: clearStore,
+  } = useFocusSessionStore();
+
   const [card, setCard] = useState<BoardCard | null>(null);
   const [loading, setLoading] = useState(true);
   const [sessionStarting, setSessionStarting] = useState(true);
@@ -70,10 +79,20 @@ export default function FocusModePage() {
       .finally(() => setLoading(false));
   }, [id, fetchCardDetail]);
 
-  // Start study session — only ONCE
+  // Start study session — only ONCE, or resume from store
   useEffect(() => {
     if (!card || sessionStartedRef.current) return;
     sessionStartedRef.current = true;
+
+    // Resume existing session from store (e.g. user navigated away and came back)
+    if (storeHasSession && storeSessionId && useFocusSessionStore.getState().cardId === id) {
+      setSessionId(storeSessionId);
+      sessionStartRef.current = new Date(useFocusSessionStore.getState().startTime);
+      setSessionStarting(false);
+      return;
+    }
+
+    // Start new session
     setSessionStarting(true);
     api
       .post<{ _id: string; card_id: string; start_time: string }>(
@@ -83,9 +102,12 @@ export default function FocusModePage() {
       .then((res) => {
         setSessionId(res._id);
         sessionStartRef.current = new Date(res.start_time);
+        // Save to global store so SessionBar can access it
+        startSession(res._id, id, card.task_name || "Fokus Belajar");
       })
       .catch(() => {
         sessionStartRef.current = new Date();
+        startSession("local", id, card.task_name || "Fokus Belajar");
       })
       .finally(() => setSessionStarting(false));
   }, [card, id]);
@@ -110,8 +132,8 @@ export default function FocusModePage() {
   })();
 
   // End session in DB
-  const endSession = async () => {
-    if (sessionId) {
+  const endSessionInDB = async () => {
+    if (sessionId && sessionId !== "local") {
       await api.post("/api/study-sessions/end", { session_id: sessionId });
     }
   };
@@ -120,7 +142,7 @@ export default function FocusModePage() {
   const savePersonalBest = async () => {
     if (!sessionStartRef.current) return;
     const durationMs = Date.now() - sessionStartRef.current.getTime();
-    if (durationMs < 60000) return; // Skip if under 1 minute
+    if (durationMs < 60000) return;
 
     const currentBest = card?.personal_best;
     const currentBestMs =
@@ -146,8 +168,9 @@ export default function FocusModePage() {
 
     try {
       await savePersonalBest();
-      await endSession();
+      await endSessionInDB();
     } finally {
+      clearStore();
       router.back();
     }
   };
@@ -160,9 +183,10 @@ export default function FocusModePage() {
 
     try {
       await savePersonalBest();
-      await endSession();
+      await endSessionInDB();
       await moveCard(id, "controlling");
     } finally {
+      clearStore();
       router.back();
     }
   };
@@ -174,21 +198,23 @@ export default function FocusModePage() {
     setEnding(true);
 
     const durationSec = sessionStartRef.current
-      ? Math.floor(
-          (Date.now() - sessionStartRef.current.getTime()) / 1000
-        )
+      ? Math.floor((Date.now() - sessionStartRef.current.getTime()) / 1000)
       : 0;
 
     try {
       await savePersonalBest();
-      await endSession();
-      router.push(
-        `/task/${id}/reflection?duration=${durationSec}`
-      );
+      await endSessionInDB();
+      clearStore();
+      router.push(`/task/${id}/reflection?duration=${durationSec}`);
     } catch {
       finishingRef.current = false;
       setEnding(false);
     }
+  };
+
+  // Minimize → go back, SessionBar keeps session alive
+  const handleMinimize = () => {
+    router.back();
   };
 
   // Loading state
@@ -205,7 +231,7 @@ export default function FocusModePage() {
       {/* Header */}
       <header className="shrink-0 pt-14 pb-3 px-5 border-b border-neutral-100 flex items-center justify-between bg-white z-50">
         <button
-          onClick={() => router.back()}
+          onClick={handleMinimize}
           className="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-50 border border-neutral-100 text-neutral-600 active:scale-95 transition-all"
         >
           <Minimize2 className="w-5 h-5" />
@@ -234,7 +260,10 @@ export default function FocusModePage() {
           icon={strategyIcon}
         />
 
-        <FocusTimer personalBest={personalBestDisplay} />
+        <FocusTimer
+          personalBest={personalBestDisplay}
+          startTime={sessionStartRef.current?.getTime() || Date.now()}
+        />
       </main>
 
       {/* Footer CTA — two buttons */}
