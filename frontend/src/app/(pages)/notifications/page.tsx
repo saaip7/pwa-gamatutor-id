@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2 } from "lucide-react";
+import { Loader2, Bell } from "lucide-react";
 import { NotificationHeader } from "@/components/feature/notifications/NotificationHeader";
 import { NotificationItem, NotificationType } from "@/components/feature/notifications/NotificationItem";
 import { useNotificationsStore } from "@/stores/notifications";
@@ -115,7 +115,7 @@ export default function NotificationPage() {
         {!loading && notifications.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="w-16 h-16 rounded-full bg-neutral-100 flex items-center justify-center mb-4">
-              <span className="text-2xl">🔔</span>
+              <Bell className="w-7 h-7 text-neutral-300" strokeWidth={1.5} />
             </div>
             <p className="text-sm font-semibold text-neutral-700 mb-1">Belum ada notifikasi</p>
             <p className="text-xs text-neutral-400">Notifikasi terbaru akan muncul di sini.</p>

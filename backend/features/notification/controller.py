@@ -8,20 +8,20 @@ from bson import ObjectId
 
 @jwt_required()
 def get_notifications():
-    """Get all notifications (paginated) with group labels."""
+    """Get all notifications (paginated)."""
     user_id = get_jwt_identity()
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 20, type=int)
 
     try:
         notifications = Notification.get_all(user_id, page, per_page)
-        notifications = Notification.format_with_group(notifications)
-        unread_count = Notification.get_unread_count(user_id)
+        total = Notification.count_all(user_id)
+        has_more = (page * per_page) < total
         return jsonify({
             "notifications": notifications,
-            "unreadCount": unread_count,
+            "total": total,
             "page": page,
-            "perPage": per_page,
+            "has_more": has_more,
         }), 200
     except Exception as e:
         return jsonify({"message": "An error occurred", "error": str(e)}), 500

@@ -57,28 +57,32 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
   },
 
   markRead: async (id) => {
+    // Optimistic update
+    set((state) => ({
+      notifications: state.notifications.map((n) =>
+        n._id === id ? { ...n, read: true } : n
+      ),
+      unreadCount: Math.max(0, state.unreadCount - 1),
+    }));
     try {
       await api.put(`/api/notifications/${id}/read`);
-      set((state) => ({
-        notifications: state.notifications.map((n) =>
-          n._id === id ? { ...n, read: true } : n
-        ),
-        unreadCount: Math.max(0, state.unreadCount - 1),
-      }));
     } catch {
-      // silent
+      // Re-fetch on failure to restore correct state
+      get().fetchNotifications(1);
     }
   },
 
   markAllRead: async () => {
+    // Optimistic update
+    set((state) => ({
+      notifications: state.notifications.map((n) => ({ ...n, read: true })),
+      unreadCount: 0,
+    }));
     try {
       await api.put("/api/notifications/read-all");
-      set((state) => ({
-        notifications: state.notifications.map((n) => ({ ...n, read: true })),
-        unreadCount: 0,
-      }));
     } catch {
-      // silent
+      // Re-fetch on failure
+      get().fetchNotifications(1);
     }
   },
 }));
