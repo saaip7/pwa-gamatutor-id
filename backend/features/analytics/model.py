@@ -26,9 +26,9 @@ class Analytics:
         badges_unlocked = mongo.db.badges.count_documents({"user_id": user_id})
         total_badges = 10  # fixed count from BADGE_DEFINITIONS
 
-        # Focus hours from study sessions
+        # Focus hours from study sessions (exclude orphans)
         focus_pipeline = [
-            {"$match": {"user_id": user_id, "end_time": {"$ne": None}}},
+            {"$match": {"user_id": user_id, "end_time": {"$ne": None}, "orphan": {"$ne": True}}},
             {"$project": {
                 "duration_hours": {"$divide": [{"$subtract": ["$end_time", "$start_time"]}, 3600000]},
             }},
@@ -70,9 +70,9 @@ class Analytics:
 
         completion_rate = round((completed_cards / total_cards) * 100) if total_cards > 0 else 0
 
-        # Personal best — longest single study session
+        # Personal best — longest single study session (exclude orphans)
         pb_pipeline = [
-            {"$match": {"user_id": user_id, "end_time": {"$ne": None}}},
+            {"$match": {"user_id": user_id, "end_time": {"$ne": None}, "orphan": {"$ne": True}}},
             {"$project": {
                 "duration_min": {"$divide": [{"$subtract": ["$end_time", "$start_time"]}, 60000]},
             }},
@@ -407,7 +407,7 @@ class Analytics:
     def _compute_patterns(user_id):
         """Compute productive time-of-day and productive days of week."""
         sessions = list(mongo.db.study_sessions.find(
-            {"user_id": user_id, "start_time": {"$ne": None}},
+            {"user_id": user_id, "start_time": {"$ne": None}, "orphan": {"$ne": True}},
             {"start_time": 1}
         ))
 

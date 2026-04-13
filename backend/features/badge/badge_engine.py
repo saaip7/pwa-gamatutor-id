@@ -111,11 +111,12 @@ class BadgeEngine:
         if existing:
             return None
 
-        # Find sessions > 60 minutes
+        # Find sessions > 60 minutes (exclude orphans)
         pipeline = [
             {"$match": {
                 "user_id": user_id,
                 "end_time": {"$ne": None},
+                "orphan": {"$ne": True},
             }},
             {"$project": {
                 "card_id": 1,
@@ -150,10 +151,10 @@ class BadgeEngine:
         if existing:
             return None
 
-        # Get sessions sorted by start_time, extract date and hour
+        # Get sessions sorted by start_time, extract date and hour (exclude orphans)
         sessions = list(
             mongo.db.study_sessions.find(
-                {"user_id": user_id, "start_time": {"$ne": None}},
+                {"user_id": user_id, "start_time": {"$ne": None}, "orphan": {"$ne": True}},
                 {"start_time": 1}
             ).sort("start_time", 1)
         )
