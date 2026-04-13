@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
 export interface ReflectionData {
-  q1_strategy: string;
+  q1_strategy: number | null;
   q2_confidence: number | null;
   q3_improvement: string;
   q4_value: string | null;
@@ -31,7 +31,7 @@ export function ReflectionForm({ strategyName, mainGoal, onChange }: ReflectionF
   useEffect(() => {
     onChange(
       {
-        q1_strategy: strategyRating !== null ? STRATEGY_LABELS[strategyRating] || "" : "",
+        q1_strategy: strategyRating,  // numeric 1-5 (label derived on display)
         q2_confidence: confidenceRating,
         q3_improvement: futureNotes,
         q4_value: goalAlignment,

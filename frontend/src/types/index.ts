@@ -35,7 +35,7 @@ export interface BoardCard {
   personal_best?: { duration_ms?: number; date?: string } | string;
   goal_check?: { goal_text?: string; helpful?: boolean };
   reflection?: {
-    q1_strategy?: string;
+    q1_strategy?: number | string;
     q2_confidence?: number;
     q3_improvement?: string;
     q4_value?: string;
