@@ -32,23 +32,14 @@ export function OnboardingFlow() {
 
   const handleComplete = async () => {
     try {
-      // Mark onboarding as completed
       await api.put("/api/preferences/onboarding", {
         completed: true,
       });
+      // Trigger badge check for initiator
+      const { useBadgesStore } = await import("@/stores/badges");
+      await useBadgesStore.getState().fetchBadges();
     } catch {
       // Silent — non-blocking
-    }
-    router.push("/dashboard");
-  };
-
-  const handleSkip = async () => {
-    try {
-      await api.put("/api/preferences/onboarding", {
-        completed: true,
-      });
-    } catch {
-      // Silent
     }
     router.push("/dashboard");
   };
@@ -62,12 +53,7 @@ export function OnboardingFlow() {
       {/* Shared Header with Progress Indicators */}
       <header className="shrink-0 pt-14 px-6 pb-2 z-20 relative flex items-center justify-between bg-white/50 backdrop-blur-sm">
         {step === 1 ? (
-          <button
-            onClick={handleSkip}
-            className="text-sm font-medium text-neutral-500 hover:text-neutral-800 transition-colors py-2 pr-4"
-          >
-            Skip
-          </button>
+          <div className="w-10" />
         ) : (
           <button
             onClick={handleBack}
