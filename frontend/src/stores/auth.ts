@@ -37,8 +37,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ token: res.token, user, isAuthenticated: true, loading: false });
     } catch (e: unknown) {
       set({ loading: false });
-      const msg = e instanceof Error ? e.message : "Email atau password salah";
-      toast.error(msg);
+      if (e instanceof TypeError) {
+        toast.error("Server tidak merespon. Silakan coba lagi nanti.");
+      } else if (e instanceof Error) {
+        toast.error(e.message);
+      } else {
+        toast.error("Email atau password salah");
+      }
       throw e;
     }
   },
@@ -59,8 +64,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ token: loginRes.token, user, isAuthenticated: true, loading: false });
     } catch (e: unknown) {
       set({ loading: false });
-      const msg = e instanceof Error ? e.message : "Registrasi gagal";
-      toast.error(msg);
+      if (e instanceof TypeError) {
+        toast.error("Server tidak merespon. Silakan coba lagi nanti.");
+      } else if (e instanceof Error) {
+        toast.error(e.message);
+      } else {
+        toast.error("Registrasi gagal");
+      }
       throw e;
     }
   },
@@ -102,7 +112,11 @@ export const useAuthStore = create<AuthState>((set) => ({
         new_password: data.newPassword,
       });
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Gagal mengubah password");
+      if (e instanceof TypeError) {
+        toast.error("Server tidak merespon. Silakan coba lagi nanti.");
+      } else {
+        toast.error(e instanceof Error ? e.message : "Gagal mengubah password");
+      }
       throw e;
     }
   },
