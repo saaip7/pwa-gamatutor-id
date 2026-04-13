@@ -164,6 +164,13 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         streak: unknown;
       }>(`/board/card/${cardId}/move`, { column: listId, position });
 
+      // If badges were unlocked, refresh badges store to trigger celebration
+      if (res.newlyUnlocked && res.newlyUnlocked.length > 0) {
+        import("@/stores/badges").then(({ useBadgesStore }) => {
+          useBadgesStore.getState().fetchBadges();
+        });
+      }
+
       // Optimistically update local state
       set((state) => {
         const newColumns = { ...state.columns };
@@ -209,13 +216,24 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   updateCard: async (cardId, data) => {
     try {
-      const updated = await api.put<BoardCard>(
-        `/board/card/${cardId}`,
-        data
-      );
-      set((state) => ({
-        tasks: { ...state.tasks, [cardId]: updated },
-      }));
+      const res = await api.put<{
+        message: string;
+        newlyUnlocked: string[];
+      }>(`/board/card/${cardId}`, data);
+
+      // Update local task cache with the latest card data
+      set((state) => {
+        const existing = state.tasks[cardId];
+        const updated = existing ? { ...existing, ...data } : { ...data } as BoardCard;
+        return { tasks: { ...state.tasks, [cardId]: updated } };
+      });
+
+      // If badges were unlocked, refresh badges store to trigger celebration
+      if (res.newlyUnlocked && res.newlyUnlocked.length > 0) {
+        import("@/stores/badges").then(({ useBadgesStore }) => {
+          useBadgesStore.getState().fetchBadges();
+        });
+      }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Gagal update card";
       set({ error: msg });
