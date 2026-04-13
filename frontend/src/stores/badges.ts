@@ -9,9 +9,11 @@ interface BadgesState {
   error: string | null;
 
   fetchBadges: () => Promise<void>;
+  markDisplayed: (badgeType: string) => Promise<void>;
+  undisplayedBadges: () => Badge[];
 }
 
-export const useBadgesStore = create<BadgesState>((set) => ({
+export const useBadgesStore = create<BadgesState>((set, get) => ({
   badges: [],
   unlockedCount: 0,
   loading: false,
@@ -31,5 +33,22 @@ export const useBadgesStore = create<BadgesState>((set) => ({
       const msg = e instanceof Error ? e.message : "Gagal memuat badges";
       set({ error: msg, loading: false });
     }
+  },
+
+  markDisplayed: async (badgeType: string) => {
+    try {
+      await api.put(`/api/badges/${badgeType}/displayed`, {});
+      set((state) => ({
+        badges: state.badges.map((b) =>
+          b.type === badgeType ? { ...b, displayed: true } : b
+        ),
+      }));
+    } catch {
+      // Silent fail — not critical
+    }
+  },
+
+  undisplayedBadges: () => {
+    return get().badges.filter((b) => b.unlocked && !b.displayed);
   },
 }));

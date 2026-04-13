@@ -174,10 +174,15 @@ export default function FocusModePage() {
   // End session in DB — returns server-computed duration_ms
   const endSessionInDB = async (): Promise<number> => {
     if (sessionId && sessionId !== "local") {
-      const res = await api.post<{ message: string; duration_ms: number }>(
+      const res = await api.post<{ message: string; duration_ms: number; newlyUnlocked: string[] }>(
         "/api/study-sessions/end",
         { session_id: sessionId }
       );
+      // If badges unlocked, refresh badges store to trigger celebration later
+      if (res.newlyUnlocked && res.newlyUnlocked.length > 0) {
+        const { useBadgesStore } = await import("@/stores/badges");
+        useBadgesStore.getState().fetchBadges();
+      }
       return res.duration_ms ?? 0;
     }
     // Local session fallback — use wall clock
