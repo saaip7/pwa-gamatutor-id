@@ -6,6 +6,7 @@ from features.analytics.controller import (
     confidence_trend,
     streak,
     streak_history,
+    reflection_notes,
 )
 
 analytics_bp = Blueprint("analytics_bp", __name__)
@@ -16,3 +17,4 @@ analytics_bp.route("/api/analytics/strategy-effectiveness", methods=["GET"])(str
 analytics_bp.route("/api/analytics/confidence-trend", methods=["GET"])(confidence_trend)
 analytics_bp.route("/api/analytics/streak", methods=["GET"])(streak)
 analytics_bp.route("/api/analytics/streak/history", methods=["GET"])(streak_history)
+analytics_bp.route("/api/analytics/reflection-notes", methods=["GET"])(reflection_notes)

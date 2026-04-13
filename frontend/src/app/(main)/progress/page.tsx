@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import { BookOpen } from "lucide-react";
 import { ProgressHeader } from "@/components/feature/progress/ProgressHeader";
 import { InsightCard } from "@/components/feature/progress/InsightCard";
 import { PeriodSelector } from "@/components/feature/progress/PeriodSelector";
@@ -12,7 +14,7 @@ import { LearningStrategies, StrategyItem } from "@/components/feature/progress/
 import { AchievementBanner } from "@/components/feature/mastery/AchievementBanner";
 import { useAnalyticsStore } from "@/stores/analytics";
 import { useBadgesStore } from "@/stores/badges";
-import type { ConfidenceDataPoint } from "@/types";
+import type { ConfidenceDataPoint, ReflectionNote } from "@/types";
 
 export default function ProgressPage() {
   const [activePeriod, setActivePeriod] = useState<"week" | "month" | "all">("week");
@@ -21,11 +23,13 @@ export default function ProgressPage() {
     strategies,
     dashboard,
     confidenceTrend,
+    reflectionNotes,
     loading,
     fetchProgress,
     fetchStrategies,
     fetchDashboard,
     fetchConfidenceTrend,
+    fetchReflectionNotes,
   } = useAnalyticsStore();
   const { unlockedCount, badges, fetchBadges } = useBadgesStore();
 
@@ -34,8 +38,9 @@ export default function ProgressPage() {
     fetchStrategies();
     fetchDashboard();
     fetchConfidenceTrend();
+    fetchReflectionNotes();
     fetchBadges();
-  }, [fetchProgress, fetchStrategies, fetchDashboard, fetchConfidenceTrend, fetchBadges]);
+  }, [fetchProgress, fetchStrategies, fetchDashboard, fetchConfidenceTrend, fetchReflectionNotes, fetchBadges]);
 
   const totalBadges = badges.length || 1; // avoid divide-by-zero
 
@@ -153,6 +158,79 @@ export default function ProgressPage() {
           )}
 
           <LearningStrategies strategies={strategyItems.length > 0 ? strategyItems : []} />
+
+          {/* Catatan Refleksi */}
+          <motion.div
+            className="bg-white border border-neutral-200 rounded-xl p-5 shadow-sm mt-1 mb-4 w-full"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <BookOpen className="w-4 h-4 text-primary" />
+              <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-800">
+                Catatan Refleksi
+              </h3>
+            </div>
+
+            {reflectionNotes && reflectionNotes.length > 0 ? (
+              <div className="space-y-3">
+                {reflectionNotes.map((note: ReflectionNote) => {
+                  const formattedDate = note.completed_at
+                    ? new Date(note.completed_at).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })
+                    : null;
+
+                  return (
+                    <div
+                      key={note.card_id}
+                      className="bg-neutral-50 border border-neutral-100 rounded-2xl p-5"
+                    >
+                      <p className="text-sm text-neutral-700 italic leading-relaxed">
+                        &ldquo;{note.q3_improvement}&rdquo;
+                      </p>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3">
+                        <span className="text-xs font-semibold text-neutral-800">
+                          {note.task_name}
+                        </span>
+                        {note.course_name && (
+                          <>
+                            <span className="text-[10px] text-neutral-300">|</span>
+                            <span className="text-xs text-neutral-500">
+                              {note.course_name}
+                            </span>
+                          </>
+                        )}
+                        {formattedDate && (
+                          <>
+                            <span className="text-[10px] text-neutral-300">|</span>
+                            <span className="text-xs text-neutral-400">
+                              {formattedDate}
+                            </span>
+                          </>
+                        )}
+                        {note.strategy && (
+                          <>
+                            <span className="text-[10px] text-neutral-300">|</span>
+                            <span className="text-[10px] text-primary font-medium">
+                              {note.strategy}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-neutral-400 text-center py-4">
+                Belum ada catatan refleksi. Tulis catatan saat menyelesaikan refleksi tugas!
+              </p>
+            )}
+          </motion.div>
         </div>
       </div>
     </>

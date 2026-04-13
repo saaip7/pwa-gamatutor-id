@@ -408,6 +408,42 @@ class Analytics:
             "freezes_available": freezes_available,
         }
 
+    @staticmethod
+    def get_reflection_notes(user_id):
+        """Get all q3_improvement notes from cards with reflection data."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+
+        cards = list(mongo.db.cards.find(
+            {
+                "user_id": user_id,
+                "reflection.q3_improvement": {"$exists": True, "$ne": ""},
+                "deleted": {"$ne": True},
+            },
+            {
+                "card_id": 1,
+                "task_name": 1,
+                "course_name": 1,
+                "reflection.q3_improvement": 1,
+                "reflection.completed_at": 1,
+                "learning_strategy": 1,
+            },
+        ).sort("reflection.completed_at", -1))
+
+        notes = []
+        for card in cards:
+            reflection = card.get("reflection", {})
+            notes.append({
+                "card_id": card.get("card_id", str(card.get("_id", ""))),
+                "task_name": card.get("task_name", ""),
+                "course_name": card.get("course_name"),
+                "q3_improvement": reflection.get("q3_improvement", ""),
+                "completed_at": reflection.get("completed_at"),
+                "strategy": card.get("learning_strategy"),
+            })
+
+        return {"notes": notes}
+
     # --- Private helpers ---
 
     @staticmethod
