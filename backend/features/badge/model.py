@@ -6,7 +6,7 @@ BADGE_DEFINITIONS = [
     # Foundation (The Start)
     {"type": "initiator", "name": "Initiator", "category": "foundation", "shape": "diamond",
      "description": "Perjalanan belajarmu dimulai.",
-     "condition": "onboarding_or_first_done_or_first_reflection"},
+     "condition": "onboarding_completed"},
     {"type": "architect", "name": "Architect", "category": "foundation", "shape": "diamond",
      "description": "Visi besar diterjemahkan menjadi langkah kecil.",
      "condition": "three_task_goals_linked"},
@@ -29,7 +29,7 @@ BADGE_DEFINITIONS = [
      "condition": "same_strategy_3_times_with_high_effectiveness"},
     {"type": "explorer", "name": "Explorer", "category": "mindset", "shape": "circle",
      "description": "Eksplorasi untuk menemukan cara belajar terbaik.",
-     "condition": "all_4_strategy_types"},
+     "condition": "at_least_4_different_strategies"},
     # Mastery (The Result)
     {"type": "improver", "name": "Improver", "category": "mastery", "shape": "shield",
      "description": "Melampaui dirimu yang kemarin.",
