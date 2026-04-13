@@ -47,51 +47,83 @@ export interface ItemDef {
   id: SlotLevel;
   slot: SlotType;
   names: Record<Gender, string>;
-  badgeId: string | null;
+  badgeId: Record<Gender, string | null>; // gender-specific badge unlock
   preview?: Partial<Record<Gender, PreviewTransform>>;
 }
 
 // ─── Item Definitions ─────────────────────────────────────────
+//
+// Distribution (approved Apr 13):
+//   initiator  = Auto (onboard) → base character only
+//   architect  = Easy → Head♂lv1, Top♀lv1, Bottom♂lv1
+//   deep_diver = Easy → Head♀lv1, Top♂lv1, Bottom♀lv1
+//   marathoner = Easy-Med → Head♂lv2, Top♂lv2, Bottom♀lv2
+//   ritualist  = Medium → Head♀lv2, Top♀lv2, Bottom♂lv2, Bottom♂lv3
+//   reflector  = Medium → Head♂lv3, Top♂lv3, Bottom♀lv3, Special lv1
+//   strategist = Med-Hard → Head♀lv3, Top♀lv3, Bottom♂lv4, Head♀lv4
+//   explorer   = Hard → Head♂lv4, Top♂lv4, Bottom♀lv4
+//   improver   = Hard → Top♀lv4, Bottom♂lv5, Top♂lv5, Special lv2
+//   zenith     = Hardest → Bottom♀lv5, Top♀lv5, Special lv3
 
 export const ITEMS: ItemDef[] = [
   // HEAD (5 items: 1 base + 4 unlockable)
-  { id: "base", slot: "head", names: { male: "Short Fade", female: "Chic Long Hair" }, badgeId: null,
+  { id: "base", slot: "head", names: { male: "Short Fade", female: "Chic Long Hair" },
+    badgeId: { male: null, female: null },
     preview: { female: { offsetY: -7, scale: 0.85 } } },
-  { id: "lv1", slot: "head", names: { male: "Textured Crop", female: "Cute Bangs" }, badgeId: "initiator",
+  { id: "lv1", slot: "head", names: { male: "Textured Crop", female: "Cute Bangs" },
+    badgeId: { male: "architect", female: "deep_diver" },
     preview: { female: { offsetY: -5, scale: 0.9 } } },
-  { id: "lv2", slot: "head", names: { male: "Messy Wavy", female: "Sweet Pink Bob" }, badgeId: "marathoner",
+  { id: "lv2", slot: "head", names: { male: "Messy Wavy", female: "Sweet Pink Bob" },
+    badgeId: { male: "marathoner", female: "ritualist" },
     preview: { female: { offsetY: 0 } } },
-  { id: "lv3", slot: "head", names: { male: "Side Part", female: "Neat Ponytail" }, badgeId: "ritualist",
+  { id: "lv3", slot: "head", names: { male: "Side Part", female: "Neat Ponytail" },
+    badgeId: { male: "reflector", female: "strategist" },
     preview: { female: { offsetY: -14, scale: 1.15 } } },
-  { id: "lv4", slot: "head", names: { male: "Blue Spiky", female: "Messy Bun" }, badgeId: "explorer",
+  { id: "lv4", slot: "head", names: { male: "Blue Spiky", female: "Messy Bun" },
+    badgeId: { male: "explorer", female: "strategist" },
     preview: { female: { offsetY: -7, scale: 1.1 } } },
 
   // TOP (6 items: 1 base + 5 unlockable)
-  { id: "base", slot: "top", names: { male: "Open Jacket", female: "Beige Parka" }, badgeId: null,
-preview: { female: { offsetY: -12, scale: 1.1 } } },
-  { id: "lv1", slot: "top", names: { male: "Overshirt", female: "Graphic Hoodie" }, badgeId: "initiator",
-preview: { female: { offsetY: -10, scale: 1.1 } }  },
-  { id: "lv2", slot: "top", names: { male: "Crewneck", female: "Striped Sweater" }, badgeId: "deep_diver",
-preview: { female: { offsetY: -10, scale: 1.1 } }  },
-  { id: "lv3", slot: "top", names: { male: "Denim Jacket", female: "Light Blue Coat" }, badgeId: "reflector",
-preview: { female: { offsetY: -15, scale: 1.1 } } },
-  { id: "lv4", slot: "top", names: { male: "Track Jacket", female: "Navy Cardigan" }, badgeId: "strategist",
-preview: { female: { offsetY: -15, scale: 1.1 } }  },
-  { id: "lv5", slot: "top", names: { male: "Formal Blazer", female: "Brown Jacket" }, badgeId: "improver",
-preview: { female: { offsetY: -10, scale: 1.1 } }  },
+  { id: "base", slot: "top", names: { male: "Open Jacket", female: "Beige Parka" },
+    badgeId: { male: null, female: null },
+    preview: { female: { offsetY: -12, scale: 1.1 } } },
+  { id: "lv1", slot: "top", names: { male: "Overshirt", female: "Graphic Hoodie" },
+    badgeId: { male: "deep_diver", female: "architect" },
+    preview: { female: { offsetY: -10, scale: 1.1 } } },
+  { id: "lv2", slot: "top", names: { male: "Crewneck", female: "Striped Sweater" },
+    badgeId: { male: "marathoner", female: "ritualist" },
+    preview: { female: { offsetY: -10, scale: 1.1 } } },
+  { id: "lv3", slot: "top", names: { male: "Denim Jacket", female: "Light Blue Coat" },
+    badgeId: { male: "reflector", female: "strategist" },
+    preview: { female: { offsetY: -15, scale: 1.1 } } },
+  { id: "lv4", slot: "top", names: { male: "Track Jacket", female: "Navy Cardigan" },
+    badgeId: { male: "explorer", female: "improver" },
+    preview: { female: { offsetY: -15, scale: 1.1 } } },
+  { id: "lv5", slot: "top", names: { male: "Formal Blazer", female: "Brown Jacket" },
+    badgeId: { male: "improver", female: "zenith" },
+    preview: { female: { offsetY: -10, scale: 1.1 } } },
 
   // BOTTOM (6 items: 1 base + 5 unlockable)
-  { id: "base", slot: "bottom", names: { male: "Light Denim", female: "Track Pants" }, badgeId: null },
-  { id: "lv1", slot: "bottom", names: { male: "Black Joggers", female: "Black Cropped Pants" }, badgeId: "architect" },
-  { id: "lv2", slot: "bottom", names: { male: "Ripped Jeans", female: "Straight Pants" }, badgeId: "deep_diver" },
-  { id: "lv3", slot: "bottom", names: { male: "Dark Denim", female: "Pleated Skirt" }, badgeId: "marathoner" },
-  { id: "lv4", slot: "bottom", names: { male: "Navy Trousers", female: "Brown Midi Skirt" }, badgeId: "ritualist" },
-  { id: "lv5", slot: "bottom", names: { male: "Khaki Chinos", female: "Floral Skirt" }, badgeId: "explorer" },
+  { id: "base", slot: "bottom", names: { male: "Light Denim", female: "Track Pants" },
+    badgeId: { male: null, female: null } },
+  { id: "lv1", slot: "bottom", names: { male: "Black Joggers", female: "Black Cropped Pants" },
+    badgeId: { male: "architect", female: "deep_diver" } },
+  { id: "lv2", slot: "bottom", names: { male: "Ripped Jeans", female: "Straight Pants" },
+    badgeId: { male: "ritualist", female: "marathoner" } },
+  { id: "lv3", slot: "bottom", names: { male: "Dark Denim", female: "Pleated Skirt" },
+    badgeId: { male: "ritualist", female: "reflector" } },
+  { id: "lv4", slot: "bottom", names: { male: "Navy Trousers", female: "Brown Midi Skirt" },
+    badgeId: { male: "strategist", female: "explorer" } },
+  { id: "lv5", slot: "bottom", names: { male: "Khaki Chinos", female: "Floral Skirt" },
+    badgeId: { male: "improver", female: "zenith" } },
 
   // SPECIAL (3 items: all unlockable)
-  { id: "lv1", slot: "special", names: { male: "Mirror Pendant", female: "Mirror Pendant" }, badgeId: "reflector" },
-  { id: "lv2", slot: "special", names: { male: "Growth Shield", female: "Growth Shield" }, badgeId: "improver" },
-  { id: "lv3", slot: "special", names: { male: "Zenith Crown", female: "Zenith Crown" }, badgeId: "zenith" },
+  { id: "lv1", slot: "special", names: { male: "Mirror Pendant", female: "Mirror Pendant" },
+    badgeId: { male: "reflector", female: "reflector" } },
+  { id: "lv2", slot: "special", names: { male: "Growth Shield", female: "Growth Shield" },
+    badgeId: { male: "improver", female: "improver" } },
+  { id: "lv3", slot: "special", names: { male: "Zenith Crown", female: "Zenith Crown" },
+    badgeId: { male: "zenith", female: "zenith" } },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────
@@ -100,11 +132,9 @@ export function getItemsBySlot(slot: SlotType): ItemDef[] {
   return ITEMS.filter((item) => item.slot === slot);
 }
 
-export function isItemUnlocked(item: ItemDef, unlockedBadges: string[]): boolean {
-  // TODO: During development, unlock all items. Replace with badge check for production.
-  //return true;
-  if (!item.badgeId) return true; // base items always available
-  return unlockedBadges.includes(item.badgeId);
+export function isItemUnlocked(item: ItemDef, unlockedBadges: string[], gender: Gender): boolean {
+  if (!item.badgeId[gender]) return true; // base items always available
+  return unlockedBadges.includes(item.badgeId[gender]!);
 }
 
 export function getItemDisplayName(item: ItemDef, gender: Gender): string {

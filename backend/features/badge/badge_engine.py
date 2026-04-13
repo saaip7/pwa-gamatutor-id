@@ -11,8 +11,8 @@ class BadgeEngine:
     # Each trigger maps to a list of badge check functions
     TRIGGER_MAP = {
         "onboarding_completed": ["_check_initiator"],
-        "task_done": ["_check_initiator", "_check_reflector", "_check_zenith"],
-        "reflection_completed": ["_check_initiator", "_check_reflector", "_check_strategist"],
+        "task_done": ["_check_reflector", "_check_zenith"],
+        "reflection_completed": ["_check_reflector", "_check_strategist"],
         "goal_linked": ["_check_architect"],
         "session_completed": ["_check_deep_diver", "_check_ritualist"],
         "streak_updated": ["_check_marathoner"],
@@ -51,35 +51,13 @@ class BadgeEngine:
 
     @staticmethod
     def _check_initiator(user_id):
-        """Selesai onboarding ATAU 1 task Done ATAU refleksi pertama."""
+        """Selesai onboarding → auto unlock. Only fires on onboarding_completed trigger."""
         existing = mongo.db.badges.find_one({"user_id": user_id, "badge_type": "initiator"})
         if existing:
             return None
 
-        # Condition 1: Onboarding completed
-        prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
-        if prefs and prefs.get("onboarding", {}).get("completed"):
-            Badge.unlock(user_id, "initiator")
-            return "initiator"
-
-        card_query = {"user_id": user_id, "deleted": {"$ne": True}}
-
-        # Condition 2: At least 1 task in Done (list4)
-        done_count = mongo.db.cards.count_documents({**card_query, "column": "list4"})
-        if done_count >= 1:
-            Badge.unlock(user_id, "initiator")
-            return "initiator"
-
-        # Condition 3: Any card has reflection data
-        reflected = mongo.db.cards.find_one({
-            **card_query,
-            "reflection.q2_confidence": {"$exists": True, "$ne": None},
-        })
-        if reflected:
-            Badge.unlock(user_id, "initiator")
-            return "initiator"
-
-        return None
+        Badge.unlock(user_id, "initiator")
+        return "initiator"
 
     @staticmethod
     def _check_architect(user_id):
@@ -257,20 +235,18 @@ class BadgeEngine:
 
     @staticmethod
     def _check_explorer(user_id):
-        """Mencoba semua 4 tipe strategi belajar: Video, Latihan, Baca, Diskusi."""
+        """Mencoba minimal 4 learning strategy berbeda (dinamis, bukan hardcoded)."""
         existing = mongo.db.badges.find_one({"user_id": user_id, "badge_type": "explorer"})
         if existing:
             return None
 
-        required = {"Video", "Latihan", "Baca", "Diskusi"}
-
         found_strategies = mongo.db.cards.distinct("learning_strategy", {
             "user_id": user_id,
-            "learning_strategy": {"$in": list(required)},
+            "learning_strategy": {"$exists": True, "$ne": None},
             "deleted": {"$ne": True},
         })
 
-        if set(found_strategies) >= required:
+        if len(found_strategies) >= 4:
             Badge.unlock(user_id, "explorer")
             return "explorer"
 
