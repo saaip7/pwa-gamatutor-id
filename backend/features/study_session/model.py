@@ -19,11 +19,18 @@ class StudySession:
 
     @staticmethod
     def end(session_id):
+        now = datetime.utcnow()
         result = mongo.db.study_sessions.update_one(
             {"_id": ObjectId(session_id)},
-            {"$set": {"end_time": datetime.utcnow()}},
+            {"$set": {"end_time": now}},
         )
-        return result.modified_count > 0
+        if result.modified_count == 0:
+            return None
+        doc = mongo.db.study_sessions.find_one({"_id": ObjectId(session_id)})
+        duration_ms = 0
+        if doc and doc.get("start_time"):
+            duration_ms = int((now - doc["start_time"]).total_seconds() * 1000)
+        return {"duration_ms": duration_ms}
 
     @staticmethod
     def get_by_card(card_id):
