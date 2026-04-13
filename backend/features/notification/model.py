@@ -36,7 +36,20 @@ class Notification:
         for n in notifications:
             n["_id"] = str(n["_id"])
             n["user_id"] = str(n["user_id"])
+            # Convert is_unread → read for FE compatibility
+            n["read"] = not n.get("is_unread", True)
+            # Ensure created_at is ISO string with timezone
+            created = n.get("created_at")
+            if isinstance(created, datetime):
+                n["created_at"] = created.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         return notifications
+
+    @staticmethod
+    def count_all(user_id):
+        """Total notification count for a user."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        return mongo.db.notifications.count_documents({"user_id": user_id})
 
     @staticmethod
     def get_unread_count(user_id):
