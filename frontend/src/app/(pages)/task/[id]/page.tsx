@@ -15,6 +15,8 @@ import {
   FileText,
   Globe,
   Youtube,
+  BarChart2,
+  Archive,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { TaskDetailHeader } from "@/components/feature/task/TaskDetailHeader";
@@ -121,12 +123,25 @@ export default function TaskDetailPage() {
   const completedCount = checklists.filter((s) => s.isCompleted).length;
   const progressPercent = checklists.length > 0 ? (completedCount / checklists.length) * 100 : 0;
   const goalText = card.goal_check?.goal_text || "";
+  const isArchived = card.archived === true;
 
   return (
     <div className="w-full h-screen flex flex-col mx-auto bg-white relative overflow-hidden max-w-md">
       <TaskDetailHeader />
 
       <main className="flex-1 overflow-y-auto no-scrollbar px-6 py-6 space-y-8 pb-32">
+        {/* Archived Banner */}
+        {isArchived && (
+          <div className="flex items-center gap-3 px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-2xl">
+            <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center shrink-0">
+              <Archive className="w-4 h-4 text-neutral-400" />
+            </div>
+            <p className="text-sm font-medium text-neutral-500">
+              Tugas ini telah diarsipkan
+            </p>
+          </div>
+        )}
+
         {/* Section 1: Title & Status */}
         <section className="space-y-4">
           <div className="flex items-center gap-2">
@@ -160,50 +175,94 @@ export default function TaskDetailPage() {
           </Badge>
         </section>
 
-        {/* Section 3: Info Grid */}
-        <section className="grid grid-cols-2 gap-3">
-          <div className="bg-neutral-50 border border-neutral-100 rounded-2xl p-4 flex flex-col gap-1.5 shadow-sm">
-            <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5" /> Deadline
-            </span>
-            <span className="text-sm font-bold text-neutral-900">
-              {formatDeadline(card.deadline)}
-            </span>
+        {/* Section 3: Info — Deadline + Priority & Difficulty */}
+        <section className="bg-neutral-50 border border-neutral-100 rounded-2xl shadow-sm overflow-hidden">
+          {/* Row 1: Deadline */}
+          <div className="px-4 py-3 flex items-center gap-3">
+            <div className={cn(
+              "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+              card.deadline ? "bg-blue-50" : "bg-neutral-100"
+            )}>
+              <Calendar className={cn("w-4 h-4", card.deadline ? "text-primary" : "text-neutral-400")} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">
+                Deadline
+              </span>
+              <p className={cn(
+                "text-sm font-bold leading-tight",
+                card.deadline ? "text-neutral-900" : "text-neutral-400"
+              )}>
+                {formatDeadline(card.deadline)}
+              </p>
+            </div>
           </div>
-          <div className="bg-neutral-50 border border-neutral-100 rounded-2xl p-4 flex flex-col gap-1.5 shadow-sm">
-            <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-              <Flag className="w-3.5 h-3.5" /> Prioritas
-            </span>
-            <span
-              className={cn(
-                "text-sm font-bold",
-                card.priority === "High"
-                  ? "text-error"
-                  : card.priority === "Medium"
-                    ? "text-amber-600"
-                    : "text-neutral-600"
-              )}
-            >
-              {card.priority || "Medium"}
-            </span>
+          {/* Row 2: Priority & Difficulty */}
+          <div className="border-t border-neutral-100 grid grid-cols-2 divide-x divide-neutral-100">
+            <div className="px-4 py-2.5 flex items-center gap-2">
+              <Flag className={cn(
+                "w-3.5 h-3.5 shrink-0",
+                card.priority === "High" ? "text-error"
+                  : card.priority === "Medium" ? "text-amber-500"
+                  : "text-neutral-400"
+              )} />
+              <div className="min-w-0">
+                <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-widest block leading-none">
+                  Prioritas
+                </span>
+                <span className={cn(
+                  "text-xs font-bold",
+                  card.priority === "High" ? "text-error"
+                    : card.priority === "Medium" ? "text-amber-600"
+                    : "text-neutral-500"
+                )}>
+                  {card.priority || "Medium"}
+                </span>
+              </div>
+            </div>
+            <div className="px-4 py-2.5 flex items-center gap-2">
+              <BarChart2 className={cn(
+                "w-3.5 h-3.5 shrink-0",
+                card.difficulty === "Hard" ? "text-rose-500"
+                  : card.difficulty === "Medium" ? "text-amber-500"
+                  : "text-emerald-500"
+              )} />
+              <div className="min-w-0">
+                <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-widest block leading-none">
+                  Kesulitan
+                </span>
+                <span className={cn(
+                  "text-xs font-bold",
+                  card.difficulty === "Hard" ? "text-rose-600"
+                    : card.difficulty === "Medium" ? "text-amber-600"
+                    : "text-emerald-600"
+                )}>
+                  {card.difficulty === "Hard" ? "Sulit" : card.difficulty === "Medium" ? "Sedang" : "Mudah"}
+                </span>
+              </div>
+            </div>
           </div>
         </section>
 
         {/* Section 4: Description */}
-        {card.description && (
-          <section className="space-y-3">
-            <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
-              <AlignLeft className="w-4 h-4 text-neutral-400" />
-              Deskripsi
-            </h3>
+        <section className="space-y-3">
+          <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
+            <AlignLeft className="w-4 h-4 text-neutral-400" />
+            Deskripsi
+          </h3>
+          {card.description ? (
             <div className="bg-neutral-50 rounded-2xl p-5 border border-neutral-100 leading-relaxed text-sm text-neutral-600 font-medium">
               {card.description}
             </div>
-          </section>
-        )}
+          ) : (
+            <div className="bg-neutral-50 rounded-2xl p-5 border border-dashed border-neutral-200 text-center">
+              <p className="text-xs text-neutral-400 font-medium">Belum ada deskripsi</p>
+            </div>
+          )}
+        </section>
 
         {/* Section 5: Checklists / Subtasks */}
-        <section className="space-y-4">
+        <section className={cn("space-y-4", isArchived && "opacity-60")}>
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
               <CheckSquare className="w-4 h-4 text-neutral-400" />
@@ -322,7 +381,7 @@ export default function TaskDetailPage() {
         </section>
       </main>
 
-      <TaskDetailActionBar taskId={id} status={status} taskName={card.task_name} />
+      <TaskDetailActionBar taskId={id} status={status} taskName={card.task_name} isArchived={isArchived} />
     </div>
   );
 }

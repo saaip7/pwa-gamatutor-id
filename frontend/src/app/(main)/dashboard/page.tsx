@@ -46,7 +46,7 @@ function boardCardToTask(card: BoardCard): Task {
     description: card.description,
     progressText: total > 0 ? `${completed}/${total}` : "0/0",
     progressPercent: percent,
-    priority: "Medium" as const,
+    priority: (card.priority || "Medium") as "High" | "Medium" | "Low",
     difficulty: card.difficulty || "Medium",
     time: formatRelativeDeadline(card.deadline),
     subtasks: checklists.map((c: { id: string; title: string; isCompleted: boolean }) => ({

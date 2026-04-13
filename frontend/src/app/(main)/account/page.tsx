@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Moon, Bell, Globe, User, ShieldCheck, LogOut, Flame } from "lucide-react";
+import { Moon, Bell, Globe, User, ShieldCheck, LogOut, Flame, Archive } from "lucide-react";
 import { AccountHeader } from "@/components/feature/account/AccountHeader";
 import { ProfileCard } from "@/components/feature/account/ProfileCard";
 import { SettingsGroup } from "@/components/feature/account/SettingsGroup";
@@ -102,6 +102,14 @@ export default function AccountPage() {
             href="/account/streak"
             iconBgClass="bg-amber-100"
             iconColorClass="text-amber-600"
+          />
+          <SettingItem
+            type="link"
+            icon={Archive}
+            label="Arsip Tugas"
+            href="/account/archive"
+            iconBgClass="bg-neutral-100"
+            iconColorClass="text-neutral-600"
           />
           <SettingItem
             type="link"

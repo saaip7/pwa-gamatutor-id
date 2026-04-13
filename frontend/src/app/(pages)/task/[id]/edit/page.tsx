@@ -101,6 +101,7 @@ export default function EditTaskPage() {
     difficulty: card?.difficulty ? (card.difficulty as "Easy" | "Medium" | "Hard") : "Medium",
     checklists: card?.checklists ?? [],
     links: (card?.links ?? []).map((l) => ({ ...l, id: l.id || "" })),
+    preTestGrade: card?.pre_test_grade,
   });
 
   // Sync form when card loads
@@ -154,7 +155,7 @@ export default function EditTaskPage() {
         description: description || undefined,
         learning_strategy: strategy || undefined,
         priority: priority,
-        difficulty: priorityToDifficulty(priority),
+        difficulty: advanced.difficulty,
         deadline,
         goal_check: goal.trim()
           ? { goal_text: goal.trim(), ...(card.goal_check?.helpful !== undefined ? { helpful: card.goal_check.helpful } : {}) }
@@ -310,7 +311,7 @@ export default function EditTaskPage() {
           </div>
 
           {/* Opsi Lanjutan - Now will work perfectly with -mx-5 */}
-          <AdvancedOptions onChange={setAdvanced} />
+          <AdvancedOptions onChange={setAdvanced} defaultValue={advanced} />
 
           {/* Meta & Danger Zone */}
           <section className="flex flex-col items-center gap-8 pt-4 pb-10">

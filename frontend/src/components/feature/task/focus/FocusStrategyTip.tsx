@@ -16,8 +16,8 @@ export function FocusStrategyTip({ strategy, tip, icon: Icon }: FocusStrategyTip
         <Icon className="w-4 h-4" />
         <span className="text-[11px] font-black uppercase tracking-widest">Strategi: {strategy}</span>
       </div>
-      <p className="mt-3 text-sm font-medium text-neutral-500 italic flex items-center gap-1.5 justify-center">
-        <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
+      <p className="mt-3 text-sm font-medium text-neutral-500 italic flex items-start gap-1.5 justify-center text-center">
+        <Lightbulb className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
         Tip: {tip}
       </p>
     </section>

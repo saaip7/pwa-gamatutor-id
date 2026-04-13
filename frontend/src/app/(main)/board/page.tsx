@@ -4,6 +4,7 @@ import React, { useState, useCallback, useRef, useEffect, useMemo } from "react"
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { toast } from "sonner";
 import {
   DndContext,
   DragOverlay,
@@ -114,7 +115,7 @@ function boardCardToTask(card: BoardCard): Task {
     description: card.description,
     progressText: total > 0 ? `${completed}/${total}` : "0/0",
     progressPercent: percent,
-    priority: "Medium" as const,
+    priority: (card.priority || "Medium") as "High" | "Medium" | "Low",
     difficulty: card.difficulty || "Medium",
     time: formatRelativeDeadline(card.deadline),
     subtasks: checklists.map((c: { id: string; title: string; isCompleted: boolean }) => ({
@@ -415,7 +416,9 @@ function KanbanBoardContent() {
     // This check comes FIRST because active.id === over.id can be true even for cross-column moves
     if (origCol && currentCol && origCol !== currentCol) {
       const position = Math.max(0, latest[currentCol].indexOf(activeId));
-      moveCard(activeId, currentCol, position).catch(() => {
+      moveCard(activeId, currentCol, position).catch((err) => {
+        const msg = err instanceof Error ? err.message : "";
+        if (msg) toast.error(msg, { duration: 4000 });
         setColumns(storeColumns);
       });
       return;

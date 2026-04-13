@@ -41,6 +41,15 @@ def end():
 
 
 @jwt_required()
+def get_session(session_id):
+    """Get a single study session by ID. Used by FE to validate resume."""
+    session = StudySession.get(session_id)
+    if not session:
+        return jsonify({"error": "Session not found"}), 404
+    return jsonify(session), 200
+
+
+@jwt_required()
 def get_card_sessions(card_id):
     user_id = get_jwt_identity()
     sessions = StudySession.get_by_card(card_id)

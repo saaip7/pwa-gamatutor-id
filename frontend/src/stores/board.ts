@@ -24,10 +24,12 @@ interface BoardState {
   board: Board | null;
   tasks: Record<string, BoardCard>; // keyed by card id
   columns: Record<ColumnKey, string[]>; // card IDs per column
+  archivedCards: BoardCard[];
   loading: boolean;
   error: string | null;
 
   fetchBoard: () => Promise<void>;
+  fetchArchived: () => Promise<void>;
   createBoard: () => Promise<void>;
   moveCard: (
     cardId: string,
@@ -69,6 +71,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     controlling: [],
     reflection: [],
   },
+  archivedCards: [],
   loading: false,
   error: null,
 
@@ -98,6 +101,15 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Gagal memuat board";
       set({ error: msg, loading: false });
+    }
+  },
+
+  fetchArchived: async () => {
+    try {
+      const res = await api.get<{ cards: BoardCard[] }>("/board/archived");
+      set({ archivedCards: res.cards });
+    } catch {
+      set({ archivedCards: [] });
     }
   },
 

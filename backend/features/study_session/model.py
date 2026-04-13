@@ -45,9 +45,19 @@ class StudySession:
         return result.modified_count
 
     @staticmethod
+    def get(session_id):
+        """Get a single session by ID. Returns None if not found."""
+        doc = mongo.db.study_sessions.find_one({"_id": ObjectId(session_id)})
+        if not doc:
+            return None
+        doc["_id"] = str(doc["_id"])
+        doc["user_id"] = str(doc["user_id"])
+        return doc
+
+    @staticmethod
     def get_total_time(card_id):
         pipeline = [
-            {"$match": {"card_id": card_id, "end_time": {"$ne": None}}},
+            {"$match": {"card_id": card_id, "end_time": {"$ne": None}, "orphan": {"$ne": True}}},
             {"$group": {
                 "_id": None,
                 "total_minutes": {
