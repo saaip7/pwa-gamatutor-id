@@ -91,6 +91,16 @@ def get_board():
 
 
 @jwt_required()
+def get_archived_cards():
+    """GET /board/archived — Return all archived cards for the current user."""
+    user_id = get_jwt_identity()
+    cards = Card.find_archived(user_id)
+    return jsonify({
+        "cards": [_serialize_card(c) for c in cards],
+    }), 200
+
+
+@jwt_required()
 def create_board():
     """POST /board — Create or recreate board for current user."""
     user_id = get_jwt_identity()
@@ -140,6 +150,14 @@ def move_card(card_id):
         return jsonify({"message": "Card not found"}), 404
 
     old_column = card.get("column", "list1")
+
+    # Prevent manual drag to reflection (list4) without reflection data
+    if new_column == "list4" and old_column != "list4":
+        reflection = card.get("reflection")
+        if not reflection or not reflection.get("q2_confidence"):
+            return jsonify({
+                "message": "Kartu hanya bisa dipindahkan ke Reflection setelah mengisi sesi refleksi.",
+            }), 403
 
     # Move the card
     success = Card.move_card(user_id, card_id, new_column, new_position)

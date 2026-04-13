@@ -15,7 +15,7 @@ export interface ReflectionData {
 interface ReflectionFormProps {
   strategyName: string;
   mainGoal: string;
-  onChange: (data: ReflectionData) => void;
+  onChange: (data: ReflectionData, isValid: boolean) => void;
 }
 
 export function ReflectionForm({ strategyName, mainGoal, onChange }: ReflectionFormProps) {
@@ -24,15 +24,21 @@ export function ReflectionForm({ strategyName, mainGoal, onChange }: ReflectionF
   const [goalAlignment, setGoalAlignment] = useState<string | null>(null);
   const [futureNotes, setFutureNotes] = useState("");
 
+  // Check if required fields are filled
+  const isValid = strategyRating !== null && confidenceRating !== null && goalAlignment !== null;
+
   // Notify parent of changes
   useEffect(() => {
-    onChange({
-      q1_strategy: strategyRating !== null ? STRATEGY_LABELS[strategyRating] || "" : "",
-      q2_confidence: confidenceRating,
-      q3_improvement: futureNotes,
-      q4_value: goalAlignment,
-    });
-  }, [strategyRating, confidenceRating, goalAlignment, futureNotes, onChange]);
+    onChange(
+      {
+        q1_strategy: strategyRating !== null ? STRATEGY_LABELS[strategyRating] || "" : "",
+        q2_confidence: confidenceRating,
+        q3_improvement: futureNotes,
+        q4_value: goalAlignment,
+      },
+      isValid
+    );
+  }, [strategyRating, confidenceRating, goalAlignment, futureNotes, onChange, isValid]);
 
   const strategyEmojis = ["😟", "😐", "😊", "😁", "🤩"];
   const confidenceEmojis = ["🤔", "🙂", "😌", "😎", "🚀"];
@@ -65,6 +71,7 @@ export function ReflectionForm({ strategyName, mainGoal, onChange }: ReflectionF
             {strategyName}
           </span>{" "}
           bagimu?
+          <span className="text-error ml-0.5">*</span>
         </h3>
         <div className="flex justify-between items-center px-1">
           {strategyEmojis.map((emoji, index) => (
@@ -85,34 +92,32 @@ export function ReflectionForm({ strategyName, mainGoal, onChange }: ReflectionF
         </div>
       </motion.section>
 
-      {/* Q2: Mastery Confidence */}
+      {/* Q2: Mastery Confidence — same style as Q1 */}
       <motion.section variants={itemVariants} className="space-y-4">
         <h3 className="text-base font-bold text-neutral-800 leading-snug">
           Seberapa yakin kamu menguasai materi ini sekarang?
+          <span className="text-error ml-0.5">*</span>
         </h3>
-        <div className="space-y-3">
-          <div className="flex justify-between items-center px-1 relative">
-            <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1 bg-neutral-100 rounded-full -z-10" />
-            {confidenceEmojis.map((emoji, index) => (
-              <button
-                key={index}
-                type="button"
-                onClick={() => setConfidenceRating(index + 1)}
-                className={cn(
-                  "w-11 h-11 bg-white flex items-center justify-center text-2xl rounded-full border-2 transition-all duration-300 shadow-sm",
-                  confidenceRating === index + 1
-                    ? "border-primary bg-blue-50 grayscale-0 scale-125 z-10"
-                    : "border-transparent grayscale opacity-50 z-0"
-                )}
-              >
-                {emoji}
-              </button>
-            ))}
-          </div>
-          <div className="flex justify-between text-[10px] font-bold text-neutral-400 uppercase tracking-widest px-1">
-            <span>Masih Ragu</span>
-            <span>Sangat Yakin</span>
-          </div>
+        <div className="flex justify-between items-center px-1">
+          {confidenceEmojis.map((emoji, index) => (
+            <button
+              key={index}
+              type="button"
+              onClick={() => setConfidenceRating(index + 1)}
+              className={cn(
+                "text-4xl transition-all duration-300 transform active:scale-90",
+                confidenceRating === index + 1
+                  ? "grayscale-0 opacity-100 scale-125 -translate-y-1 drop-shadow-md"
+                  : "grayscale opacity-40 hover:grayscale-0 hover:opacity-100"
+              )}
+            >
+              {emoji}
+            </button>
+          ))}
+        </div>
+        <div className="flex justify-between text-[10px] font-bold text-neutral-400 uppercase tracking-widest px-1">
+          <span>Masih Ragu</span>
+          <span>Sangat Yakin</span>
         </div>
       </motion.section>
 
@@ -124,6 +129,7 @@ export function ReflectionForm({ strategyName, mainGoal, onChange }: ReflectionF
             {mainGoal}
           </span>
           ?
+          <span className="text-error ml-0.5">*</span>
         </h3>
         <div className="flex gap-3">
           {[
@@ -169,7 +175,7 @@ export function ReflectionForm({ strategyName, mainGoal, onChange }: ReflectionF
         </div>
       </motion.section>
 
-      {/* Q4: Future Notes */}
+      {/* Q4: Future Notes (Optional) */}
       <motion.section variants={itemVariants} className="space-y-3">
         <h3 className="text-base font-bold text-neutral-800 leading-snug">
           Ada catatan untuk dirimu di masa depan?{" "}

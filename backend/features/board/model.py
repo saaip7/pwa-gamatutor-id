@@ -90,6 +90,17 @@ class Card:
         )
 
     @staticmethod
+    def find_archived(user_id):
+        """Find all archived cards for a user, sorted by updated_at descending."""
+        return list(
+            mongo.db.cards.find({
+                "user_id": ObjectId(user_id),
+                "archived": True,
+                "deleted": {"$ne": True},
+            }).sort("updated_at", -1)
+        )
+
+    @staticmethod
     def update_card(user_id, card_id, updates):
         """Update specific fields on a card. Returns (success, message, status)."""
         # Remove fields that should never be directly overwritten

@@ -30,19 +30,28 @@ export interface AdvancedOptionsData {
 
 interface AdvancedOptionsProps {
   onChange: (data: AdvancedOptionsData) => void;
+  defaultValue?: AdvancedOptionsData;
 }
 
-export function AdvancedOptions({ onChange }: AdvancedOptionsProps) {
+export function AdvancedOptions({ onChange, defaultValue }: AdvancedOptionsProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [difficulty, setDifficulty] = useState<"Easy" | "Medium" | "Hard">("Medium");
+  const [difficulty, setDifficulty] = useState<"Easy" | "Medium" | "Hard">(
+    defaultValue?.difficulty ?? "Medium"
+  );
   const [isTrackNilai, setTrackNilai] = useState(false);
-  const [preTestGrade, setPreTestGrade] = useState<string>("");
+  const [preTestGrade, setPreTestGrade] = useState<string>(
+    defaultValue?.preTestGrade != null ? String(defaultValue.preTestGrade) : ""
+  );
 
   // Subtasks State (mapped to checklists for BE)
-  const [subtasks, setSubtasks] = useState<{ id: string; text: string }[]>([]);
+  const [subtasks, setSubtasks] = useState<{ id: string; text: string }[]>(
+    defaultValue?.checklists?.map((c) => ({ id: c.id, text: c.title })) ?? []
+  );
 
   // Links State
-  const [links, setLinks] = useState<{ id: string; title: string; url: string }[]>([]);
+  const [links, setLinks] = useState<{ id: string; title: string; url: string }[]>(
+    defaultValue?.links ?? []
+  );
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [newLink, setNewLink] = useState({ title: "", url: "" });
 

@@ -8,6 +8,7 @@ import { Check, Clock, Link2, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Task } from "./TaskCard";
 import { GripVertical } from "lucide-react";
+import { useFocusSessionStore } from "@/stores/focusSession";
 
 interface DraggableBoardCardProps {
   task: Task;
@@ -27,6 +28,8 @@ export function DraggableBoardCard({
   showFocusButton = false,
 }: DraggableBoardCardProps) {
   const router = useRouter();
+  const activeCardId = useFocusSessionStore((s) => s.cardId);
+  const sessionActive = useFocusSessionStore((s) => s.isActive);
   const [isLongPress, setIsLongPress] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const touchStartPos = useRef<{ x: number; y: number } | null>(null);
@@ -238,23 +241,39 @@ export function DraggableBoardCard({
         </div>
       </div>
 
-      {showFocusButton && (
-        <div
-          className="px-4 pb-4 pt-0 bg-neutral-50 border-t border-neutral-100"
-          onClick={(e) => {
-            e.stopPropagation();
-            router.push(`/task/${task.id}/focus`);
-          }}
-          onTouchEnd={(e) => {
-            e.stopPropagation();
-          }}
-        >
-          <button className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold text-sm rounded-xl shadow-md flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
-            <Play className="w-4 h-4" />
-            Mulai Fokus
-          </button>
-        </div>
-      )}
+      {showFocusButton && (() => {
+        const isThisCard = activeCardId === task.id;
+        const isBlocked = sessionActive && !isThisCard;
+
+        return (
+          <div
+            className={cn(
+              "px-4 pb-4 pt-0 bg-neutral-50 border-t border-neutral-100",
+              isBlocked && "opacity-50"
+            )}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!isBlocked) router.push(`/task/${task.id}/focus`);
+            }}
+            onTouchEnd={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            <button
+              className={cn(
+                "w-full py-2.5 font-bold text-sm rounded-xl shadow-md flex items-center justify-center gap-2 transition-transform",
+                isBlocked
+                  ? "bg-neutral-200 text-neutral-400 cursor-not-allowed shadow-none"
+                  : "bg-gradient-to-r from-blue-600 to-blue-500 text-white active:scale-[0.98]"
+              )}
+              disabled={isBlocked}
+            >
+              <Play className="w-4 h-4" />
+              {isThisCard ? "Lanjutkan Fokus" : isBlocked ? "Sesi Lain Aktif" : "Mulai Fokus"}
+            </button>
+          </div>
+        );
+      })()}
     </div>
   );
 

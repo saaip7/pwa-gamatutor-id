@@ -11,6 +11,7 @@ import {
   Pause,
   AlertTriangle,
 } from "lucide-react";
+import { toast } from "sonner";
 import { FocusTimer } from "@/components/feature/task/focus/FocusTimer";
 import { FocusStrategyTip } from "@/components/feature/task/focus/FocusStrategyTip";
 import { Drawer } from "@/components/ui/Drawer";
@@ -35,21 +36,35 @@ export default function FocusModePage() {
   const {
     isActive: storeHasSession,
     sessionId: storeSessionId,
+    startTime: storeStartTime,
     startSession,
     endSession: clearStore,
+    markFinished,
+    clearFinished,
+    setPendingReflection,
   } = useFocusSessionStore();
 
   const [card, setCard] = useState<BoardCard | null>(null);
   const [loading, setLoading] = useState(true);
   const [sessionStarting, setSessionStarting] = useState(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionStartTime, setSessionStartTime] = useState<number>(0);
   const [showEndDrawer, setShowEndDrawer] = useState(false);
   const [ending, setEnding] = useState(false);
   const [strategyTip, setStrategyTip] = useState(DEFAULT_TIP);
 
-  const sessionStartRef = useRef<Date | null>(null);
   const sessionStartedRef = useRef(false);
   const finishingRef = useRef(false);
+
+  // Guard: if this card was just finished, redirect away
+  useEffect(() => {
+    const finishedId = useFocusSessionStore.getState().lastFinishedCardId;
+    if (finishedId === id) {
+      clearFinished(id);
+      router.replace("/board");
+      return;
+    }
+  }, [id]);
 
   // Fetch card detail on mount
   useEffect(() => {
@@ -67,7 +82,9 @@ export default function FocusModePage() {
     api
       .get<{ learning_strat_name: string; tips: string[] }[]>("/learningstrats")
       .then((strategies) => {
-        const match = strategies.find((s) => s.learning_strat_name === card.learning_strategy);
+        const match = strategies.find(
+          (s) => s.learning_strat_name === card.learning_strategy
+        );
         if (match?.tips?.length) {
           const randomIndex = Math.floor(Math.random() * match.tips.length);
           setStrategyTip(match.tips[randomIndex]);
@@ -76,20 +93,9 @@ export default function FocusModePage() {
       .catch(() => {});
   }, [card?.learning_strategy]);
 
-  // Start study session — only ONCE, or resume from store
-  useEffect(() => {
-    if (!card || sessionStartedRef.current) return;
-    sessionStartedRef.current = true;
-
-    // Resume existing session from store (e.g. user navigated away and came back)
-    if (storeHasSession && storeSessionId && useFocusSessionStore.getState().cardId === id) {
-      setSessionId(storeSessionId);
-      sessionStartRef.current = new Date(useFocusSessionStore.getState().startTime);
-      setSessionStarting(false);
-      return;
-    }
-
-    // Start new session
+  // Extracted: start a new session via BE
+  const startNewSession = useCallback(() => {
+    if (!card) return;
     setSessionStarting(true);
     api
       .post<{ _id: string; card_id: string; start_time: string }>(
@@ -97,17 +103,55 @@ export default function FocusModePage() {
         { card_id: id }
       )
       .then((res) => {
+        const beStartTime = new Date(res.start_time).getTime();
         setSessionId(res._id);
-        sessionStartRef.current = new Date(res.start_time);
-        // Save to global store so SessionBar can access it
-        startSession(res._id, id, card.task_name || "Fokus Belajar");
+        setSessionStartTime(beStartTime);
+        startSession(res._id, id, card.task_name || "Fokus Belajar", beStartTime);
       })
       .catch(() => {
-        sessionStartRef.current = new Date();
-        startSession("local", id, card.task_name || "Fokus Belajar");
+        const now = Date.now();
+        setSessionStartTime(now);
+        startSession("local", id, card.task_name || "Fokus Belajar", now);
       })
       .finally(() => setSessionStarting(false));
-  }, [card, id]);
+  }, [card, id, startSession]);
+
+  // Start study session — only ONCE, or resume from store
+  useEffect(() => {
+    if (!card || sessionStartedRef.current) return;
+    sessionStartedRef.current = true;
+
+    // Resume existing session from store — but validate against BE first
+    if (storeHasSession && storeSessionId && storeSessionId !== "local" && useFocusSessionStore.getState().cardId === id) {
+      setSessionStarting(true);
+      // Verify session still exists in BE (not cleaned up by orphan job)
+      api.get<{ _id: string; start_time: string; end_time: string | null }>(
+        `/api/study-sessions/${storeSessionId}`
+      ).then((res) => {
+        if (res.end_time) {
+          // Session was already ended (orphan cleanup or other reason)
+          clearStore();
+          toast.info("Sesi sebelumnya sudah berakhir. Memulai sesi baru...", { duration: 4000 });
+          startNewSession();
+        } else {
+          // Session still valid — resume
+          const beStartTime = new Date(res.start_time).getTime();
+          setSessionId(storeSessionId);
+          setSessionStartTime(beStartTime);
+          setSessionStarting(false);
+        }
+      }).catch(() => {
+        // Session not found in BE — start fresh
+        clearStore();
+        toast.info("Sesi sebelumnya sudah kadaluarsa. Memulai sesi baru...", { duration: 4000 });
+        startNewSession();
+      });
+      return;
+    }
+
+    // No existing session — start new
+    startNewSession();
+  }, [card, id, storeHasSession, storeSessionId, clearStore, startNewSession]);
 
   // Derive strategy info from card
   const strategyName = card?.learning_strategy || "Fokus Mandiri";
@@ -136,8 +180,8 @@ export default function FocusModePage() {
 
   // Save personal best if this session is a new record (longest single session)
   const savePersonalBest = async () => {
-    if (!sessionStartRef.current) return;
-    const durationMs = Date.now() - sessionStartRef.current.getTime();
+    if (!sessionStartTime) return;
+    const durationMs = Date.now() - sessionStartTime;
     if (durationMs < 60000) return;
 
     const currentBest = card?.personal_best;
@@ -164,11 +208,19 @@ export default function FocusModePage() {
 
     try {
       await savePersonalBest();
-      await endSessionInDB();
-    } finally {
-      clearStore();
-      router.back();
+    } catch {
+      toast.error("Gagal menyimpan personal best");
     }
+
+    try {
+      await endSessionInDB();
+    } catch {
+      toast.error("Gagal mengakhiri sesi di server");
+    }
+
+    markFinished(id);
+    clearStore();
+    router.back();
   };
 
   // Action 2: Jeda & Sesuaikan — end session, card moves to controlling
@@ -179,12 +231,25 @@ export default function FocusModePage() {
 
     try {
       await savePersonalBest();
-      await endSessionInDB();
-      await moveCard(id, "controlling");
-    } finally {
-      clearStore();
-      router.back();
+    } catch {
+      toast.error("Gagal menyimpan personal best");
     }
+
+    try {
+      await endSessionInDB();
+    } catch {
+      toast.error("Gagal mengakhiri sesi di server");
+    }
+
+    try {
+      await moveCard(id, "controlling");
+    } catch {
+      toast.error("Gagal memindahkan kartu ke Controlling");
+    }
+
+    markFinished(id);
+    clearStore();
+    router.back();
   };
 
   // Action 3: Selesai & Beri Refleksi — end session, navigate to reflection
@@ -193,19 +258,26 @@ export default function FocusModePage() {
     finishingRef.current = true;
     setEnding(true);
 
-    const durationSec = sessionStartRef.current
-      ? Math.floor((Date.now() - sessionStartRef.current.getTime()) / 1000)
+    const durationSec = sessionStartTime
+      ? Math.floor((Date.now() - sessionStartTime) / 1000)
       : 0;
 
     try {
       await savePersonalBest();
-      await endSessionInDB();
-      clearStore();
-      router.push(`/task/${id}/reflection?duration=${durationSec}`);
     } catch {
-      finishingRef.current = false;
-      setEnding(false);
+      toast.error("Gagal menyimpan personal best");
     }
+
+    try {
+      await endSessionInDB();
+    } catch {
+      toast.error("Gagal mengakhiri sesi di server");
+    }
+
+    markFinished(id);
+    setPendingReflection(id, durationSec);
+    clearStore();
+    router.push(`/task/${id}/reflection?duration=${durationSec}`);
   };
 
   // Minimize → go back, SessionBar keeps session alive
@@ -258,7 +330,7 @@ export default function FocusModePage() {
 
         <FocusTimer
           personalBest={personalBestDisplay}
-          startTime={sessionStartRef.current?.getTime() || Date.now()}
+          startTime={sessionStartTime || Date.now()}
         />
       </main>
 
