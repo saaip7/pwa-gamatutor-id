@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from bson import ObjectId
 from features.board.model import Board, Card, _ensure_card_indexes
 from features.badge.badge_engine import BadgeEngine
+from shared.db import mongo
 from shared.log_model import Log
 from shared.streak import update_streak
 
@@ -164,17 +165,15 @@ def move_card(card_id):
     if not success:
         return jsonify({"message": "Move failed"}), 500
 
-    # Badge + streak triggers when card moves to Done
-    badge_results = []
+    # Any card movement counts as meaningful activity for streak
     streak = None
+    badge_results = []
 
+    if old_column != new_column:
+        streak = update_streak(user_id)
+
+    # Badge triggers when card moves to Done
     if new_column == "list4" and old_column != "list4":
-        # Check if card has reflection with q2_confidence for streak
-        reflection = card.get("reflection") or data.get("reflection")
-        if reflection and reflection.get("q2_confidence"):
-            streak = update_streak(user_id)
-            Log.create(user_id, "streak_active", "Streak updated — task completed with reflection")
-
         unlocked = BadgeEngine.evaluate(user_id, "task_done")
         badge_results.extend(unlocked)
         Log.create(user_id, "task_done", f"Task moved to Done: {card.get('task_name', card_id)}")
@@ -223,6 +222,7 @@ def create_card():
     card = Card.create(user_id, board_id, data)
 
     Log.create(user_id, "task_created", f"Card created: {card.get('task_name', '')}")
+    update_streak(user_id)
 
     return jsonify({
         "message": "Card created",
@@ -280,6 +280,7 @@ def update_card(card_id):
     badge_results = []
 
     if "reflection" in updates and updates["reflection"]:
+        update_streak(user_id)
         unlocked = BadgeEngine.evaluate(user_id, "reflection_completed")
         badge_results.extend(unlocked)
         Log.create(user_id, "reflection_completed", f"Reflection saved for card {card_id}")
@@ -302,12 +303,15 @@ def update_card(card_id):
 
 @jwt_required()
 def delete_card(card_id):
-    """DELETE /board/card/<card_id> — Hard delete a card."""
+    """DELETE /board/card/<card_id> — Hard delete a card and its study sessions."""
     user_id = get_jwt_identity()
 
     success = Card.delete_card(user_id, card_id)
     if not success:
         return jsonify({"message": "Card not found"}), 404
+
+    # Also delete all study sessions for this card
+    mongo.db.study_sessions.delete_many({"card_id": card_id})
 
     Log.create(user_id, "task_deleted", f"Card deleted: {card_id}")
 
