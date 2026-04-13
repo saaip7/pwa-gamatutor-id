@@ -17,6 +17,8 @@ import {
   Youtube,
   BarChart2,
   Archive,
+  BookOpen,
+  TrendingUp,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { TaskDetailHeader } from "@/components/feature/task/TaskDetailHeader";
@@ -379,6 +381,81 @@ export default function TaskDetailPage() {
             </div>
           )}
         </section>
+
+        {/* Section: Nilai (Pre-test / Post-test) */}
+        {(card.pre_test_grade != null || card.post_test_grade != null) && (
+          <section className="space-y-3">
+            <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
+              <TrendingUp className="w-4 h-4 text-neutral-400" />
+              Nilai
+            </h3>
+            <div className="bg-neutral-50 border border-neutral-100 rounded-2xl overflow-hidden">
+              <div className="grid grid-cols-2 divide-x divide-neutral-100">
+                <div className="px-5 py-4 text-center">
+                  <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest block">
+                    Pre-test
+                  </span>
+                  <span className="text-2xl font-black text-neutral-900 block mt-1">
+                    {card.pre_test_grade ?? "—"}
+                  </span>
+                </div>
+                <div className="px-5 py-4 text-center">
+                  <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest block">
+                    Post-test
+                  </span>
+                  <span className="text-2xl font-black text-neutral-900 block mt-1">
+                    {card.post_test_grade ?? "—"}
+                  </span>
+                </div>
+              </div>
+              {card.pre_test_grade != null && card.post_test_grade != null && card.pre_test_grade > 0 && (
+                <div className="border-t border-neutral-100 px-5 py-3 flex items-center justify-center gap-2">
+                  <TrendingUp className={cn(
+                    "w-4 h-4",
+                    card.post_test_grade > card.pre_test_grade
+                      ? "text-emerald-500"
+                      : card.post_test_grade < card.pre_test_grade
+                        ? "text-rose-500"
+                        : "text-neutral-400"
+                  )} />
+                  <span className={cn(
+                    "text-sm font-bold",
+                    card.post_test_grade > card.pre_test_grade
+                      ? "text-emerald-600"
+                      : card.post_test_grade < card.pre_test_grade
+                        ? "text-rose-600"
+                        : "text-neutral-500"
+                  )}>
+                    {(() => {
+                      const diff = ((card.post_test_grade! - card.pre_test_grade!) / card.pre_test_grade! * 100);
+                      return diff > 0 ? `+${diff.toFixed(0)}%` : `${diff.toFixed(0)}%`;
+                    })()}
+                  </span>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Section: Catatan Refleksi (q3_improvement) */}
+        {card.reflection?.q3_improvement && (
+          <section className="space-y-3">
+            <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
+              <BookOpen className="w-4 h-4 text-neutral-400" />
+              Catatan untuk Dirimu
+            </h3>
+            <div className="bg-amber-50/50 border border-amber-100/60 rounded-2xl p-5">
+              <p className="text-sm text-neutral-700 font-medium leading-relaxed italic">
+                "{card.reflection.q3_improvement}"
+              </p>
+              {card.reflection.completed_at && (
+                <p className="text-[10px] text-neutral-400 font-bold mt-3 uppercase tracking-wider">
+                  Ditulis {new Date(card.reflection.completed_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                </p>
+              )}
+            </div>
+          </section>
+        )}
       </main>
 
       <TaskDetailActionBar taskId={id} status={status} taskName={card.task_name} isArchived={isArchived} />
