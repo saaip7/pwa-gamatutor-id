@@ -205,7 +205,17 @@ class Board:
 
     @staticmethod
     def delete_board(board_id, user_id):
-        """Delete the board document AND all associated cards."""
+        """Delete the board document AND all associated cards + study sessions."""
+        # Get all card_ids for this board to clean up study sessions
+        card_ids = [
+            c["card_id"] for c in mongo.db.cards.find(
+                {"board_id": ObjectId(board_id), "user_id": ObjectId(user_id)},
+                {"card_id": 1}
+            )
+        ]
+        # Delete study sessions for these cards
+        if card_ids:
+            mongo.db.study_sessions.delete_many({"card_id": {"$in": card_ids}})
         # Delete all cards belonging to this board
         mongo.db.cards.delete_many(
             {"board_id": ObjectId(board_id), "user_id": ObjectId(user_id)}

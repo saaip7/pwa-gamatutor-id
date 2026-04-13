@@ -118,7 +118,6 @@ class Analytics:
         cards = list(mongo.db.cards.find({
             "user_id": user_id,
             "learning_strategy": {"$exists": True, "$ne": None},
-            "deleted": {"$ne": True},
         }))
 
         if not cards:
@@ -138,14 +137,22 @@ class Analytics:
                 }
             strategy_data[strat]["cards"].append(card)
 
-            # Subjective: Q1 effectiveness rating
+            # Subjective: Q1 effectiveness rating (ensure numeric)
             q1 = card.get("reflection", {}).get("q1_strategy")
             if q1 is not None:
-                strategy_data[strat]["q1_ratings"].append(q1)
+                try:
+                    strategy_data[strat]["q1_ratings"].append(float(q1))
+                except (ValueError, TypeError):
+                    pass
 
-            # Objective: grade improvement
+            # Objective: grade improvement (ensure numeric)
             pre = card.get("pre_test_grade")
             post = card.get("post_test_grade")
+            try:
+                pre = float(pre) if pre is not None else None
+                post = float(post) if post is not None else None
+            except (ValueError, TypeError):
+                pre = post = None
             if pre is not None and post is not None and pre > 0:
                 imp = ((post - pre) / pre) * 100
                 strategy_data[strat]["improvements"].append(imp)
