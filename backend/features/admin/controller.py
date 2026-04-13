@@ -100,17 +100,36 @@ def get_user_detail(user_id):
     # Badges — use Badge model to get ALL definitions + unlock status
     badges = Badge.get_all_badges(user_id)
 
-    # Goals
+    # Goals — stringify ObjectIds for JSON serialization
     goals = list(mongo.db.goals.find({"user_id": oid}))
     for g in goals:
         g["_id"] = str(g["_id"])
         g["user_id"] = str(g["user_id"])
+        if "card_id" in g and g["card_id"]:
+            g["card_id"] = str(g["card_id"])
+
+    # Task goals — from goal_check field on cards
+    task_goals = []
+    cards_with_goals = list(mongo.db.cards.find(
+        {"user_id": oid, "goal_check": {"$exists": True, "$ne": None}},
+        {"card_id": 1, "task_name": 1, "course_name": 1, "goal_check": 1}
+    ))
+    for c in cards_with_goals:
+        gc = c.get("goal_check", {})
+        if gc and gc.get("goal_text"):
+            task_goals.append({
+                "card_id": c.get("card_id", str(c["_id"])),
+                "task_name": c.get("task_name", ""),
+                "course_name": c.get("course_name"),
+                "goal_text": gc.get("goal_text", ""),
+                "helpful": gc.get("helpful"),
+            })
 
     # Board (metadata + cards from separate collection)
     board_doc = mongo.db.boards.find_one({"user_id": oid})
     board = _build_board_with_cards(board_doc, user_id)
 
-    # Recent study sessions (last 20)
+    # Recent study sessions (last 20) — compute duration from timestamps
     study_sessions = list(
         mongo.db.study_sessions.find({"user_id": oid})
         .sort("start_time", -1)
@@ -119,6 +138,14 @@ def get_user_detail(user_id):
     for s in study_sessions:
         s["_id"] = str(s["_id"])
         s["user_id"] = str(s["user_id"])
+        if s.get("card_id"):
+            s["card_id"] = str(s["card_id"])
+        # Compute duration (seconds) and status
+        if s.get("start_time") and s.get("end_time"):
+            s["duration"] = int((s["end_time"] - s["start_time"]).total_seconds())
+            s["status"] = "completed"
+        else:
+            s["status"] = "active"
 
     # Streak info from preferences
     streak_info = None
@@ -130,6 +157,7 @@ def get_user_detail(user_id):
         "preferences": preferences,
         "badges": badges,
         "goals": goals,
+        "task_goals": task_goals,
         "board": board,
         "recent_study_sessions": study_sessions,
         "streak": streak_info,

@@ -42,6 +42,14 @@ export interface AdminGoal {
   created_at: string;
 }
 
+export interface AdminTaskGoal {
+  card_id: string;
+  task_name: string;
+  course_name?: string;
+  goal_text: string;
+  helpful?: boolean | null;
+}
+
 export interface AdminBoardList {
   id: string;
   title: string;
@@ -55,7 +63,7 @@ export interface AdminBoardCard {
   description?: string;
   deadline?: string;
   difficulty?: string;
-  personal_best?: string;
+  personal_best?: { duration_ms?: number; date?: string } | string;
   reflection?: {
     q1_strategy?: number;
     q2_confidence?: number;
@@ -124,6 +132,7 @@ export interface AdminUserDetail {
   preferences: AdminPreferences | null;
   badges: AdminBadge[];
   goals: AdminGoal[];
+  task_goals: AdminTaskGoal[];
   board: AdminBoard | null;
   recent_study_sessions: AdminStudySession[];
   streak: AdminPreferences["streak"] | null;

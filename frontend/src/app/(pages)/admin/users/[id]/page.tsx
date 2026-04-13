@@ -31,6 +31,7 @@ import type {
   AdminUser,
   AdminBadge,
   AdminGoal,
+  AdminTaskGoal,
   AdminBoard,
   AdminStudySession,
   AdminPreferences,
@@ -248,7 +249,11 @@ function BoardTab({ board }: { board: AdminBoard | null }) {
                       )}
                       <div className="flex items-center gap-4 text-sm text-neutral-400">
                         {card.personal_best && (
-                          <span className="font-medium" style={{ color: "#059669" }}>PB {card.personal_best}</span>
+                          <span className="font-medium" style={{ color: "#059669" }}>
+                            PB {typeof card.personal_best === "object"
+                              ? `${Math.round((card.personal_best.duration_ms ?? 0) / 60000)}m`
+                              : card.personal_best}
+                          </span>
                         )}
                         {card.deadline && <span>Deadline: {fmtDate(card.deadline)}</span>}
                       </div>
@@ -266,57 +271,80 @@ function BoardTab({ board }: { board: AdminBoard | null }) {
 
 // ========== GOALS TAB ==========
 
-function GoalsTab({ goals }: { goals: AdminGoal[] }) {
-  const grouped = useMemo(() => ({
-    general: goals.filter((g) => !g.card_id),
-    task: goals.filter((g) => g.card_id),
-  }), [goals]);
-
-  const META: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-    general: { label: "General Goals", icon: Target, color: "#3B82F6" },
-    task: { label: "Task Goals", icon: CheckCircle2, color: "#059669" },
-  };
-
+function GoalsTab({ goals, taskGoals }: { goals: AdminGoal[]; taskGoals: AdminTaskGoal[] }) {
   return (
     <div style={col(20)}>
-      {(Object.entries(grouped) as [string, AdminGoal[]][]).map(([type, items]) => {
-        const m = META[type];
-        const Icon = m.icon;
-        return (
-          <div key={type} style={col(8)}>
-            <div className="flex items-center gap-2.5">
-              <div
-                className="w-6 h-6 rounded flex items-center justify-center"
-                style={{ background: `${m.color}1a` }}
-              >
-                <Icon className="w-3.5 h-3.5" style={{ color: m.color }} />
-              </div>
-              <SectionLabel>{m.label}</SectionLabel>
-              <span className="text-sm text-neutral-400">{items.length}</span>
-            </div>
-            {items.length === 0 ? (
-              <p className="text-sm text-neutral-400 py-3 text-center">Belum ada</p>
-            ) : (
-              <Card>
-                {items.map((goal, i) => {
-                  const content = goal.goal_text || [goal.text_pre, goal.text_highlight].filter(Boolean).join(" ");
-                  return (
-                    <ListRow key={goal._id} last={i === items.length - 1}>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm text-neutral-800">{content}</p>
-                        {goal.card_id && (
-                          <p className="text-sm text-neutral-400 mt-0.5">Task: {goal.card_id}</p>
-                        )}
-                      </div>
-                      <span className="text-sm text-neutral-400 shrink-0 ml-3">{fmtDate(goal.created_at)}</span>
-                    </ListRow>
-                  );
-                })}
-              </Card>
-            )}
+      {/* General Goals (from goals collection) */}
+      <div style={col(8)}>
+        <div className="flex items-center gap-2.5">
+          <div
+            className="w-6 h-6 rounded flex items-center justify-center"
+            style={{ background: "rgba(59,130,246,0.1)" }}
+          >
+            <Target className="w-3.5 h-3.5" style={{ color: "#3B82F6" }} />
           </div>
-        );
-      })}
+          <SectionLabel>General Goals</SectionLabel>
+          <span className="text-sm text-neutral-400">{goals.length}</span>
+        </div>
+        {goals.length === 0 ? (
+          <p className="text-sm text-neutral-400 py-3 text-center">Belum ada</p>
+        ) : (
+          <Card>
+            {goals.map((goal, i) => {
+              const content = goal.goal_text || [goal.text_pre, goal.text_highlight].filter(Boolean).join(" ");
+              return (
+                <ListRow key={goal._id} last={i === goals.length - 1}>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-neutral-800">{content}</p>
+                  </div>
+                  <span className="text-sm text-neutral-400 shrink-0 ml-3">{fmtDate(goal.created_at)}</span>
+                </ListRow>
+              );
+            })}
+          </Card>
+        )}
+      </div>
+
+      {/* Task Goals (from cards' goal_check field) */}
+      <div style={col(8)}>
+        <div className="flex items-center gap-2.5">
+          <div
+            className="w-6 h-6 rounded flex items-center justify-center"
+            style={{ background: "rgba(5,150,105,0.1)" }}
+          >
+            <CheckCircle2 className="w-3.5 h-3.5" style={{ color: "#059669" }} />
+          </div>
+          <SectionLabel>Task Goals</SectionLabel>
+          <span className="text-sm text-neutral-400">{taskGoals.length}</span>
+        </div>
+        {taskGoals.length === 0 ? (
+          <p className="text-sm text-neutral-400 py-3 text-center">Belum ada</p>
+        ) : (
+          <Card>
+            {taskGoals.map((tg, i) => (
+              <ListRow key={tg.card_id} last={i === taskGoals.length - 1}>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-neutral-800">{tg.goal_text}</p>
+                  <p className="text-sm text-neutral-400 mt-0.5">
+                    {tg.task_name}{tg.course_name ? ` — ${tg.course_name}` : ""}
+                  </p>
+                </div>
+                {tg.helpful != null && (
+                  <span
+                    className="text-xs font-medium px-2 py-0.5 rounded shrink-0 ml-3"
+                    style={{
+                      background: tg.helpful ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.1)",
+                      color: tg.helpful ? "#059669" : "#dc2626",
+                    }}
+                  >
+                    {tg.helpful ? "Membantu" : "Kurang membantu"}
+                  </span>
+                )}
+              </ListRow>
+            ))}
+          </Card>
+        )}
+      </div>
     </div>
   );
 }
@@ -432,36 +460,45 @@ function SessionsTab({ sessions }: { sessions: AdminStudySession[] }) {
 
 interface AnalyticsData {
   dashboard: {
-    streak: number;
-    focus_hours: number;
-    tasks_completed: number;
-    badges_unlocked: number;
-    total_badges: number;
+    stats: {
+      streak: number;
+      focusHours: number;
+      tasksCompleted: number;
+      badgesUnlocked: number;
+      totalBadges: number;
+    };
+    patterns: {
+      productiveTime: string;
+      productiveDays: string;
+    };
   } | null;
   progress: {
-    total_cards: number;
-    completed_cards: number;
-    completion_rate: number;
-    personal_best: string;
-    task_distribution: {
-      todo_percent: number;
-      in_progress_percent: number;
-      review_percent: number;
-      done_percent: number;
+    summary: {
+      totalCards: number;
+      completedCards: number;
+      completionRate: number;
+      personalBest: string;
+    };
+    taskDistribution: {
+      total: number;
+      todoPercent: number;
+      progPercent: number;
+      revPercent: number;
+      donePercent: number;
     };
   } | null;
   strategy_effectiveness: {
     strategies: {
       name: string;
-      task_count: number;
-      subjective: { avg_rating: number; total_rated: number; positive_percent: number };
-      objective: { avg_improvement: number; total_tracked: number; is_data_insufficient: boolean };
+      taskCount: number;
+      subjective: { avgRating: number; totalRated: number; positivePercent: number };
+      objective: { avgImprovement: number; totalTracked: number; isDataInsufficient: boolean };
     }[];
   } | null;
   confidence_trend: {
-    course_name: string;
-    available_courses: { name: string; data_points: number }[];
-    data_points: { date: string; confidence: number; learning_gain: number }[];
+    courseName: string | null;
+    availableCourses: { name: string; dataPoints: number }[];
+    dataPoints: { date: string; confidence: number | null; learningGain: number | null }[];
     trend: string;
   } | null;
 }
@@ -509,8 +546,9 @@ function AnalyticsTab({ userId }: { userId: string }) {
 
   if (!data) return null;
 
-  const db = data.dashboard;
-  const prog = data.progress;
+  const db = data.dashboard?.stats ?? null;
+  const prog = data.progress?.summary ?? null;
+  const progDist = data.progress?.taskDistribution ?? null;
   const strat = data.strategy_effectiveness;
   const conf = data.confidence_trend;
 
@@ -542,7 +580,7 @@ function AnalyticsTab({ userId }: { userId: string }) {
               <Clock className="w-5 h-5" style={{ color: "#3B82F6" }} />
             </div>
             <div className="min-w-0">
-              <p className="text-2xl font-bold text-neutral-800">{db?.focus_hours ?? 0}</p>
+              <p className="text-2xl font-bold text-neutral-800">{db?.focusHours ?? 0}</p>
               <p className="text-sm text-neutral-400">Focus Hours</p>
             </div>
           </div>
@@ -556,7 +594,7 @@ function AnalyticsTab({ userId }: { userId: string }) {
               <CheckCircle2 className="w-5 h-5" style={{ color: "#10b981" }} />
             </div>
             <div className="min-w-0">
-              <p className="text-2xl font-bold text-neutral-800">{db?.tasks_completed ?? 0}</p>
+              <p className="text-2xl font-bold text-neutral-800">{db?.tasksCompleted ?? 0}</p>
               <p className="text-sm text-neutral-400">Tasks Done</p>
             </div>
           </div>
@@ -570,7 +608,7 @@ function AnalyticsTab({ userId }: { userId: string }) {
               <Award className="w-5 h-5" style={{ color: "#d97706" }} />
             </div>
             <div className="min-w-0">
-              <p className="text-2xl font-bold text-neutral-800">{db?.badges_unlocked ?? 0}<span className="text-sm font-normal text-neutral-400">/{db?.total_badges ?? 0}</span></p>
+              <p className="text-2xl font-bold text-neutral-800">{db?.badgesUnlocked ?? 0}<span className="text-sm font-normal text-neutral-400">/{db?.totalBadges ?? 0}</span></p>
               <p className="text-sm text-neutral-400">Badges</p>
             </div>
           </div>
@@ -578,7 +616,7 @@ function AnalyticsTab({ userId }: { userId: string }) {
       </div>
 
       {/* --- 2. Task Distribution --- */}
-      {prog && (
+      {prog && progDist && (
         <>
           <SectionLabel>Distribusi Tugas</SectionLabel>
           <Card>
@@ -587,13 +625,13 @@ function AnalyticsTab({ userId }: { userId: string }) {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-neutral-500">Completion Rate</span>
                 <span className="text-sm font-semibold" style={{ color: "#10b981" }}>
-                  {Math.round((prog.completion_rate ?? 0) * 100)}%
+                  {Math.round(prog.completionRate ?? 0)}%
                 </span>
               </div>
-              {prog.personal_best && (
+              {prog.personalBest && (
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-neutral-500">Personal Best</span>
-                  <span className="text-sm font-semibold" style={{ color: "#3B82F6" }}>{prog.personal_best}</span>
+                  <span className="text-sm font-semibold" style={{ color: "#3B82F6" }}>{prog.personalBest}</span>
                 </div>
               )}
 
@@ -603,10 +641,10 @@ function AnalyticsTab({ userId }: { userId: string }) {
                 style={{ height: "28px", display: "flex", background: "#f3f4f6" }}
               >
                 {[
-                  { pct: prog.task_distribution?.todo_percent ?? 0, color: "#94a3b8" },
-                  { pct: prog.task_distribution?.in_progress_percent ?? 0, color: "#3B82F6" },
-                  { pct: prog.task_distribution?.review_percent ?? 0, color: "#f59e0b" },
-                  { pct: prog.task_distribution?.done_percent ?? 0, color: "#10b981" },
+                  { pct: progDist.todoPercent ?? 0, color: "#94a3b8" },
+                  { pct: progDist.progPercent ?? 0, color: "#3B82F6" },
+                  { pct: progDist.revPercent ?? 0, color: "#f59e0b" },
+                  { pct: progDist.donePercent ?? 0, color: "#10b981" },
                 ].map((seg, i) => (
                   <div
                     key={i}
@@ -630,10 +668,10 @@ function AnalyticsTab({ userId }: { userId: string }) {
               {/* Legend */}
               <div className="flex flex-wrap items-center" style={{ gap: "16px" }}>
                 {[
-                  { label: "To Do", pct: prog.task_distribution?.todo_percent ?? 0, color: "#94a3b8" },
-                  { label: "In Progress", pct: prog.task_distribution?.in_progress_percent ?? 0, color: "#3B82F6" },
-                  { label: "Review", pct: prog.task_distribution?.review_percent ?? 0, color: "#f59e0b" },
-                  { label: "Done", pct: prog.task_distribution?.done_percent ?? 0, color: "#10b981" },
+                  { label: "To Do", pct: progDist.todoPercent ?? 0, color: "#94a3b8" },
+                  { label: "In Progress", pct: progDist.progPercent ?? 0, color: "#3B82F6" },
+                  { label: "Review", pct: progDist.revPercent ?? 0, color: "#f59e0b" },
+                  { label: "Done", pct: progDist.donePercent ?? 0, color: "#10b981" },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center" style={{ gap: "6px" }}>
                     <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: item.color }} />
@@ -657,32 +695,32 @@ function AnalyticsTab({ userId }: { userId: string }) {
             <ListRow key={s.name} last={i === strat.strategies.length - 1}>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-neutral-800">{s.name}</p>
-                <p className="text-sm text-neutral-400 mt-0.5">{s.task_count} tugas</p>
+                <p className="text-sm text-neutral-400 mt-0.5">{s.taskCount} tugas</p>
               </div>
               <div className="shrink-0 flex items-center" style={{ gap: "16px" }}>
                 {/* Avg rating */}
-                {s.subjective && s.subjective.total_rated > 0 && (
+                {s.subjective && s.subjective.totalRated > 0 && (
                   <div className="text-center">
                     <p className="text-sm font-semibold text-neutral-800">
-                      {s.subjective.avg_rating?.toFixed(1) ?? "—"}
+                      {s.subjective.avgRating?.toFixed(1) ?? "—"}
                     </p>
                     <p className="text-xs text-neutral-400">Rating</p>
                   </div>
                 )}
                 {/* Positive % */}
-                {s.subjective && s.subjective.total_rated > 0 && (
+                {s.subjective && s.subjective.totalRated > 0 && (
                   <div className="text-center">
                     <p className="text-sm font-semibold" style={{ color: "#10b981" }}>
-                      {Math.round(s.subjective.positive_percent ?? 0)}%
+                      {Math.round(s.subjective.positivePercent ?? 0)}%
                     </p>
                     <p className="text-xs text-neutral-400">Positif</p>
                   </div>
                 )}
                 {/* Avg improvement */}
-                {s.objective && !s.objective.is_data_insufficient && (
+                {s.objective && !s.objective.isDataInsufficient && (
                   <div className="text-center">
                     <p className="text-sm font-semibold" style={{ color: "#3B82F6" }}>
-                      +{Math.round(s.objective.avg_improvement ?? 0)}%
+                      +{Math.round(s.objective.avgImprovement ?? 0)}%
                     </p>
                     <p className="text-xs text-neutral-400">Improvement</p>
                   </div>
@@ -696,14 +734,14 @@ function AnalyticsTab({ userId }: { userId: string }) {
       {/* --- 4. Confidence Trend --- */}
       <SectionLabel>Confidence Trend</SectionLabel>
       <Card>
-        {!conf || !conf.data_points || conf.data_points.length === 0 ? (
+        {!conf || !conf.dataPoints || conf.dataPoints.length === 0 ? (
           <div className="px-4 py-8 text-center text-sm text-neutral-400">Belum ada data confidence</div>
         ) : (
           <div className="p-4" style={col(12)}>
             <div className="flex items-center justify-between">
               <div className="flex items-center" style={{ gap: "8px" }}>
-                {conf.course_name && (
-                  <span className="text-sm font-medium text-neutral-800">{conf.course_name}</span>
+                {conf.courseName && (
+                  <span className="text-sm font-medium text-neutral-800">{conf.courseName}</span>
                 )}
                 {(() => {
                   const t = conf.trend;
@@ -722,24 +760,24 @@ function AnalyticsTab({ userId }: { userId: string }) {
                   );
                 })()}
               </div>
-              {conf.data_points.length > 0 && (
+              {conf.dataPoints.length > 0 && (
                 <span className="text-sm text-neutral-500">
-                  Latest: <span className="font-semibold text-neutral-800">{conf.data_points[conf.data_points.length - 1].confidence?.toFixed(1)}</span>
+                  Latest: <span className="font-semibold text-neutral-800">{conf.dataPoints[conf.dataPoints.length - 1].confidence?.toFixed(1)}</span>
                 </span>
               )}
             </div>
 
             {/* Recent data points */}
-            {conf.data_points.length > 0 && (
+            {conf.dataPoints.length > 0 && (
               <div style={col(4)}>
-                {conf.data_points.slice(-5).map((dp, i) => (
+                {conf.dataPoints.slice(-5).map((dp, i) => (
                   <div key={i} className="flex items-center justify-between">
                     <span className="text-sm text-neutral-400">{fmtDate(dp.date)}</span>
                     <div className="flex items-center" style={{ gap: "12px" }}>
                       <span className="text-sm font-medium text-neutral-700">Confidence: {dp.confidence?.toFixed(1)}</span>
-                      {dp.learning_gain != null && (
-                        <span className="text-sm" style={{ color: dp.learning_gain >= 0 ? "#10b981" : "#dc2626" }}>
-                          {dp.learning_gain >= 0 ? "+" : ""}{(dp.learning_gain * 100)?.toFixed(0)}%
+                      {dp.learningGain != null && (
+                        <span className="text-sm" style={{ color: dp.learningGain >= 0 ? "#10b981" : "#dc2626" }}>
+                          {dp.learningGain >= 0 ? "+" : ""}{Math.round(dp.learningGain)}%
                         </span>
                       )}
                     </div>
@@ -1015,7 +1053,7 @@ export default function UserDetailPage({
     );
   }
 
-  const { user, preferences, badges, goals, board, recent_study_sessions, streak } = userDetail;
+  const { user, preferences, badges, goals, task_goals, board, recent_study_sessions, streak } = userDetail;
 
   return (
     <div className="mx-auto" style={col(20)}>
@@ -1075,7 +1113,7 @@ export default function UserDetailPage({
         <ProfileTab user={user} preferences={preferences} streak={streak} />
       )}
       {activeTab === "board" && <BoardTab board={board} />}
-      {activeTab === "goals" && <GoalsTab goals={goals} />}
+      {activeTab === "goals" && <GoalsTab goals={goals} taskGoals={task_goals} />}
       {activeTab === "badges" && <BadgesTab badges={badges} />}
       {activeTab === "sessions" && <SessionsTab sessions={recent_study_sessions} />}
       {activeTab === "analytics" && <AnalyticsTab userId={user._id} />}

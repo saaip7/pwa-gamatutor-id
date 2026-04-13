@@ -138,7 +138,7 @@ class Analytics:
             strategy_data[strat]["cards"].append(card)
 
             # Subjective: Q1 effectiveness rating (ensure numeric)
-            q1 = card.get("reflection", {}).get("q1_strategy")
+            q1 = (card.get("reflection") or {}).get("q1_strategy")
             if q1 is not None:
                 try:
                     strategy_data[strat]["q1_ratings"].append(float(q1))
@@ -245,7 +245,7 @@ class Analytics:
                 course_data[card_course][date_str] = {"confidences": [], "gains": []}
 
             # Confidence (Q2)
-            q2 = card.get("reflection", {}).get("q2_confidence")
+            q2 = (card.get("reflection") or {}).get("q2_confidence")
             if q2 is not None:
                 course_data[card_course][date_str]["confidences"].append(q2)
 
@@ -432,7 +432,7 @@ class Analytics:
 
         notes = []
         for card in cards:
-            reflection = card.get("reflection", {})
+            reflection = card.get("reflection") or {}
             notes.append({
                 "card_id": card.get("card_id", str(card.get("_id", ""))),
                 "task_name": card.get("task_name", ""),

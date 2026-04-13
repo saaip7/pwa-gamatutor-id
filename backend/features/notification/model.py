@@ -73,6 +73,19 @@ class Notification:
             return False
 
     @staticmethod
+    def delete(user_id, notification_id):
+        """Delete a single notification."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        try:
+            result = mongo.db.notifications.delete_one(
+                {"_id": ObjectId(notification_id), "user_id": user_id}
+            )
+            return result.deleted_count > 0
+        except Exception:
+            return False
+
+    @staticmethod
     def mark_all_read(user_id):
         """Mark all notifications as read."""
         if isinstance(user_id, str):
