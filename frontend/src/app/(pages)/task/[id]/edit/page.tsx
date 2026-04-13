@@ -351,10 +351,25 @@ export default function EditTaskPage() {
 
       {/* Delete Confirmation Drawer */}
       <Drawer isOpen={showDeleteDrawer} onClose={() => setShowDeleteDrawer(false)} title="Hapus Tugas?">
-        <div className="space-y-6 pt-2">
+        <div className="space-y-5 pt-2">
           <p className="text-sm text-neutral-600 font-medium leading-relaxed">
-            Tugas <strong>"{card?.task_name}"</strong> akan dihapus secara permanen. Tindakan ini tidak bisa dibatalkan.
+            Tugas <strong>"{card?.task_name}"</strong> akan dihapus secara permanen.
           </p>
+
+          {/* Data loss warning card */}
+          <div className="bg-red-50/80 border border-red-100 rounded-2xl p-4">
+            <p className="text-xs text-red-700/80 font-medium leading-relaxed">
+              Semua data terkait tugas ini akan ikut terhapus, termasuk sesi belajar, personal best, statistik belajar, data refleksi, dan catatan.
+            </p>
+          </div>
+
+          {/* Archive suggestion */}
+          <div className="bg-neutral-50 border border-neutral-100 rounded-2xl p-4">
+            <p className="text-xs text-neutral-500 font-medium leading-relaxed">
+              <span className="font-bold text-neutral-700">Ingin menyimpan datanya?</span> Pilih <strong>Arsipkan</strong> sebagai pengganti hapus — semua data analitik tetap tersimpan.
+            </p>
+          </div>
+
           <div className="flex gap-3">
             <button
               onClick={() => setShowDeleteDrawer(false)}
