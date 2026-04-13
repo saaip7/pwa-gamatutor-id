@@ -68,3 +68,14 @@ def streak_history():
         return jsonify(data), 200
     except Exception as e:
         return jsonify({"message": "An error occurred", "error": str(e)}), 500
+
+
+@jwt_required()
+def reflection_notes():
+    """All q3_improvement notes from cards with reflection data."""
+    user_id = get_jwt_identity()
+    try:
+        data = Analytics.get_reflection_notes(user_id)
+        return jsonify(data), 200
+    except Exception as e:
+        return jsonify({"message": "An error occurred", "error": str(e)}), 500

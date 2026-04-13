@@ -173,6 +173,15 @@ export interface StreakHistoryData {
   freezes_available: number;
 }
 
+export interface ReflectionNote {
+  card_id: string;
+  task_name: string;
+  course_name?: string;
+  q3_improvement: string;
+  completed_at?: string;
+  strategy?: string;
+}
+
 // --- Badges ---
 
 export interface Badge {

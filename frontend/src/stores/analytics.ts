@@ -7,6 +7,7 @@ import type {
   ConfidenceTrendResponse,
   StreakData,
   StreakHistoryData,
+  ReflectionNote,
 } from "@/types";
 
 interface AnalyticsState {
@@ -16,6 +17,7 @@ interface AnalyticsState {
   confidenceTrend: ConfidenceTrendResponse | null;
   streak: StreakData | null;
   streakHistory: StreakHistoryData | null;
+  reflectionNotes: ReflectionNote[] | null;
   loading: boolean;
   error: string | null;
 
@@ -25,6 +27,7 @@ interface AnalyticsState {
   fetchConfidenceTrend: (courseName?: string) => Promise<void>;
   fetchStreak: () => Promise<void>;
   fetchStreakHistory: () => Promise<void>;
+  fetchReflectionNotes: () => Promise<void>;
   fetchAll: () => Promise<void>;
 }
 
@@ -35,6 +38,7 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
   confidenceTrend: null,
   streak: null,
   streakHistory: null,
+  reflectionNotes: null,
   loading: false,
   error: null,
 
@@ -99,6 +103,16 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
       set({ streakHistory: data });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Gagal memuat riwayat streak";
+      set({ error: msg });
+    }
+  },
+
+  fetchReflectionNotes: async () => {
+    try {
+      const data = await api.get<{ notes: ReflectionNote[] }>("/api/analytics/reflection-notes");
+      set({ reflectionNotes: data.notes });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Gagal memuat catatan refleksi";
       set({ error: msg });
     }
   },
