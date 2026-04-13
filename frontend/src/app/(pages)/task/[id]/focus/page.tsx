@@ -171,17 +171,21 @@ export default function FocusModePage() {
     return "—";
   })();
 
-  // End session in DB
-  const endSessionInDB = async () => {
+  // End session in DB — returns server-computed duration_ms
+  const endSessionInDB = async (): Promise<number> => {
     if (sessionId && sessionId !== "local") {
-      await api.post("/api/study-sessions/end", { session_id: sessionId });
+      const res = await api.post<{ message: string; duration_ms: number }>(
+        "/api/study-sessions/end",
+        { session_id: sessionId }
+      );
+      return res.duration_ms ?? 0;
     }
+    // Local session fallback — use wall clock
+    return sessionStartTime ? Date.now() - sessionStartTime : 0;
   };
 
   // Save personal best if this session is a new record (longest single session)
-  const savePersonalBest = async () => {
-    if (!sessionStartTime) return;
-    const durationMs = Date.now() - sessionStartTime;
+  const savePersonalBest = async (durationMs: number) => {
     if (durationMs < 60000) return;
 
     const currentBest = card?.personal_best;
@@ -206,16 +210,17 @@ export default function FocusModePage() {
     finishingRef.current = true;
     setEnding(true);
 
+    let durationMs = 0;
     try {
-      await savePersonalBest();
+      durationMs = await endSessionInDB();
     } catch {
-      toast.error("Gagal menyimpan personal best");
+      toast.error("Gagal mengakhiri sesi di server");
     }
 
     try {
-      await endSessionInDB();
+      await savePersonalBest(durationMs);
     } catch {
-      toast.error("Gagal mengakhiri sesi di server");
+      toast.error("Gagal menyimpan personal best");
     }
 
     markFinished(id);
@@ -229,16 +234,17 @@ export default function FocusModePage() {
     finishingRef.current = true;
     setEnding(true);
 
+    let durationMs = 0;
     try {
-      await savePersonalBest();
+      durationMs = await endSessionInDB();
     } catch {
-      toast.error("Gagal menyimpan personal best");
+      toast.error("Gagal mengakhiri sesi di server");
     }
 
     try {
-      await endSessionInDB();
+      await savePersonalBest(durationMs);
     } catch {
-      toast.error("Gagal mengakhiri sesi di server");
+      toast.error("Gagal menyimpan personal best");
     }
 
     try {
@@ -258,22 +264,20 @@ export default function FocusModePage() {
     finishingRef.current = true;
     setEnding(true);
 
-    const durationSec = sessionStartTime
-      ? Math.floor((Date.now() - sessionStartTime) / 1000)
-      : 0;
-
+    let durationMs = 0;
     try {
-      await savePersonalBest();
-    } catch {
-      toast.error("Gagal menyimpan personal best");
-    }
-
-    try {
-      await endSessionInDB();
+      durationMs = await endSessionInDB();
     } catch {
       toast.error("Gagal mengakhiri sesi di server");
     }
 
+    try {
+      await savePersonalBest(durationMs);
+    } catch {
+      toast.error("Gagal menyimpan personal best");
+    }
+
+    const durationSec = Math.floor(durationMs / 1000);
     markFinished(id);
     setPendingReflection(id, durationSec);
     clearStore();
