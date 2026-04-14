@@ -6,6 +6,7 @@ from bson import ObjectId
 from apscheduler.schedulers.background import BackgroundScheduler
 from shared.db import mongo
 from shared.fcm import send_push
+from shared.timezone_utils import now_wib
 from features.notification.model import Notification
 
 logger = logging.getLogger(__name__)
@@ -22,10 +23,10 @@ def _is_quiet_hours(prefs):
     quiet = prefs.get("notifications", {}).get("quiet_hours", {})
     if not quiet.get("enabled"):
         return False
-    now = datetime.utcnow()
+    wib = now_wib()
     start = quiet.get("start", "22:00")
     end = quiet.get("end", "07:00")
-    current_time = now.strftime("%H:%M")
+    current_time = wib.strftime("%H:%M")
     if start <= end:
         return start <= current_time < end
     else:
@@ -201,8 +202,8 @@ def job_smart_reminder():
     """
     logger.info("[Scheduler] Running smart reminder job")
 
-    now = datetime.utcnow()
-    current_hour = now.hour
+    wib = now_wib()
+    current_hour = wib.hour
 
     users = mongo.db.user_preferences.find({
         "notifications.smart_reminder_enabled": True,
