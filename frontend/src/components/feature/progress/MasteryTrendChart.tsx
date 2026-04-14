@@ -33,6 +33,18 @@ function buildAreaPath(points: { x: number; y: number }[]): string {
   return `${line} L${last.x},100 L${first.x},100 Z`;
 }
 
+function normalizeGainToScale(gainPercent: number): number {
+  // Map learning gain percentage to 1-5 scale for chart display
+  // Negative (regression) → 1, 0% → 2.5 (mid), positive → up to 5
+  // Linear: 0-50% range maps to 2.5-5
+  if (gainPercent <= 0) {
+    // Regression: -50% or worse = 1, 0% = 2.5
+    return Math.max(1, 2.5 + (gainPercent / 50) * 1.5);
+  }
+  // Improvement: 0% = 2.5, 50%+ = 5
+  return Math.min(5, 2.5 + (gainPercent / 50) * 2.5);
+}
+
 function mapDataToSvg(
   dataPoints: ConfidenceDataPoint[],
   key: "confidence" | "learningGain"
@@ -41,9 +53,9 @@ function mapDataToSvg(
   if (valid.length === 0) return [];
   return valid.map((dp, i) => {
     const x = valid.length === 1 ? 50 : (i / (valid.length - 1)) * 100;
-    const value = dp[key]!;
-    const clampedValue = Math.max(1, Math.min(5, value));
-    const y = 100 - ((clampedValue - 1) / 4) * 100;
+    const rawValue = dp[key]!;
+    const value = key === "learningGain" ? normalizeGainToScale(rawValue) : Math.max(1, Math.min(5, rawValue));
+    const y = 100 - ((value - 1) / 4) * 100;
     return { x, y };
   });
 }
