@@ -1,6 +1,7 @@
 from shared.db import mongo
 from bson import ObjectId
 from datetime import datetime, timedelta
+from shared.timezone_utils import utc_to_wib
 
 
 class Analytics:
@@ -476,7 +477,7 @@ class Analytics:
         day_counts = {}
 
         for s in sessions:
-            st = s["start_time"]
+            st = utc_to_wib(s["start_time"])
             hour = st.hour
 
             if 6 <= hour < 12:
@@ -490,7 +491,7 @@ class Analytics:
             else:
                 time_periods["dini_hari"] += 1
 
-            day_name = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"][st.weekday()]
+            day_name = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"][utc_to_wib(s["start_time"]).weekday()]
             day_counts[day_name] = day_counts.get(day_name, 0) + 1
 
         # Map period to label

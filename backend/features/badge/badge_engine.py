@@ -3,6 +3,7 @@ from bson import ObjectId
 from datetime import datetime as dt
 from features.badge.model import Badge, BADGE_DEFINITIONS
 from features.notification.model import Notification
+from shared.timezone_utils import utc_to_wib
 
 
 class BadgeEngine:
@@ -143,7 +144,7 @@ class BadgeEngine:
         # Group sessions by calendar date, keep the hour of first session each day
         daily_hours = {}
         for s in sessions:
-            st = s["start_time"]
+            st = utc_to_wib(s["start_time"])
             date_key = st.strftime("%Y-%m-%d")
             hour = st.hour
             if date_key not in daily_hours:
