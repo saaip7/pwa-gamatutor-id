@@ -77,19 +77,28 @@ def delete_notification(notification_id):
 
 @jwt_required()
 def test_push():
-    """Send a test push notification to the current user's device."""
+    """Send a test push notification to the current user's device.
+
+    Also saves to DB (Notification.create) so we can verify DB integration.
+    """
     user_id = get_jwt_identity()
     title = request.json.get("title", "Test GamaTutor")
     body = request.json.get("body", "Push notification berhasil!")
 
+    # 1. Save to DB first
+    notif = Notification.create(user_id, "reminder", title, body)
+
+    # 2. Send push
     prefs = mongo.db.user_preferences.find_one({"user_id": ObjectId(user_id)})
-    if not prefs or not prefs.get("fcm_token"):
-        return jsonify({"message": "No FCM token found for this user"}), 404
+    token = prefs.get("fcm_token") if prefs else None
+    push_ok = False
+    if token:
+        push_ok = send_push(token, title, body, {"type": "test"})
 
-    token = prefs["fcm_token"]
-    ok = send_push(token, title, body, {"type": "test"})
-
-    if ok:
-        return jsonify({"message": "Push sent", "token_preview": token[:20] + "..."}), 200
-    else:
-        return jsonify({"message": "Push failed (token may be invalid)"}), 500
+    return jsonify({
+        "message": "Done",
+        "db_saved": True,
+        "db_id": str(notif["_id"]),
+        "push_sent": push_ok,
+        "has_token": bool(token),
+    }), 200
