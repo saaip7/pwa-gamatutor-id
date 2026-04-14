@@ -430,13 +430,19 @@ class Analytics:
             },
         ).sort("reflection.completed_at", -1))
 
+        # Build course_name → course_code lookup
+        course_map = {}
+        for c in mongo.db.courses.find({}, {"course_name": 1, "course_code": 1}):
+            course_map[c.get("course_name")] = c.get("course_code")
+
         notes = []
         for card in cards:
             reflection = card.get("reflection") or {}
+            cname = card.get("course_name")
             notes.append({
                 "card_id": card.get("card_id", str(card.get("_id", ""))),
                 "task_name": card.get("task_name", ""),
-                "course_name": card.get("course_name"),
+                "course_code": course_map.get(cname) if cname else None,
                 "q3_improvement": reflection.get("q3_improvement", ""),
                 "completed_at": reflection.get("completed_at"),
                 "strategy": card.get("learning_strategy"),
