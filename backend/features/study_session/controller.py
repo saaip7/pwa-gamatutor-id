@@ -42,6 +42,18 @@ def end():
 
 
 @jwt_required()
+def heartbeat():
+    """Receive a heartbeat ping from FE to signal user is still actively studying."""
+    session_id = request.json.get("session_id")
+    if not session_id:
+        return jsonify({"error": "Missing session_id"}), 400
+    success = StudySession.update_heartbeat(session_id)
+    if not success:
+        return jsonify({"error": "Session not found"}), 404
+    return jsonify({"success": True}), 200
+
+
+@jwt_required()
 def get_session(session_id):
     """Get a single study session by ID. Used by FE to validate resume."""
     session = StudySession.get(session_id)

@@ -56,6 +56,12 @@ export default function FocusModePage() {
   const sessionStartedRef = useRef(false);
   const finishingRef = useRef(false);
 
+  // Visibility tracking state
+  const hiddenAtRef = useRef<number | null>(null);
+  const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [showIdlePopup, setShowIdlePopup] = useState(false);
+  const idleDurationRef = useRef<number>(0);
+
   // Guard: if this card was just finished, redirect away
   useEffect(() => {
     const finishedId = useFocusSessionStore.getState().lastFinishedCardId;
@@ -153,24 +159,6 @@ export default function FocusModePage() {
     startNewSession();
   }, [card, id, storeHasSession, storeSessionId, clearStore, startNewSession]);
 
-  // Derive strategy info from card
-  const strategyName = card?.learning_strategy || "Fokus Mandiri";
-  const strategyIcon = Video;
-
-  // Personal best display
-  const personalBestDisplay = (() => {
-    const pb = card?.personal_best;
-    if (!pb) return "—";
-    if (typeof pb === "string") return pb;
-    if (pb.duration_ms) {
-      const totalMin = Math.floor(pb.duration_ms / 60000);
-      const h = Math.floor(totalMin / 60);
-      const m = totalMin % 60;
-      return h > 0 ? `${h}j ${m}m` : `${m}m`;
-    }
-    return "—";
-  })();
-
   // End session in DB — returns server-computed duration_ms
   const endSessionInDB = async (): Promise<number> => {
     if (sessionId && sessionId !== "local") {
@@ -188,6 +176,110 @@ export default function FocusModePage() {
     // Local session fallback — use wall clock
     return sessionStartTime ? Date.now() - sessionStartTime : 0;
   };
+
+  // Heartbeat: send to BE every 5 min while page is visible
+  const sendHeartbeat = useCallback(async () => {
+    if (!sessionId || sessionId === "local") return;
+    try {
+      await api.post("/api/study-sessions/heartbeat", { session_id: sessionId });
+    } catch {
+      // Silent fail — heartbeat is best-effort
+    }
+  }, [sessionId]);
+
+  // Auto-end session when user is away for 60+ minutes
+  const handleAutoEnd = useCallback(async (hiddenMinutes: number) => {
+    if (finishingRef.current) return;
+    finishingRef.current = true;
+
+    try {
+      await endSessionInDB();
+    } catch {}
+
+    markFinished(id);
+    clearStore();
+    toast.info("Sesi belajar diakhiri otomatis karena tidak aktif selama 60 menit.", { duration: 5000 });
+    router.replace("/board");
+  }, [sessionId, sessionStartTime, id, markFinished, clearStore, router]);
+
+  // Keep refs updated for use in effects (avoids stale closures)
+  const endSessionInDBRef = useRef(endSessionInDB);
+  endSessionInDBRef.current = endSessionInDB;
+
+  const handleAutoEndRef = useRef(handleAutoEnd);
+  handleAutoEndRef.current = handleAutoEnd;
+
+  const sendHeartbeatRef = useRef(sendHeartbeat);
+  sendHeartbeatRef.current = sendHeartbeat;
+
+  // Heartbeat interval: start when sessionId is valid, clear on unmount
+  useEffect(() => {
+    if (sessionId && sessionId !== "local") {
+      sendHeartbeatRef.current(); // Initial heartbeat
+      heartbeatIntervalRef.current = setInterval(() => sendHeartbeatRef.current(), 5 * 60 * 1000);
+      return () => {
+        if (heartbeatIntervalRef.current) {
+          clearInterval(heartbeatIntervalRef.current);
+          heartbeatIntervalRef.current = null;
+        }
+      };
+    }
+  }, [sessionId]);
+
+  // Visibility change: detect idle, auto-end, or show popup
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        hiddenAtRef.current = Date.now();
+        // Pause heartbeat while hidden
+        if (heartbeatIntervalRef.current) {
+          clearInterval(heartbeatIntervalRef.current);
+          heartbeatIntervalRef.current = null;
+        }
+      } else if (document.visibilityState === "visible") {
+        if (hiddenAtRef.current && sessionId && !finishingRef.current) {
+          const hiddenDurationMs = Date.now() - hiddenAtRef.current;
+          const hiddenDurationMin = hiddenDurationMs / 60000;
+          idleDurationRef.current = hiddenDurationMin;
+
+          if (hiddenDurationMin > 60) {
+            // Auto-end session
+            handleAutoEndRef.current(hiddenDurationMin);
+          } else if (hiddenDurationMin >= 30) {
+            // Show idle popup
+            setShowIdlePopup(true);
+          }
+          // < 30 min: silent resume
+
+          // Resume heartbeat
+          sendHeartbeatRef.current();
+          heartbeatIntervalRef.current = setInterval(() => sendHeartbeatRef.current(), 5 * 60 * 1000);
+        }
+        hiddenAtRef.current = null;
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [sessionId]);
+
+  // Derive strategy info from card
+  const strategyName = card?.learning_strategy || "Fokus Mandiri";
+  const strategyIcon = Video;
+
+  // Personal best display
+  const personalBestDisplay = (() => {
+    const pb = card?.personal_best;
+    if (!pb) return "—";
+    if (typeof pb === "string") return pb;
+    if (pb.duration_ms) {
+      const totalMin = Math.floor(pb.duration_ms / 60000);
+      const h = Math.floor(totalMin / 60);
+      const m = totalMin % 60;
+      return h > 0 ? `${h}j ${m}m` : `${m}m`;
+    }
+    return "—";
+  })();
 
   // Save personal best if this session is a new record (longest single session)
   const savePersonalBest = async (durationMs: number) => {
@@ -405,6 +497,51 @@ export default function FocusModePage() {
           </div>
         </div>
       </Drawer>
+
+      {/* Idle Confirmation Popup */}
+      {showIdlePopup && (
+        <div className="absolute inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                <AlertTriangle className="w-6 h-6 text-amber-500" />
+              </div>
+              <h3 className="text-base font-bold text-neutral-900">Masih belajar?</h3>
+              <p className="text-sm text-neutral-500 mt-2 leading-relaxed">
+                Kamu tidak aktif selama <span className="font-bold text-neutral-700">{Math.round(idleDurationRef.current)} menit</span>.
+                Sesi belajarmu masih berjalan.
+              </p>
+            </div>
+            <div className="mt-5 flex gap-3">
+              <button
+                onClick={() => {
+                  setShowIdlePopup(false);
+                }}
+                className="flex-1 py-3 bg-primary text-white rounded-xl font-bold text-sm active:scale-95 transition-all"
+              >
+                Ya, Lanjutkan
+              </button>
+              <button
+                onClick={async () => {
+                  setShowIdlePopup(false);
+                  if (!finishingRef.current) {
+                    finishingRef.current = true;
+                    try {
+                      await endSessionInDBRef.current();
+                    } catch {}
+                    markFinished(id);
+                    clearStore();
+                    router.replace("/board");
+                  }
+                }}
+                className="flex-1 py-3 bg-white border border-neutral-200 text-neutral-700 rounded-xl font-bold text-sm active:scale-95 transition-all"
+              >
+                Akhiri Sesi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
