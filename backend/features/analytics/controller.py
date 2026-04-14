@@ -40,9 +40,9 @@ def strategy_effectiveness():
 def confidence_trend():
     """Confidence and learning gain over time, optionally filtered by course."""
     user_id = get_jwt_identity()
-    course_name = request.args.get("course_name")
+    course_code = request.args.get("course_code")
     try:
-        data = Analytics.get_confidence_trend(user_id, course_name=course_name)
+        data = Analytics.get_confidence_trend(user_id, course_code=course_code)
         return jsonify(data), 200
     except Exception as e:
         return jsonify({"message": "An error occurred", "error": str(e)}), 500

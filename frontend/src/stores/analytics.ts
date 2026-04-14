@@ -74,9 +74,9 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
     }
   },
 
-  fetchConfidenceTrend: async (courseName) => {
+  fetchConfidenceTrend: async (courseCode) => {
     try {
-      const query = courseName ? `?course_name=${encodeURIComponent(courseName)}` : "";
+      const query = courseCode ? `?course_code=${encodeURIComponent(courseCode)}` : "";
       const data = await api.get<ConfidenceTrendResponse>(
         `/api/analytics/confidence-trend${query}`
       );
