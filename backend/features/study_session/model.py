@@ -1,6 +1,6 @@
 from shared.db import mongo
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class StudySession:
@@ -60,6 +60,49 @@ class StudySession:
         doc["_id"] = str(doc["_id"])
         doc["user_id"] = str(doc["user_id"])
         return doc
+
+    @staticmethod
+    def update_heartbeat(session_id):
+        """Update last_heartbeat timestamp on an active session."""
+        now = datetime.utcnow()
+        result = mongo.db.study_sessions.update_one(
+            {"_id": ObjectId(session_id)},
+            {"$set": {"last_heartbeat": now}},
+        )
+        return result.modified_count > 0
+
+    @staticmethod
+    def auto_end_stale(user_id=None, minutes_threshold=60):
+        """End stale sessions inactive beyond minutes_threshold.
+
+        Sets end_time to last_heartbeat + 5min grace, marks auto_ended=True.
+        Returns list of dicts with user_id and card_id of auto-ended sessions.
+        """
+        cutoff = datetime.utcnow() - timedelta(minutes=minutes_threshold)
+
+        query = {
+            "end_time": None,
+            "last_heartbeat": {"$exists": True, "$lt": cutoff},
+        }
+        if user_id:
+            query["user_id"] = ObjectId(user_id) if not isinstance(user_id, ObjectId) else user_id
+
+        stale_sessions = list(mongo.db.study_sessions.find(query))
+
+        ended = []
+        for session in stale_sessions:
+            grace_end = session["last_heartbeat"] + timedelta(minutes=5)
+            mongo.db.study_sessions.update_one(
+                {"_id": session["_id"]},
+                {"$set": {"end_time": grace_end, "auto_ended": True}},
+            )
+            ended.append({
+                "user_id": str(session["user_id"]),
+                "card_id": session["card_id"],
+                "session_id": str(session["_id"]),
+            })
+
+        return ended
 
     @staticmethod
     def get_total_time(card_id):

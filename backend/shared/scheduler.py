@@ -378,6 +378,84 @@ def job_cleanup_orphan_sessions():
 
 
 # ---------------------------------------------------------------------------
+# Job 6: Idle Session Check (push notification after 30 min inactivity)
+# ---------------------------------------------------------------------------
+
+def job_check_idle_sessions():
+    """Find active sessions idle >30 min and send a nudge notification."""
+    logger.info("[Scheduler] Running idle session check")
+
+    now = datetime.utcnow()
+    idle_cutoff = now - timedelta(minutes=30)
+
+    idle_sessions = mongo.db.study_sessions.find({
+        "end_time": None,
+        "last_heartbeat": {"$exists": True, "$lt": idle_cutoff},
+        "idle_notified": {"$ne": True},
+    })
+
+    notified = 0
+    for session in idle_sessions:
+        user_id = session["user_id"]
+        prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
+        if not prefs:
+            continue
+
+        token = prefs.get("fcm_token")
+        if not token:
+            continue
+
+        title = "Masih belajar?"
+        body = "Kamu sudah tidak aktif selama 30 menit. Ketuk untuk kembali belajar."
+
+        send_push(token, title, body, {"type": "idle_session", "session_id": str(session["_id"])})
+
+        # Mark as notified to avoid repeated pings
+        mongo.db.study_sessions.update_one(
+            {"_id": session["_id"]},
+            {"$set": {"idle_notified": True}},
+        )
+
+        notified += 1
+
+    if notified:
+        logger.info(f"[Scheduler] Idle session check: {notified} notifications sent")
+
+
+# ---------------------------------------------------------------------------
+# Job 7: Auto-End Stale Sessions (after 60 min inactivity)
+# ---------------------------------------------------------------------------
+
+def job_auto_end_stale_sessions():
+    """Auto-end sessions idle >60 min and notify users."""
+    from features.study_session.model import StudySession
+    from shared.log_model import Log
+
+    logger.info("[Scheduler] Running auto-end stale sessions")
+
+    ended = StudySession.auto_end_stale(minutes_threshold=60)
+
+    notified = 0
+    for item in ended:
+        user_oid = ObjectId(item["user_id"]) if isinstance(item["user_id"], str) else item["user_id"]
+        prefs = mongo.db.user_preferences.find_one({"user_id": user_oid})
+        if not prefs:
+            continue
+
+        token = prefs.get("fcm_token")
+        if token:
+            title = "Sesi belajar diakhiri"
+            body = "Sesi belajarmu telah diakhiri otomatis karena tidak aktif selama 60 menit."
+            send_push(token, title, body, {"type": "auto_end", "session_id": item["session_id"]})
+            notified += 1
+
+        Log.create(item["user_id"], "session_auto_ended", f"Session {item['session_id']} auto-ended after 60 min idle")
+
+    if ended:
+        logger.info(f"[Scheduler] Auto-end stale: {len(ended)} sessions ended, {notified} notifications sent")
+
+
+# ---------------------------------------------------------------------------
 # Init
 # ---------------------------------------------------------------------------
 
@@ -404,6 +482,14 @@ def init_scheduler(app):
             job_cleanup_orphan_sessions, "interval", hours=6,
             id="orphan_cleanup", replace_existing=True,
         )
+        scheduler.add_job(
+            job_check_idle_sessions, "interval", minutes=10,
+            id="check_idle_sessions", replace_existing=True,
+        )
+        scheduler.add_job(
+            job_auto_end_stale_sessions, "interval", minutes=10,
+            id="auto_end_stale_sessions", replace_existing=True,
+        )
 
         scheduler.start()
-        logger.info("[Scheduler] Started with 5 jobs: deadline_reminder, smart_reminder, streak_nudge, social_presence, orphan_cleanup")
+        logger.info("[Scheduler] Started with 7 jobs: deadline_reminder, smart_reminder, streak_nudge, social_presence, orphan_cleanup, check_idle_sessions, auto_end_stale_sessions")
