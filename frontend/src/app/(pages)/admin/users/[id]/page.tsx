@@ -23,7 +23,9 @@ import {
   TrendingUp,
   BarChart3,
   Loader2,
-} from "lucide-react";
+  BookOpen,
+  Timer,
+  } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
 import { useAdminStore } from "@/stores/admin";
@@ -36,6 +38,7 @@ import type {
   AdminStudySession,
   AdminPreferences,
   AdminUserDetail,
+  AdminBoardCard,
 } from "@/stores/admin";
 
 // --- Types ---
@@ -165,8 +168,23 @@ function ProfileTab({ user, preferences, streak }: { user: AdminUser; preference
 
 // ========== BOARD TAB ==========
 
+function fmtPB(pb: AdminBoardCard["personal_best"]): string | null {
+  if (!pb) return null;
+  if (typeof pb === "string") return pb;
+  const ms = pb.duration_ms ?? 0;
+  if (ms === 0) return null;
+  const m = Math.round(ms / 60000);
+  const h = Math.floor(m / 60);
+  const r = m % 60;
+  return h > 0 ? `${h}j ${r}m` : `${m}m`;
+}
+
+const PRI_COLOR: Record<string, string> = { high: "#dc2626", medium: "#d97706", low: "#6b7280" };
+const PRI_LABEL: Record<string, string> = { high: "High", medium: "Med", low: "Low" };
+const DIF_COLOR: Record<string, string> = { hard: "#dc2626", medium: "#d97706", easy: "#059669", very_easy: "#6b7280" };
+const DIF_LABEL: Record<string, string> = { hard: "Hard", medium: "Med", easy: "Easy", very_easy: "V.Easy" };
+
 function BoardTab({ board }: { board: AdminBoard | null }) {
-  // Group cards by column from board lists
   const columns = useMemo(() => {
     const groups: Record<string, { title: string; cards: NonNullable<AdminBoard["lists"]>[number]["cards"] }> = {
       planning: { title: "Planning", cards: [] },
@@ -174,16 +192,12 @@ function BoardTab({ board }: { board: AdminBoard | null }) {
       controlling: { title: "Controlling", cards: [] },
       reflection: { title: "Reflection", cards: [] },
     };
-
     if (board?.lists) {
       for (const list of board.lists) {
         const colKey = LIST_ID_TO_COL[list.id] || list.id;
-        if (groups[colKey]) {
-          groups[colKey].cards = list.cards || [];
-        }
+        if (groups[colKey]) groups[colKey].cards = list.cards || [];
       }
     }
-
     return groups;
   }, [board]);
 
@@ -195,71 +209,135 @@ function BoardTab({ board }: { board: AdminBoard | null }) {
       {Object.entries(columns).map(([colKey, { cards: colCards }]) => {
         const meta = COL[colKey];
         return (
-          <div key={colKey} style={col(8)}>
+          <div key={colKey} style={col(10)}>
             {/* Column header */}
             <div
               className="rounded-lg px-4 py-2.5 flex items-center justify-between"
               style={{ background: meta.light }}
             >
-              <div className="flex items-center gap-2.5">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ background: meta.color }} />
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full" style={{ background: meta.color }} />
                 <span className="text-sm font-semibold" style={{ color: meta.color }}>{meta.label}</span>
               </div>
-              <span
-                className="text-xs font-bold px-2 py-0.5 rounded-full"
-                style={{ background: meta.bg, color: meta.color }}
-              >
-                {colCards.length}
-              </span>
+              <span className="text-xs font-medium text-neutral-400">{colCards.length}</span>
             </div>
 
-            {/* Cards */}
             {colCards.length === 0 ? (
-              <p className="text-sm text-neutral-400 py-3 text-center">Kosong</p>
+              <p className="text-sm text-neutral-300 text-center py-4">Kosong</p>
             ) : (
               <div style={col(8)}>
-                {colCards.map((card) => (
-                  <Card key={card.card_id}>
-                    <div className="p-4" style={col(10)}>
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-neutral-800">{card.task_name}</p>
-                          {card.course_name && (
-                            <p className="text-sm text-neutral-400 mt-0.5">{card.course_name}</p>
+                {colCards.map((card) => {
+                  const pb = fmtPB(card.personal_best);
+                  const ref = card.reflection;
+                  const hasRef = ref?.q1_strategy || ref?.q2_confidence || ref?.q3_improvement;
+                  const hasGrades = card.pre_test_grade != null || card.post_test_grade != null;
+                  const gradeDelta = (card.pre_test_grade != null && card.post_test_grade != null && (card.pre_test_grade ?? 0) > 0)
+                    ? Math.round(((card.post_test_grade! - card.pre_test_grade!) / card.pre_test_grade!) * 100)
+                    : null;
+
+                  return (
+                    <Card key={card.card_id}>
+                      <div className="p-4" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+
+                        {/* Title + priority/difficulty */}
+                        <div className="flex items-start justify-between" style={{ gap: "10px" }}>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-neutral-800 leading-snug">{card.task_name}</p>
+                            {card.course_name && (
+                              <p className="text-xs text-neutral-400 mt-0.5">{card.course_name}</p>
+                            )}
+                          </div>
+                          <div className="flex items-center shrink-0" style={{ gap: "4px" }}>
+                            {card.priority && (
+                              <span className="text-xs font-semibold px-2 py-0.5 rounded" style={{
+                                background: `${PRI_COLOR[card.priority]}14`,
+                                color: PRI_COLOR[card.priority],
+                              }}>
+                                {PRI_LABEL[card.priority]}
+                              </span>
+                            )}
+                            {card.difficulty && (
+                              <span className="text-xs font-semibold px-2 py-0.5 rounded" style={{
+                                background: `${DIF_COLOR[card.difficulty]}14`,
+                                color: DIF_COLOR[card.difficulty],
+                              }}>
+                                {DIF_LABEL[card.difficulty]}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Description */}
+                        {card.description && (
+                          <p className="text-sm text-neutral-500 leading-relaxed">{card.description}</p>
+                        )}
+
+                        {/* Metadata: strategy · PB · deadline */}
+                        <div className="flex flex-wrap items-center text-sm" style={{ gap: "12px" }}>
+                          {card.learning_strategy && (
+                            <span className="flex items-center gap-1.5 font-medium text-neutral-600">
+                              <BookOpen className="w-3.5 h-3.5 text-neutral-400" />
+                              {card.learning_strategy}
+                            </span>
+                          )}
+                          {pb && (
+                            <span className="flex items-center gap-1.5 font-medium" style={{ color: "#059669" }}>
+                              <Timer className="w-3.5 h-3.5" style={{ opacity: 0.7 }} />
+                              {pb}
+                            </span>
+                          )}
+                          {card.deadline && (
+                            <span className="flex items-center gap-1.5 text-neutral-400">
+                              <Calendar className="w-3.5 h-3.5" />
+                              {fmtDate(card.deadline)}
+                            </span>
                           )}
                         </div>
-                        {card.difficulty && (
-                          <span
-                            className="text-sm font-medium px-2 py-0.5 rounded shrink-0"
-                            style={{ background: "#f3f4f6", color: "#6b7280" }}
-                          >
-                            Lv {card.difficulty}
-                          </span>
+
+                        {/* Grades */}
+                        {hasGrades && (
+                          <div className="flex items-center text-sm" style={{ gap: "8px" }}>
+                            <span className="text-neutral-400">Nilai</span>
+                            <span className="font-semibold text-neutral-700">{card.pre_test_grade ?? "—"}</span>
+                            <span className="text-neutral-300">→</span>
+                            <span className="font-semibold text-neutral-700">{card.post_test_grade ?? "—"}</span>
+                            {gradeDelta != null && (
+                              <span className="font-semibold" style={{
+                                color: gradeDelta >= 0 ? "#059669" : "#dc2626",
+                              }}>
+                                {gradeDelta >= 0 ? "+" : ""}{gradeDelta}%
+                              </span>
+                            )}
+                          </div>
                         )}
-                      </div>
-                      {card.description && (
-                        <p className="text-sm text-neutral-500 leading-relaxed">{card.description}</p>
-                      )}
-                      {card.reflection?.notes && (
-                        <div className="rounded-md px-3 py-2" style={{ background: meta.bg }}>
-                          <p className="text-sm" style={{ color: meta.color }}>
-                            {card.reflection.notes}
-                          </p>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-4 text-sm text-neutral-400">
-                        {card.personal_best && (
-                          <span className="font-medium" style={{ color: "#059669" }}>
-                            PB {typeof card.personal_best === "object"
-                              ? `${Math.round((card.personal_best.duration_ms ?? 0) / 60000)}m`
-                              : card.personal_best}
-                          </span>
+
+                        {/* Reflection */}
+                        {hasRef && (
+                          <div className="rounded-lg p-3" style={{ background: "#f9fafb" }}>
+                            <div className="flex items-center flex-wrap" style={{ gap: "16px" }}>
+                              {ref?.q1_strategy != null && (
+                                <span className="flex items-center text-sm" style={{ gap: "6px" }}>
+                                  <span className="text-neutral-400">Efektivitas</span>
+                                  <span className="font-semibold text-neutral-700">{ref.q1_strategy}/5</span>
+                                </span>
+                              )}
+                              {ref?.q2_confidence != null && (
+                                <span className="flex items-center text-sm" style={{ gap: "6px" }}>
+                                  <span className="text-neutral-400">Confidence</span>
+                                  <span className="font-semibold text-neutral-700">{ref.q2_confidence}/5</span>
+                                </span>
+                              )}
+                            </div>
+                            {ref?.q3_improvement && (
+                              <p className="text-sm text-neutral-500 leading-relaxed mt-2">{ref.q3_improvement}</p>
+                            )}
+                          </div>
                         )}
-                        {card.deadline && <span>Deadline: {fmtDate(card.deadline)}</span>}
+
                       </div>
-                    </div>
-                  </Card>
-                ))}
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </div>

@@ -63,13 +63,20 @@ export interface AdminBoardCard {
   description?: string;
   deadline?: string;
   difficulty?: string;
+  priority?: string;
+  learning_strategy?: string;
   personal_best?: { duration_ms?: number; date?: string } | string;
+  pre_test_grade?: number;
+  post_test_grade?: number;
   reflection?: {
     q1_strategy?: number;
     q2_confidence?: number;
+    q3_improvement?: string;
     q3_alignment?: string;
     notes?: string;
+    completed_at?: string;
   };
+  goal_check?: { goal_text?: string; helpful?: boolean };
   checklists?: { id: string; title: string; isCompleted: boolean }[];
   created_at?: string;
 }
