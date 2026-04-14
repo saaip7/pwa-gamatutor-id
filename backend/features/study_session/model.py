@@ -67,7 +67,7 @@ class StudySession:
         now = datetime.utcnow()
         result = mongo.db.study_sessions.update_one(
             {"_id": ObjectId(session_id)},
-            {"$set": {"last_heartbeat": now}},
+            {"$set": {"last_heartbeat": now, "idle_notified": False}},
         )
         return result.modified_count > 0
 

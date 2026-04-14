@@ -370,9 +370,9 @@ def job_social_presence():
 # ---------------------------------------------------------------------------
 
 def job_cleanup_orphan_sessions():
-    """End study sessions that have been running for over 24 hours without ending."""
+    """End study sessions that have been running for over 3 hours without ending (safety net for sessions without heartbeat)."""
     from features.study_session.model import StudySession
-    cleaned = StudySession.cleanup_orphan_sessions(max_age_hours=24)
+    cleaned = StudySession.cleanup_orphan_sessions(max_age_hours=3)
     if cleaned:
         logger.info(f"[Scheduler] Orphan session cleanup: {cleaned} sessions ended")
 
@@ -406,7 +406,7 @@ def job_check_idle_sessions():
             continue
 
         title = "Masih belajar?"
-        body = "Kamu sudah tidak aktif selama 30 menit. Ketuk untuk kembali belajar."
+        body = "Kamu sudah lama tidak terlihat. Ketuk untuk kembali belajar."
 
         send_push(token, title, body, {"type": "idle_session", "session_id": str(session["_id"])})
 
@@ -433,7 +433,7 @@ def job_auto_end_stale_sessions():
 
     logger.info("[Scheduler] Running auto-end stale sessions")
 
-    ended = StudySession.auto_end_stale(minutes_threshold=60)
+    ended = StudySession.auto_end_stale(minutes_threshold=90)
 
     notified = 0
     for item in ended:
@@ -445,7 +445,7 @@ def job_auto_end_stale_sessions():
         token = prefs.get("fcm_token")
         if token:
             title = "Sesi belajar diakhiri"
-            body = "Sesi belajarmu telah diakhiri otomatis karena tidak aktif selama 60 menit."
+            body = "Kamu sudah lama tidak aktif. Sesi belajarmu telah diakhiri otomatis."
             send_push(token, title, body, {"type": "auto_end", "session_id": item["session_id"]})
             notified += 1
 

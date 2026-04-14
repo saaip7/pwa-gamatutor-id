@@ -61,6 +61,8 @@ export default function FocusModePage() {
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [showIdlePopup, setShowIdlePopup] = useState(false);
   const idleDurationRef = useRef<number>(0);
+  const totalHiddenMsRef = useRef<number>(0); // Accumulated hidden duration for timer offset
+  const [, forceUpdate] = useState(0); // Trigger re-render when timer offset changes
 
   // Guard: if this card was just finished, redirect away
   useEffect(() => {
@@ -198,7 +200,7 @@ export default function FocusModePage() {
 
     markFinished(id);
     clearStore();
-    toast.info("Sesi belajar diakhiri otomatis karena tidak aktif selama 60 menit.", { duration: 5000 });
+    toast.info("Sesi belajar diakhiri otomatis karena sudah lama tidak aktif.", { duration: 5000 });
     router.replace("/board");
   }, [sessionId, sessionStartTime, id, markFinished, clearStore, router]);
 
@@ -237,12 +239,22 @@ export default function FocusModePage() {
           heartbeatIntervalRef.current = null;
         }
       } else if (document.visibilityState === "visible") {
+        if (hiddenAtRef.current && sessionId) {
+          const hiddenDurationMs = Date.now() - hiddenAtRef.current;
+          // Trust threshold: first 30 min of hidden time, we trust user is studying
+          const TRUST_THRESHOLD_MS = 30 * 60 * 1000;
+          const untrustedMs = Math.max(0, hiddenDurationMs - TRUST_THRESHOLD_MS);
+          if (untrustedMs > 0) {
+            totalHiddenMsRef.current += untrustedMs;
+            forceUpdate((v) => v + 1);
+          }
+        }
         if (hiddenAtRef.current && sessionId && !finishingRef.current) {
           const hiddenDurationMs = Date.now() - hiddenAtRef.current;
           const hiddenDurationMin = hiddenDurationMs / 60000;
           idleDurationRef.current = hiddenDurationMin;
 
-          if (hiddenDurationMin > 60) {
+          if (hiddenDurationMin > 90) {
             // Auto-end session
             handleAutoEndRef.current(hiddenDurationMin);
           } else if (hiddenDurationMin >= 30) {
@@ -431,7 +443,7 @@ export default function FocusModePage() {
 
         <FocusTimer
           personalBest={personalBestDisplay}
-          startTime={sessionStartTime || Date.now()}
+          startTime={(sessionStartTime || Date.now()) + totalHiddenMsRef.current}
         />
       </main>
 
@@ -508,8 +520,7 @@ export default function FocusModePage() {
               </div>
               <h3 className="text-base font-bold text-neutral-900">Masih belajar?</h3>
               <p className="text-sm text-neutral-500 mt-2 leading-relaxed">
-                Kamu tidak aktif selama <span className="font-bold text-neutral-700">{Math.round(idleDurationRef.current)} menit</span>.
-                Sesi belajarmu masih berjalan.
+                Kamu sudah cukup lama tidak aktif. Sesi belajarmu masih berjalan.
               </p>
             </div>
             <div className="mt-5 flex gap-3">
