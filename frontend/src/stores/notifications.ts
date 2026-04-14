@@ -13,6 +13,7 @@ interface NotificationsState {
   fetchUnreadCount: () => Promise<void>;
   markRead: (id: string) => Promise<void>;
   markAllRead: () => Promise<void>;
+  deleteNotification: (id: string) => Promise<void>;
 }
 
 export const useNotificationsStore = create<NotificationsState>((set, get) => ({
@@ -80,6 +81,25 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
     }));
     try {
       await api.put("/api/notifications/read-all");
+    } catch {
+      // Re-fetch on failure
+      get().fetchNotifications(1);
+    }
+  },
+
+  deleteNotification: async (id) => {
+    // Optimistic update
+    set((state) => {
+      const deleted = state.notifications.find((n) => n._id === id);
+      return {
+        notifications: state.notifications.filter((n) => n._id !== id),
+        unreadCount: deleted && !deleted.read
+          ? Math.max(0, state.unreadCount - 1)
+          : state.unreadCount,
+      };
+    });
+    try {
+      await api.delete(`/api/notifications/${id}`);
     } catch {
       // Re-fetch on failure
       get().fetchNotifications(1);

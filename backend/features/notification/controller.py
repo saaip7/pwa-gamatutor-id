@@ -63,6 +63,19 @@ def mark_all_read():
 
 
 @jwt_required()
+def delete_notification(notification_id):
+    """Delete a single notification."""
+    user_id = get_jwt_identity()
+    try:
+        success = Notification.delete(user_id, notification_id)
+        if not success:
+            return jsonify({"message": "Notification not found"}), 404
+        return jsonify({"message": "Notification deleted"}), 200
+    except Exception as e:
+        return jsonify({"message": "An error occurred", "error": str(e)}), 500
+
+
+@jwt_required()
 def test_push():
     """Send a test push notification to the current user's device."""
     user_id = get_jwt_identity()
