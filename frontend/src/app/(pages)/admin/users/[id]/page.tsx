@@ -687,57 +687,125 @@ function AnalyticsTab({ userId }: { userId: string }) {
 
       {/* --- 3. Strategy Effectiveness --- */}
       <SectionLabel>Efektivitas Strategi</SectionLabel>
-      <Card>
-        {!strat?.strategies || strat.strategies.length === 0 ? (
+      {!strat?.strategies || strat.strategies.length === 0 ? (
+        <Card>
           <div className="px-4 py-8 text-center text-sm text-neutral-400">Belum ada data strategi</div>
-        ) : (
-          strat.strategies.map((s, i) => (
-            <ListRow key={s.name} last={i === strat.strategies.length - 1}>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-neutral-800">{s.name}</p>
-                <p className="text-sm text-neutral-400 mt-0.5">{s.taskCount} tugas</p>
-              </div>
-              <div className="shrink-0 flex items-center" style={{ gap: "16px" }}>
-                {/* Avg rating */}
-                {s.subjective && s.subjective.totalRated > 0 && (
-                  <div className="text-center">
-                    <p className="text-sm font-semibold text-neutral-800">
-                      {s.subjective.avgRating?.toFixed(1) ?? "—"}
-                    </p>
-                    <p className="text-xs text-neutral-400">Rating</p>
+        </Card>
+      ) : (
+        <div style={col(12)}>
+          {strat.strategies.map((s) => {
+            const hasData = s.taskCount > 0;
+            return (
+              <Card key={s.name}>
+                <div className="p-4" style={col(14)}>
+                  {/* Strategy header */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-neutral-800">{s.name}</p>
+                      <p className="text-sm text-neutral-400">{s.taskCount} tugas</p>
+                    </div>
                   </div>
-                )}
-                {/* Positive % */}
-                {s.subjective && s.subjective.totalRated > 0 && (
-                  <div className="text-center">
-                    <p className="text-sm font-semibold" style={{ color: "#10b981" }}>
-                      {Math.round(s.subjective.positivePercent ?? 0)}%
-                    </p>
-                    <p className="text-xs text-neutral-400">Positif</p>
-                  </div>
-                )}
-                {/* Avg improvement */}
-                {s.objective && !s.objective.isDataInsufficient && (
-                  <div className="text-center">
-                    <p className="text-sm font-semibold" style={{ color: "#3B82F6" }}>
-                      +{Math.round(s.objective.avgImprovement ?? 0)}%
-                    </p>
-                    <p className="text-xs text-neutral-400">Improvement</p>
-                  </div>
-                )}
-              </div>
-            </ListRow>
-          ))
-        )}
-      </Card>
 
-      {/* --- 4. Confidence Trend --- */}
+                  {!hasData ? (
+                    <div className="text-center py-4">
+                      <BarChart3 className="w-5 h-5 text-neutral-300 mx-auto mb-2" />
+                      <p className="text-sm text-neutral-400">Belum ada data</p>
+                    </div>
+                  ) : (
+                    <div style={col(10)}>
+                      {/* Subjective: Rating */}
+                      {s.subjective && s.subjective.totalRated > 0 && (
+                        <div className="rounded-xl p-3" style={{ background: "#fafafa", border: "1px solid #f3f4f6" }}>
+                          <div className="flex justify-between items-center mb-2">
+                            <p className="text-xs text-neutral-500 font-medium">
+                              Rating <span className="text-neutral-400">({s.subjective.totalRated} tugas)</span>
+                            </p>
+                            <span className="text-sm font-bold text-neutral-800">
+                              {s.subjective.avgRating?.toFixed(1) ?? "—"}<span className="text-xs text-neutral-400 font-medium">/5</span>
+                            </span>
+                          </div>
+                          <div className="w-full rounded-full overflow-hidden" style={{ height: "6px", background: "#e5e7eb" }}>
+                            <div
+                              className="h-full rounded-full"
+                              style={{
+                                width: `${s.subjective.positivePercent ?? 0}%`,
+                                background: "#8b5cf6",
+                                transition: "width 0.5s",
+                              }}
+                            />
+                          </div>
+                          <p className="text-xs text-neutral-400 text-right mt-1 font-medium">
+                            {Math.round(s.subjective.positivePercent ?? 0)}% rating positif
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Objective: Peningkatan Nilai */}
+                      {s.objective && (
+                        <div
+                          className="rounded-xl p-3"
+                          style={{
+                            background: s.objective.isDataInsufficient ? "rgba(245,158,11,0.06)" : "rgba(59,130,246,0.06)",
+                            border: `1px solid ${s.objective.isDataInsufficient ? "rgba(245,158,11,0.15)" : "rgba(59,130,246,0.15)"}`,
+                          }}
+                        >
+                          <p className="text-xs text-neutral-500 font-medium mb-2">
+                            Peningkatan Nilai <span className="text-neutral-400">({s.objective.totalTracked} tugas)</span>
+                          </p>
+                          {s.objective.isDataInsufficient ? (
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+                                style={{ background: "rgba(245,158,11,0.15)" }}
+                              >
+                                <BarChart3 className="w-3.5 h-3.5" style={{ color: "#d97706" }} />
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold" style={{ color: "#92400e" }}>Data Kurang</p>
+                                <p className="text-xs text-neutral-400">Tracking nilai perlu min. 3 tugas</p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                                style={{ background: "rgba(16,185,129,0.12)" }}
+                              >
+                                <TrendingUp className="w-4 h-4" style={{ color: "#059669" }} />
+                              </div>
+                              <div>
+                                <p className="text-lg font-bold text-neutral-900">
+                                  +{Math.round(s.objective.avgImprovement ?? 0)}%
+                                </p>
+                                <p className="text-xs font-medium" style={{ color: "#059669" }}>
+                                  Peningkatan {(s.objective.avgImprovement ?? 0) > 20 ? "signifikan" : "stabil"}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {/* --- 4. Confidence Trend (SVG Line Chart) --- */}
       <SectionLabel>Confidence Trend</SectionLabel>
       <Card>
-        {!conf || !conf.dataPoints || conf.dataPoints.length === 0 ? (
-          <div className="px-4 py-8 text-center text-sm text-neutral-400">Belum ada data confidence</div>
+        {!conf || !conf.dataPoints || conf.dataPoints.length < 2 ? (
+          <div className="px-4 py-8 text-center text-sm text-neutral-400">
+            {conf?.dataPoints?.length === 1
+              ? "Data hanya 1 titik, perlu min. 2 untuk trend"
+              : "Belum ada data confidence"}
+          </div>
         ) : (
           <div className="p-4" style={col(12)}>
+            {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center" style={{ gap: "8px" }}>
                 {conf.courseName && (
@@ -745,16 +813,13 @@ function AnalyticsTab({ userId }: { userId: string }) {
                 )}
                 {(() => {
                   const t = conf.trend;
-                  const isUp = t === "improving" || t === "meningkat";
-                  const isDown = t === "declining" || t === "menurun";
+                  const isUp = t === "improving";
+                  const isDown = t === "declining";
                   const bgColor = isUp ? "rgba(16,185,129,0.12)" : isDown ? "rgba(239,68,68,0.12)" : "rgba(59,130,246,0.12)";
                   const textColor = isUp ? "#059669" : isDown ? "#dc2626" : "#3B82F6";
                   const label = isUp ? "Meningkat" : isDown ? "Menurun" : "Stabil";
                   return (
-                    <span
-                      className="text-xs font-semibold px-2 py-0.5 rounded"
-                      style={{ background: bgColor, color: textColor }}
-                    >
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded" style={{ background: bgColor, color: textColor }}>
                       {label}
                     </span>
                   );
@@ -762,29 +827,103 @@ function AnalyticsTab({ userId }: { userId: string }) {
               </div>
               {conf.dataPoints.length > 0 && (
                 <span className="text-sm text-neutral-500">
-                  Latest: <span className="font-semibold text-neutral-800">{conf.dataPoints[conf.dataPoints.length - 1].confidence?.toFixed(1)}</span>
+                  Latest: <span className="font-semibold text-neutral-800">
+                    {conf.dataPoints[conf.dataPoints.length - 1].confidence?.toFixed(1)}
+                  </span>
                 </span>
               )}
             </div>
 
-            {/* Recent data points */}
-            {conf.dataPoints.length > 0 && (
-              <div style={col(4)}>
-                {conf.dataPoints.slice(-5).map((dp, i) => (
-                  <div key={i} className="flex items-center justify-between">
-                    <span className="text-sm text-neutral-400">{fmtDate(dp.date)}</span>
-                    <div className="flex items-center" style={{ gap: "12px" }}>
-                      <span className="text-sm font-medium text-neutral-700">Confidence: {dp.confidence?.toFixed(1)}</span>
-                      {dp.learningGain != null && (
-                        <span className="text-sm" style={{ color: dp.learningGain >= 0 ? "#10b981" : "#dc2626" }}>
-                          {dp.learningGain >= 0 ? "+" : ""}{Math.round(dp.learningGain)}%
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+            {/* Legend */}
+            <div className="flex items-center" style={{ gap: "16px" }}>
+              <div className="flex items-center" style={{ gap: "6px" }}>
+                <div style={{ width: "12px", height: "2px", background: "#3B82F6", borderRadius: "1px" }} />
+                <span className="text-xs text-neutral-500">Confidence</span>
               </div>
-            )}
+              <div className="flex items-center" style={{ gap: "6px" }}>
+                <div style={{ width: "12px", height: "0", borderTop: "2px dashed #10b981" }} />
+                <span className="text-xs text-neutral-500">Learning Gain</span>
+              </div>
+            </div>
+
+            {/* SVG Line Chart */}
+            <div style={{ position: "relative", width: "100%", height: "128px" }}>
+              <svg style={{ width: "100%", height: "100%", overflow: "visible" }} preserveAspectRatio="none" viewBox="0 0 100 100">
+                <defs>
+                  <linearGradient id="conf-gradient-admin" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.15" />
+                    <stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                {/* Grid lines */}
+                {[0, 25, 50, 75, 100].map((y) => (
+                  <line key={y} x1="0" y1={y} x2="100" y2={y} stroke="#f3f4f6" strokeWidth="0.5" vectorEffect="non-scaling-stroke" />
+                ))}
+                {/* Area fill under confidence line */}
+                {(() => {
+                  const pts = conf.dataPoints.map((dp, i) => {
+                    const x = conf.dataPoints.length === 1 ? 50 : (i / (conf.dataPoints.length - 1)) * 100;
+                    const val = Math.max(1, Math.min(5, dp.confidence ?? 1));
+                    const y = 100 - ((val - 1) / 4) * 100;
+                    return { x, y };
+                  });
+                  const line = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
+                  const area = `${line} L${pts[pts.length - 1].x},100 L${pts[0].x},100 Z`;
+                  return <path d={area} fill="url(#conf-gradient-admin)" />;
+                })()}
+                {/* Confidence line (solid blue) */}
+                {(() => {
+                  const pts = conf.dataPoints.map((dp, i) => {
+                    const x = conf.dataPoints.length === 1 ? 50 : (i / (conf.dataPoints.length - 1)) * 100;
+                    const val = Math.max(1, Math.min(5, dp.confidence ?? 1));
+                    const y = 100 - ((val - 1) / 4) * 100;
+                    return { x, y };
+                  });
+                  const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
+                  return <path d={d} fill="none" stroke="#3B82F6" strokeWidth="2" vectorEffect="non-scaling-stroke" />;
+                })()}
+                {/* Learning Gain line (dashed green) */}
+                {(() => {
+                  const validPts = conf.dataPoints.filter((dp) => dp.learningGain != null);
+                  if (validPts.length < 2) return null;
+                  const pts = validPts.map((dp, i) => {
+                    const x = validPts.length === 1 ? 50 : (i / (validPts.length - 1)) * 100;
+                    // learningGain is already a percentage, normalize to 1-5 scale for chart
+                    const val = Math.max(1, Math.min(5, (dp.learningGain ?? 0) / 25 + 1));
+                    const y = 100 - ((val - 1) / 4) * 100;
+                    return { x, y };
+                  });
+                  const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
+                  return <path d={d} fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="2,2" vectorEffect="non-scaling-stroke" />;
+                })()}
+                {/* Data point dots */}
+                {conf.dataPoints.map((dp, i) => {
+                  const x = conf.dataPoints.length === 1 ? 50 : (i / (conf.dataPoints.length - 1)) * 100;
+                  const val = Math.max(1, Math.min(5, dp.confidence ?? 1));
+                  const y = 100 - ((val - 1) / 4) * 100;
+                  return (
+                    <circle key={i} cx={x} cy={y} r="1.5" fill="#3B82F6" vectorEffect="non-scaling-stroke" />
+                  );
+                })}
+              </svg>
+            </div>
+
+            {/* X-axis labels */}
+            <div className="flex justify-between" style={{ marginTop: "4px" }}>
+              {conf.dataPoints.map((dp, i) => (
+                <span key={i} className="text-neutral-400" style={{ fontSize: "9px" }}>
+                  {fmtDate(dp.date)}
+                </span>
+              ))}
+            </div>
+
+            {/* Info note */}
+            <div className="flex items-start" style={{ gap: "6px", paddingTop: "8px", borderTop: "1px solid #f3f4f6" }}>
+              <BarChart3 className="w-3 h-3 text-neutral-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-neutral-400 leading-relaxed">
+                Data menunjukkan korelasi antara tingkat keyakinan diri dan peningkatan pembelajaran.
+              </p>
+            </div>
           </div>
         )}
       </Card>

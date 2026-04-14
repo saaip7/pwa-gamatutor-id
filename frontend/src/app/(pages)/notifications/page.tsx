@@ -1,14 +1,22 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, Bell } from "lucide-react";
+import { motion } from "framer-motion";
+import { Loader2, Bell, Award, Users, CalendarClock, Lightbulb, Trash2, Check } from "lucide-react";
 import { NotificationHeader } from "@/components/feature/notifications/NotificationHeader";
-import { NotificationItem, NotificationType } from "@/components/feature/notifications/NotificationItem";
 import { useNotificationsStore } from "@/stores/notifications";
 import type { Notification } from "@/types";
+import { cn } from "@/lib/utils";
 
-// Simple relative-time formatter (no external lib needed)
+type NotificationType = "award" | "social" | "reminder" | "insight";
+
+const ICON_CONFIG: Record<string, { icon: typeof Award; bg: string; text: string }> = {
+  award: { icon: Award, bg: "bg-blue-100", text: "text-blue-600" },
+  social: { icon: Users, bg: "bg-indigo-100", text: "text-indigo-600" },
+  reminder: { icon: CalendarClock, bg: "bg-amber-100", text: "text-amber-600" },
+  insight: { icon: Lightbulb, bg: "bg-emerald-100", text: "text-emerald-600" },
+};
+
 function formatRelativeTime(dateStr: string): string {
   const now = Date.now();
   const then = new Date(dateStr).getTime();
@@ -26,27 +34,8 @@ function formatRelativeTime(dateStr: string): string {
   if (days === 1) return "Kemarin";
   if (days < 7) return `${days}h lalu`;
 
-  // Older than a week — show date
   const d = new Date(dateStr);
   return `${d.getDate()}/${d.getMonth() + 1}`;
-}
-
-// Split notifications into "Terbaru" (today-ish, within 24h) and "Sebelumnya"
-function categorize(notifications: Notification[]) {
-  const now = Date.now();
-  const DAY = 24 * 60 * 60 * 1000;
-  const terbaru: Notification[] = [];
-  const sebelumnya: Notification[] = [];
-
-  for (const n of notifications) {
-    const age = now - new Date(n.created_at).getTime();
-    if (age < DAY) {
-      terbaru.push(n);
-    } else {
-      sebelumnya.push(n);
-    }
-  }
-  return { terbaru, sebelumnya };
 }
 
 export default function NotificationPage() {
@@ -56,6 +45,7 @@ export default function NotificationPage() {
   const fetchNotifications = useNotificationsStore((s) => s.fetchNotifications);
   const markRead = useNotificationsStore((s) => s.markRead);
   const markAllRead = useNotificationsStore((s) => s.markAllRead);
+  const deleteNotification = useNotificationsStore((s) => s.deleteNotification);
 
   const [page, setPage] = useState(1);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -88,22 +78,13 @@ export default function NotificationPage() {
     return () => observer.disconnect();
   }, [hasMore, loading, page, fetchNotifications]);
 
-  const handleMarkAllRead = async () => {
-    await markAllRead();
-  };
-
-  const handleMarkRead = async (id: string) => {
-    await markRead(id);
-  };
-
-  const { terbaru, sebelumnya } = categorize(notifications);
   const hasUnread = notifications.some((n) => !n.read);
 
   return (
     <div className="w-full h-screen bg-neutral-50 flex flex-col mx-auto overflow-hidden relative max-w-md">
       <NotificationHeader />
 
-      <main className="flex-1 overflow-y-auto no-scrollbar px-5 pt-6 pb-[34px] space-y-7">
+      <main className="flex-1 overflow-y-auto no-scrollbar pt-4 pb-[34px]">
         {/* Loading state — initial load */}
         {loading && notifications.length === 0 && (
           <div className="flex items-center justify-center py-20">
@@ -113,7 +94,7 @@ export default function NotificationPage() {
 
         {/* Empty state */}
         {!loading && notifications.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="flex flex-col items-center justify-center py-20 text-center px-6">
             <div className="w-16 h-16 rounded-full bg-neutral-100 flex items-center justify-center mb-4">
               <Bell className="w-7 h-7 text-neutral-300" strokeWidth={1.5} />
             </div>
@@ -122,62 +103,92 @@ export default function NotificationPage() {
           </div>
         )}
 
-        {/* TERBARU SECTION */}
-        {terbaru.length > 0 && (
-          <section className="space-y-3">
-            <div className="flex items-center justify-between px-2">
-              <h3 className="text-xs font-bold text-neutral-400 tracking-wider uppercase">
-                Terbaru
-              </h3>
-              {hasUnread && (
-                <button
-                  onClick={handleMarkAllRead}
-                  className="text-[11px] font-bold text-primary hover:text-primary/80 active:scale-95 transition-all"
-                >
-                  Tandai dibaca
-                </button>
-              )}
-            </div>
-
-            <div className="bg-white rounded-[24px] border border-neutral-100 shadow-sm overflow-hidden">
-              {terbaru.map((n, idx) => (
-                <NotificationItem
-                  key={n._id}
-                  type={n.type as NotificationType}
-                  title={n.title}
-                  description={n.description}
-                  time={formatRelativeTime(n.created_at)}
-                  isUnread={!n.read}
-                  isLast={idx === terbaru.length - 1}
-                  onClick={() => handleMarkRead(n._id)}
-                />
-              ))}
-            </div>
-          </section>
+        {/* Mark all read button */}
+        {hasUnread && notifications.length > 0 && (
+          <div className="px-5 pb-3 flex justify-end">
+            <button
+              onClick={() => markAllRead()}
+              className="text-[11px] font-bold text-primary hover:text-primary/80 active:scale-95 transition-all"
+            >
+              Tandai semua dibaca
+            </button>
+          </div>
         )}
 
-        {/* SEBELUMNYA SECTION */}
-        {sebelumnya.length > 0 && (
-          <section className="space-y-3">
-            <h3 className="text-xs font-bold text-neutral-400 tracking-wider uppercase px-2">
-              Sebelumnya
-            </h3>
+        {/* Single flat list */}
+        {notifications.length > 0 && (
+          <div className="mx-5 bg-white rounded-[24px] border border-neutral-100 shadow-sm overflow-hidden">
+            {notifications.map((n, idx) => {
+              const config = ICON_CONFIG[n.type] || ICON_CONFIG.insight;
+              const Icon = config.icon;
+              const isLast = idx === notifications.length - 1;
 
-            <div className="bg-white rounded-[24px] border border-neutral-100 shadow-sm overflow-hidden">
-              {sebelumnya.map((n, idx) => (
-                <NotificationItem
+              return (
+                <motion.div
                   key={n._id}
-                  type={n.type as NotificationType}
-                  title={n.title}
-                  description={n.description}
-                  time={formatRelativeTime(n.created_at)}
-                  isUnread={!n.read}
-                  isLast={idx === sebelumnya.length - 1}
-                  onClick={() => handleMarkRead(n._id)}
-                />
-              ))}
-            </div>
-          </section>
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25, delay: idx * 0.04 }}
+                  className={cn(
+                    "flex items-start gap-3.5 p-4 relative group",
+                    !n.read ? "bg-blue-50/40" : "bg-white",
+                    !isLast && "border-b border-neutral-100"
+                  )}
+                >
+                  {/* Icon */}
+                  <div className={cn(
+                    "w-11 h-11 rounded-full flex items-center justify-center shrink-0",
+                    config.bg, config.text
+                  )}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 mb-0.5">
+                      <h4 className="text-sm font-semibold text-neutral-900 leading-tight truncate">
+                        {n.title}
+                      </h4>
+                      <span className={cn(
+                        "text-[10px] font-medium whitespace-nowrap mt-0.5 shrink-0",
+                        !n.read ? "text-primary" : "text-neutral-400"
+                      )}>
+                        {formatRelativeTime(n.created_at)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-neutral-600 leading-snug">
+                      {n.description}
+                    </p>
+
+                    {/* Action buttons */}
+                    <div className="flex items-center gap-3 mt-2">
+                      {!n.read && (
+                        <button
+                          onClick={() => markRead(n._id)}
+                          className="flex items-center gap-1 text-[10px] font-bold text-primary hover:text-primary/80 active:scale-95 transition-all"
+                        >
+                          <Check className="w-3 h-3" />
+                          Baca
+                        </button>
+                      )}
+                      <button
+                        onClick={() => deleteNotification(n._id)}
+                        className="flex items-center gap-1 text-[10px] font-bold text-neutral-400 hover:text-red-500 active:scale-95 transition-all"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        Hapus
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Unread dot */}
+                  {!n.read && (
+                    <div className="absolute right-4 top-4 w-2 h-2 rounded-full bg-primary shadow-[0_0_0_4px_rgba(59,130,246,0.15)]"></div>
+                  )}
+                </motion.div>
+              );
+            })}
+          </div>
         )}
 
         {/* Infinite scroll sentinel + loading indicator for next pages */}
