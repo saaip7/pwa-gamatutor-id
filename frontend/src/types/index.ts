@@ -148,8 +148,8 @@ export interface ConfidenceDataPoint {
 }
 
 export interface ConfidenceTrendResponse {
-  courseName: string;
-  availableCourses: { name: string; dataPoints: number }[];
+  courseCode: string;
+  availableCourses: { code: string; name: string; dataPoints: number }[];
   dataPoints: ConfidenceDataPoint[];
   trend: "improving" | "stable" | "declining";
 }

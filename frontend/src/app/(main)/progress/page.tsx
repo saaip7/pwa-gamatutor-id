@@ -43,6 +43,10 @@ export default function ProgressPage() {
     fetchBadges();
   }, [fetchProgress, fetchStrategies, fetchDashboard, fetchConfidenceTrend, fetchReflectionNotes, fetchBadges]);
 
+  const handleCourseChange = (courseCode: string | null) => {
+    fetchConfidenceTrend(courseCode ?? undefined);
+  };
+
   const totalBadges = badges.length || 1; // avoid divide-by-zero
 
   // Map progress.summary -> SummaryData
@@ -103,6 +107,8 @@ export default function ProgressPage() {
 
   // Confidence trend data points for chart
   const trendDataPoints: ConfidenceDataPoint[] = confidenceTrend?.dataPoints ?? [];
+  const trendCourseCode = confidenceTrend?.courseCode ?? null;
+  const trendCourses = confidenceTrend?.availableCourses ?? [];
 
   if (loading && !progress) {
     return (
@@ -146,7 +152,13 @@ export default function ProgressPage() {
           </div>
         )}
 
-        <MasteryTrendChart dataPoints={trendDataPoints} trend={confidenceTrend?.trend ?? null} />
+        <MasteryTrendChart
+          dataPoints={trendDataPoints}
+          trend={confidenceTrend?.trend ?? null}
+          courseCode={trendCourseCode}
+          availableCourses={trendCourses}
+          onCourseChange={handleCourseChange}
+        />
 
         {/* Full-width Stacked Components */}
         <div className="flex flex-col gap-1">

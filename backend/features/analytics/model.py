@@ -193,32 +193,38 @@ class Analytics:
         return {"strategies": strategies}
 
     @staticmethod
-    def get_confidence_trend(user_id, course_name=None):
-        """Confidence + learning gain over time, grouped by course.
+    def get_confidence_trend(user_id, course_code=None):
+        """Confidence + learning gain per reflection, grouped by course.
+
+        Each reflection_completed log creates one data point (no daily aggregation).
+        Default auto-selects course with most data.
 
         Args:
-            course_name: Optional course filter. If None, defaults to course with most data.
+            course_code: Optional course code filter.
         """
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
 
-        # Use logs with action_type "reflection_completed" for timestamps
         logs = list(mongo.db.logs.find(
             {"user_id": user_id, "action_type": "reflection_completed"},
             {"description": 1, "created_at": 1}
         ).sort("created_at", 1))
 
         if not logs:
-            return {"courseName": None, "availableCourses": [], "dataPoints": [], "trend": "stable"}
+            return {"courseCode": None, "availableCourses": [], "dataPoints": [], "trend": "stable"}
 
-        # Build a lookup: card_id -> card data from separate cards collection
+        # Build card lookup
         user_cards = list(mongo.db.cards.find({"user_id": user_id, "deleted": {"$ne": True}}))
         card_map = {}
         for card in user_cards:
             card_map[card.get("card_id")] = card
 
-        # Extract data points from logs, grouped by course
-        # Structure: {course_name: {date_str: {confidences: [], gains: []}}}
+        # Build course_name → course_code lookup
+        course_code_map = {}
+        for c in mongo.db.courses.find({}, {"course_name": 1, "course_code": 1}):
+            course_code_map[c.get("course_name")] = c.get("course_code")
+
+        # Build per-reflection data points, grouped by course_name
         course_data = {}
         for log in logs:
             desc = log.get("description", "")
@@ -226,7 +232,6 @@ class Analytics:
             if not created:
                 continue
 
-            # Extract card_id from "Reflection saved for card XXXXXXXX"
             parts = desc.split("card ")
             if len(parts) < 2:
                 continue
@@ -236,68 +241,71 @@ class Analytics:
             if not card:
                 continue
 
-            card_course = card.get("course_name", "Tanpa Mata Kuliah")
-            if card_course not in course_data:
-                course_data[card_course] = {}
+            cname = card.get("course_name", "Tanpa Mata Kuliah")
+            if cname not in course_data:
+                course_data[cname] = []
 
-            date_str = created.strftime("%Y-%m-%d")
-            if date_str not in course_data[card_course]:
-                course_data[card_course][date_str] = {"confidences": [], "gains": []}
-
-            # Confidence (Q2)
+            # Confidence (Q2) — safe float conversion
             q2 = (card.get("reflection") or {}).get("q2_confidence")
-            if q2 is not None:
-                course_data[card_course][date_str]["confidences"].append(q2)
+            try:
+                confidence = float(q2) if q2 is not None else None
+            except (ValueError, TypeError):
+                confidence = None
 
-            # Learning gain (pre → post)
+            # Learning gain (pre → post) — safe float conversion
+            gain = None
             pre = card.get("pre_test_grade")
             post = card.get("post_test_grade")
+            try:
+                pre = float(pre) if pre is not None else None
+                post = float(post) if post is not None else None
+            except (ValueError, TypeError):
+                pre = post = None
             if pre is not None and post is not None and pre > 0:
-                gain = ((post - pre) / pre) * 100
-                course_data[card_course][date_str]["gains"].append(gain)
+                gain = round(((post - pre) / pre) * 100, 1)
 
-        if not course_data:
-            return {"courseName": None, "availableCourses": [], "dataPoints": [], "trend": "stable"}
-
-        # Build available courses list with data point counts
-        available_courses = []
-        for cname, daily in course_data.items():
-            count = len(daily)
-            available_courses.append({"name": cname, "dataPoints": count})
-        available_courses.sort(key=lambda x: x["dataPoints"], reverse=True)
-
-        # Select which course to show
-        if course_name:
-            selected_course = course_name
-        else:
-            # Default: course with most data points
-            selected_course = available_courses[0]["name"] if available_courses else None
-
-        # Build data points for selected course
-        selected_daily = course_data.get(selected_course, {})
-        data_points = []
-        for date_str in sorted(selected_daily.keys()):
-            d = selected_daily[date_str]
-            avg_conf = round(sum(d["confidences"]) / len(d["confidences"]), 1) if d["confidences"] else None
-            avg_gain = round(sum(d["gains"]) / len(d["gains"]), 1) if d["gains"] else None
-            data_points.append({
-                "date": date_str,
-                "confidence": avg_conf,
-                "learningGain": avg_gain,
+            course_data[cname].append({
+                "date": created.strftime("%Y-%m-%d"),
+                "confidence": confidence,
+                "learningGain": gain,
             })
 
-        # Determine trend from last 3 data points with confidence
+        if not course_data:
+            return {"courseCode": None, "availableCourses": [], "dataPoints": [], "trend": "stable"}
+
+        # Build available courses list with course codes
+        available_courses = []
+        for cname, points in course_data.items():
+            available_courses.append({
+                "code": course_code_map.get(cname) or cname,
+                "name": cname,
+                "dataPoints": len(points),
+            })
+        available_courses.sort(key=lambda x: x["dataPoints"], reverse=True)
+
+        # Resolve course_code → course_name for selection
+        code_to_name = {c["code"]: c["name"] for c in available_courses}
+        selected_cname = None
+        if course_code:
+            selected_cname = code_to_name.get(course_code)
+        if not selected_cname:
+            selected_cname = available_courses[0]["name"] if available_courses else None
+
+        data_points = course_data.get(selected_cname, [])
+
+        # Trend from confidence values (first → last)
         conf_values = [dp["confidence"] for dp in data_points if dp["confidence"] is not None]
         trend = "stable"
-        if len(conf_values) >= 3:
-            recent = conf_values[-3:]
-            if recent[-1] > recent[0]:
+        if len(conf_values) >= 2:
+            if conf_values[-1] > conf_values[0]:
                 trend = "improving"
-            elif recent[-1] < recent[0]:
+            elif conf_values[-1] < conf_values[0]:
                 trend = "declining"
 
+        selected_code = course_code_map.get(selected_cname) or selected_cname
+
         return {
-            "courseName": selected_course,
+            "courseCode": selected_code,
             "availableCourses": available_courses,
             "dataPoints": data_points,
             "trend": trend,
