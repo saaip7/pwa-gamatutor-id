@@ -41,17 +41,36 @@ def _days_since_active(prefs):
         return None  # Never active
     if isinstance(last_active, str):
         last_active = datetime.fromisoformat(last_active.replace("Z", "+00:00")).replace(tzinfo=None)
-    return (datetime.utcnow() - last_active).days
+    days = (datetime.utcnow() - last_active).days
+    return days
 
 
 def _classify_activity(prefs):
-    """Classify user into activity tier: A (active), B (medium), C (passive)."""
+    """Classify user into activity tier.
+
+    A (Rajin):    active today or yesterday (0-1 days) → competence support
+    B (Medium):   inactive 2-3 days                   → neutral nudge
+    C (Pasif):    inactive 4+ days / never             → autonomy support
+    """
     days = _days_since_active(prefs)
-    if days is None or days >= 3:
-        return "C"
-    if days >= 1:
-        return "B"
-    return "A"
+    if days is None or days >= 4:
+        tier = "C"
+    elif days >= 2:
+        tier = "B"
+    else:
+        tier = "A"
+    logger.info(f"[ActivityCheck] tier={tier}, days_since_active={days}")
+    return tier
+
+
+def _sent_today(user_id, notif_type):
+    """Check if a notification of this type was already sent today. Dedup by type."""
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    return mongo.db.notifications.find_one({
+        "user_id": user_id,
+        "type": notif_type,
+        "created_at": {"$gte": today_start},
+    })
 
 
 SMART_REMINDER_MESSAGES = {
@@ -68,16 +87,16 @@ SMART_REMINDER_MESSAGES = {
         ("Apresiasi", "Konsistensimu akhir-akhir ini patut diapresiasi."),
     ],
     "B": [
-        ("Waktunya Belajar!", "Jam produktifmu sudah tiba, yuk selesaikan rencanamu."),
+        ("Waktunya Belajar!", "Yuk kembali ke rutinitas belajarmu."),
         ("Kembali ke Kanban", "Ada rencana belajar yang bisa dilanjutkan hari ini. Yuk kembali ke Kanban."),
         ("Tugas Menunggu", "Tugasmu masih menunggu di Kanban. Satu langkah kecil hari ini cukup."),
-        ("Jam Produktifmu", "Jam produktifmu tiba. Kamu punya tugas yang bisa diselesaikan sekarang."),
         ("Sebentar Saja", "Ada tugas yang menunggu. Yuk luangkan waktu sebentar untuk mengerjakannya."),
         ("15 Menit Saja", "Belajar tidak harus lama. 15 menit saja sudah berarti. Yuk mulai!"),
         ("Lanjutkan Progres", "Kanbanmu ada yang belum selesai. Yuk lanjutkan progresnya hari ini."),
         ("Rencana Menunggu", "Rencana belajarmu sudah menunggu. Yuk kelola tugasmu."),
         ("Kesempatan Baru", "Hari baru, kesempatan baru. Yuk lanjutkan progres belajarmu."),
         ("Kembali Lagi", "Satu hari tanpa belajar tidak apa-apa. Hari ini bisa kembali lagi."),
+        ("Langkah Kecil", "Tidak perlu banyak. Satu tugas kecil hari ini sudah cukup."),
     ],
     "C": [
         ("Langkah Kecil", "Langkah besar dimulai dari hal kecil. Cicil satu tugas kecil saja hari ini."),
@@ -107,17 +126,6 @@ STREAK_NUDGE_MESSAGES = [
 ]
 
 
-def _already_sent_today(user_id, desc_pattern):
-    """Check if a notification with matching description was already sent today."""
-    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
-    return mongo.db.notifications.find_one({
-        "user_id": user_id,
-        "type": "reminder",
-        "description": {"$regex": desc_pattern},
-        "created_at": {"$gte": today_start},
-    })
-
-
 # ---------------------------------------------------------------------------
 # Job 1: Deadline Reminder
 # ---------------------------------------------------------------------------
@@ -129,7 +137,6 @@ def job_deadline_reminder():
     now = datetime.utcnow()
     deadline_threshold = now + timedelta(hours=24)
 
-    # Find all cards with deadlines that are not in Done column and not deleted
     cards_with_deadlines = list(mongo.db.cards.find({
         "deadline": {"$exists": True, "$ne": None},
         "column": {"$ne": "list4"},
@@ -161,11 +168,11 @@ def job_deadline_reminder():
         if _is_quiet_hours(prefs):
             continue
 
-        # Dedup: max 1 per card per 12 hours
+        # Dedup: max 1 deadline_reminder per card per 12 hours
         task_name = card.get("task_name", "Tugas")
         existing = mongo.db.notifications.find_one({
             "user_id": user_id,
-            "type": "reminder",
+            "type": "deadline_reminder",
             "description": {"$regex": task_name},
             "created_at": {"$gte": now - timedelta(hours=12)},
         })
@@ -177,12 +184,12 @@ def job_deadline_reminder():
         body = f'"{task_name}" — {hours_left} jam lagi'
 
         Notification.create(
-            user_id=str(user_id), type="reminder",
+            user_id=str(user_id), type="deadline_reminder",
             title=title, description=body,
         )
         token = prefs.get("fcm_token")
         if token:
-            send_push(token, title, body, {"type": "deadline", "card_id": card.get("card_id", str(card["_id"]))})
+            send_push(token, title, body, {"type": "deadline_reminder", "card_id": card.get("card_id", str(card["_id"]))})
 
         reminded += 1
 
@@ -196,14 +203,13 @@ def job_deadline_reminder():
 def job_smart_reminder():
     """Send personalized study reminders based on activity level.
 
-    Condition A (active):     last active today/yesterday → competence support
-    Condition B (medium):     inactive 1-2 days           → neutral nudge
-    Condition C (passive):    inactive 3+ days / never    → autonomy support (no productive hour required)
+    Tier A (Rajin):    active 0-1 days ago → competence support / apresiasi
+    Tier B (Medium):   inactive 2-3 days   → neutral nudge
+    Tier C (Pasif):    inactive 4+ days    → autonomy support (gentle, no pressure)
+
+    All tiers: max 1 per day per user. No productive hour gate. No skip for Tier A.
     """
     logger.info("[Scheduler] Running smart reminder job")
-
-    wib = now_wib()
-    current_hour = wib.hour
 
     users = mongo.db.user_preferences.find({
         "notifications.smart_reminder_enabled": True,
@@ -217,28 +223,15 @@ def job_smart_reminder():
         if _is_quiet_hours(prefs):
             continue
 
+        # Dedup: max 1 smart_reminder per day per user
+        if _sent_today(user_id, "smart_reminder"):
+            continue
+
         tier = _classify_activity(prefs)
         title, body = random.choice(SMART_REMINDER_MESSAGES[tier])
 
-        # Conditions A & B: only send at user's productive hour
-        # Condition C: send any hour (once per day) — no productive hour gate
-        if tier in ("A", "B"):
-            productive_hour = prefs.get("analytics", {}).get("productive_hour", 20)
-            if current_hour != productive_hour:
-                continue
-
-        # Condition A: skip if already active today (they're doing great)
-        if tier == "A":
-            days = _days_since_active(prefs)
-            if days is not None and days == 0:
-                continue
-
-        # Dedup: max 1 smart reminder per day per user
-        if _already_sent_today(user_id, "smart_reminder"):
-            continue
-
         Notification.create(
-            user_id=str(user_id), type="reminder",
+            user_id=str(user_id), type="smart_reminder",
             title=title, description=body,
         )
         token = prefs.get("fcm_token")
@@ -257,8 +250,6 @@ def job_smart_reminder():
 def job_streak_nudge():
     """Nudge users with active streak (>=2) who haven't studied today."""
     logger.info("[Scheduler] Running streak nudge job")
-
-    now = datetime.utcnow()
 
     users = mongo.db.user_preferences.find({
         "streak.current": {"$gte": 2},
@@ -280,15 +271,15 @@ def job_streak_nudge():
         if streak_count < 2:
             continue
 
-        # Dedup: max 1 streak nudge per day
-        if _already_sent_today(user_id, "konsisten belajar"):
+        # Dedup: max 1 streak_nudge per day
+        if _sent_today(user_id, "streak_nudge"):
             continue
 
         title = "Jangan Putus Semangat!"
         body = random.choice(STREAK_NUDGE_MESSAGES).replace("{n}", str(streak_count))
 
         Notification.create(
-            user_id=str(user_id), type="reminder",
+            user_id=str(user_id), type="streak_nudge",
             title=title, description=body,
         )
         token = prefs.get("fcm_token")
@@ -340,13 +331,7 @@ def job_social_presence():
             continue
 
         # Dedup: max 1 per day
-        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        existing = mongo.db.notifications.find_one({
-            "user_id": user_id,
-            "type": "social",
-            "created_at": {"$gte": today_start},
-        })
-        if existing:
+        if _sent_today(user_id, "social"):
             continue
 
         title = "Teman Sedang Belajar"
@@ -370,7 +355,7 @@ def job_social_presence():
 # ---------------------------------------------------------------------------
 
 def job_cleanup_orphan_sessions():
-    """End study sessions that have been running for over 3 hours without ending (safety net for sessions without heartbeat)."""
+    """End study sessions that have been running for over 3 hours without ending."""
     from features.study_session.model import StudySession
     cleaned = StudySession.cleanup_orphan_sessions(max_age_hours=3)
     if cleaned:
@@ -410,7 +395,6 @@ def job_check_idle_sessions():
 
         send_push(token, title, body, {"type": "idle_session", "session_id": str(session["_id"])})
 
-        # Mark as notified to avoid repeated pings
         mongo.db.study_sessions.update_one(
             {"_id": session["_id"]},
             {"$set": {"idle_notified": True}},
@@ -423,11 +407,11 @@ def job_check_idle_sessions():
 
 
 # ---------------------------------------------------------------------------
-# Job 7: Auto-End Stale Sessions (after 60 min inactivity)
+# Job 7: Auto-End Stale Sessions (after 90 min inactivity)
 # ---------------------------------------------------------------------------
 
 def job_auto_end_stale_sessions():
-    """Auto-end sessions idle >60 min and notify users."""
+    """Auto-end sessions idle >90 min and notify users."""
     from features.study_session.model import StudySession
     from shared.log_model import Log
 
@@ -449,7 +433,7 @@ def job_auto_end_stale_sessions():
             send_push(token, title, body, {"type": "auto_end", "session_id": item["session_id"]})
             notified += 1
 
-        Log.create(item["user_id"], "session_auto_ended", f"Session {item['session_id']} auto-ended after 60 min idle")
+        Log.create(item["user_id"], "session_auto_ended", f"Session {item['session_id']} auto-ended after 90 min idle")
 
     if ended:
         logger.info(f"[Scheduler] Auto-end stale: {len(ended)} sessions ended, {notified} notifications sent")
@@ -462,32 +446,33 @@ def job_auto_end_stale_sessions():
 def init_scheduler(app):
     """Initialize and start the APScheduler with all jobs."""
     with app.app_context():
+        # ── [FLAG NOTIF] Change minutes/hours to test scheduler intervals ──
         scheduler.add_job(
-            job_deadline_reminder, "interval", hours=2,
+            job_deadline_reminder, "interval", hours=2,       # [FLAG NOTIF] prod: hours=2, test: minutes=1
             id="deadline_reminder", replace_existing=True,
         )
         scheduler.add_job(
-            job_smart_reminder, "interval", hours=1,
+            job_smart_reminder, "interval", hours=1,          # [FLAG NOTIF] prod: hours=1, test: minutes=1
             id="smart_reminder", replace_existing=True,
         )
         scheduler.add_job(
-            job_streak_nudge, "interval", hours=6,
+            job_streak_nudge, "interval", hours=6,            # [FLAG NOTIF] prod: hours=6, test: minutes=2
             id="streak_nudge", replace_existing=True,
         )
         scheduler.add_job(
-            job_social_presence, "interval", minutes=30,
+            job_social_presence, "interval", minutes=30,     # [FLAG NOTIF] prod: minutes=30, test: minutes=1
             id="social_presence", replace_existing=True,
         )
         scheduler.add_job(
-            job_cleanup_orphan_sessions, "interval", hours=6,
+            job_cleanup_orphan_sessions, "interval", hours=6, # [FLAG NOTIF] prod: hours=6, test: minutes=10
             id="orphan_cleanup", replace_existing=True,
         )
         scheduler.add_job(
-            job_check_idle_sessions, "interval", minutes=10,
+            job_check_idle_sessions, "interval", minutes=10,  # [FLAG NOTIF] prod: minutes=10
             id="check_idle_sessions", replace_existing=True,
         )
         scheduler.add_job(
-            job_auto_end_stale_sessions, "interval", minutes=10,
+            job_auto_end_stale_sessions, "interval", minutes=10, # [FLAG NOTIF] prod: minutes=10
             id="auto_end_stale_sessions", replace_existing=True,
         )
 
