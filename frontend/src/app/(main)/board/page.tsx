@@ -90,8 +90,11 @@ function formatRelativeDeadline(deadline?: string): string {
   if (!deadline) return "No deadline";
   const d = new Date(deadline);
   const now = new Date();
-  const diffMs = d.getTime() - now.getTime();
-  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+  // Compare by calendar date in local timezone, not raw ms diff
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const deadlineDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diffDays = Math.round((deadlineDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
   if (diffDays < 0) return "Overdue";
   if (diffDays === 0) {
