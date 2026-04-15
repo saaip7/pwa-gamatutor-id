@@ -204,7 +204,7 @@ export interface BadgesResponse {
 
 export interface Notification {
   _id: string;
-  type: "award" | "social" | "reminder" | "insight";
+  type: "award" | "social" | "reminder" | "smart_reminder" | "deadline_reminder" | "streak_nudge" | "insight";
   title: string;
   description: string;
   read: boolean;

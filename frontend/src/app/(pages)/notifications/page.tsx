@@ -8,12 +8,15 @@ import { useNotificationsStore } from "@/stores/notifications";
 import type { Notification } from "@/types";
 import { cn } from "@/lib/utils";
 
-type NotificationType = "award" | "social" | "reminder" | "insight";
+type NotificationType = "award" | "social" | "reminder" | "smart_reminder" | "deadline_reminder" | "streak_nudge" | "insight";
 
 const ICON_CONFIG: Record<string, { icon: typeof Award; bg: string; text: string }> = {
   award: { icon: Award, bg: "bg-blue-100", text: "text-blue-600" },
   social: { icon: Users, bg: "bg-indigo-100", text: "text-indigo-600" },
   reminder: { icon: CalendarClock, bg: "bg-amber-100", text: "text-amber-600" },
+  smart_reminder: { icon: Bell, bg: "bg-amber-100", text: "text-amber-600" },
+  deadline_reminder: { icon: CalendarClock, bg: "bg-red-100", text: "text-red-600" },
+  streak_nudge: { icon: Bell, bg: "bg-orange-100", text: "text-orange-600" },
   insight: { icon: Lightbulb, bg: "bg-emerald-100", text: "text-emerald-600" },
 };
 
