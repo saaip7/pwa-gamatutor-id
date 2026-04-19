@@ -137,7 +137,6 @@ function findColumn(taskId: string | number, columns: Record<ColumnKey, string[]
 }
 
 function KanbanBoardContent() {
-  const [activeFilter, setActiveFilter] = useState("All");
   const [activeTaskId, setActiveTaskId] = useState<string | number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -206,18 +205,29 @@ function KanbanBoardContent() {
 
   const totalTasks = Object.values(columns).flat().length;
 
-  // Derive course filters — labels show course_code, filtering is by course_name
-  const filters = useMemo(() => {
+  // Derive course filters — store course_name internally, display course_code
+  const { filterOptions, filterDisplayMap } = useMemo(() => {
     const courseNames = new Set<string>();
     for (const card of Object.values(boardTasks)) {
       if (card.course_name) courseNames.add(card.course_name);
     }
-    // Map to course_code if available, otherwise fall back to course_name
-    const labels = Array.from(courseNames)
-      .sort()
-      .map((name) => courseMap[name] || name);
-    return ["All", ...labels];
+    const sorted = Array.from(courseNames).sort();
+    const displayMap: Record<string, string> = {};
+    const options: string[] = [];
+    for (const name of sorted) {
+      const code = courseMap[name] || name;
+      displayMap[name] = code;
+      options.push(code);
+    }
+    return { filterOptions: ["All", ...options], filterDisplayMap: displayMap };
   }, [boardTasks, courseMap]);
+
+  // activeFilter is course_code (display), track selected course_name internally
+  const [activeFilter, setActiveFilter] = useState("All");
+  const activeCourseName = useMemo(() => {
+    if (activeFilter === "All") return null;
+    return Object.entries(filterDisplayMap).find(([, code]) => code === activeFilter)?.[0] ?? null;
+  }, [activeFilter, filterDisplayMap]);
 
   // Derived data for header
   const userName = user?.name || "Student";
@@ -230,13 +240,9 @@ function KanbanBoardContent() {
       .map((id) => taskMap[id])
       .filter(Boolean);
 
-    if (activeFilter !== "All") {
-      // activeFilter is course_code — find matching course_name
-      const targetName = Object.entries(courseMap).find(
-        ([, code]) => code === activeFilter
-      )?.[0];
+    if (activeCourseName) {
       filteredColumns[col] = colTasks.filter((t) =>
-        t.course === targetName
+        t.course === activeCourseName
       );
     } else {
       filteredColumns[col] = colTasks;
@@ -496,7 +502,7 @@ function KanbanBoardContent() {
       />
 
       <FilterBar
-        filters={filters}
+        filters={filterOptions}
         activeFilter={activeFilter}
         onFilterChange={setActiveFilter}
       />
