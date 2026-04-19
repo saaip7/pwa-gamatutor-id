@@ -440,6 +440,34 @@ def job_auto_end_stale_sessions():
 
 
 # ---------------------------------------------------------------------------
+# Job 8: Reset Stale Streaks
+# ---------------------------------------------------------------------------
+
+def job_reset_stale_streaks():
+    """Reset streak for users who haven't been active for 2+ days."""
+    logger.info("[Scheduler] Running stale streak reset")
+
+    now = datetime.utcnow()
+    yesterday = (now - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+
+    result = mongo.db.user_preferences.update_many(
+        {
+            "streak.current": {"$gt": 0},
+            "streak.last_active_date": {"$lt": yesterday},
+        },
+        {
+            "$set": {
+                "streak.current": 0,
+                "updated_at": now,
+            }
+        }
+    )
+
+    if result.modified_count:
+        logger.info(f"[Scheduler] Stale streak reset: {result.modified_count} users")
+
+
+# ---------------------------------------------------------------------------
 # Init
 # ---------------------------------------------------------------------------
 
@@ -475,6 +503,10 @@ def init_scheduler(app):
             job_auto_end_stale_sessions, "interval", minutes=10, # [FLAG NOTIF] prod: minutes=10
             id="auto_end_stale_sessions", replace_existing=True,
         )
+        scheduler.add_job(
+            job_reset_stale_streaks, "cron", hour=0, minute=0, timezone="Asia/Jakarta",
+            id="reset_stale_streaks", replace_existing=True,
+        )
 
         scheduler.start()
-        logger.info("[Scheduler] Started with 7 jobs: deadline_reminder, smart_reminder, streak_nudge, social_presence, orphan_cleanup, check_idle_sessions, auto_end_stale_sessions")
+        logger.info("[Scheduler] Started with 8 jobs: deadline_reminder, smart_reminder, streak_nudge, social_presence, orphan_cleanup, check_idle_sessions, auto_end_stale_sessions, reset_stale_streaks")

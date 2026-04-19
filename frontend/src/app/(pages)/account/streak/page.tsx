@@ -30,38 +30,51 @@ function getFirstDayOfWeek(year: number, month: number): number {
 
 interface DayCell {
   date: number; // 0 = empty
-  active: boolean;
-  isToday: boolean;
+  state: "active" | "freeze" | "inactive" | "today" | "empty";
 }
 
 function buildCalendarRows(
   year: number,
   month: number,
   activeDates: string[],
+  freezeDates: string[],
   today: Date
 ): DayCell[][] {
   const daysInMonth = getDaysInMonth(year, month);
   const firstDay = getFirstDayOfWeek(year, month);
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   const activeSet = new Set(activeDates);
+  const freezeSet = new Set(freezeDates);
 
   const cells: DayCell[] = [];
 
   for (let i = 0; i < firstDay; i++) {
-    cells.push({ date: 0, active: false, isToday: false });
+    cells.push({ date: 0, state: "empty" });
   }
 
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    cells.push({
-      date: d,
-      active: activeSet.has(dateStr),
-      isToday: dateStr === todayStr && year === today.getFullYear() && month === today.getMonth(),
-    });
+    const isToday = dateStr === todayStr && year === today.getFullYear() && month === today.getMonth();
+    const isFuture = new Date(year, month, d) > today;
+
+    let state: DayCell["state"];
+    if (isFuture) {
+      state = "empty";
+    } else if (activeSet.has(dateStr)) {
+      state = "active";
+    } else if (freezeSet.has(dateStr)) {
+      state = "freeze";
+    } else if (isToday) {
+      state = "today";
+    } else {
+      state = "inactive";
+    }
+
+    cells.push({ date: d, state });
   }
 
   while (cells.length % 7 !== 0) {
-    cells.push({ date: 0, active: false, isToday: false });
+    cells.push({ date: 0, state: "empty" });
   }
 
   const rows: DayCell[][] = [];
@@ -98,13 +111,14 @@ export default function StreakPage() {
   useEffect(() => { fetchStreakHistory(); }, [fetchStreakHistory]);
 
   const activeDates = streakHistory?.active_dates ?? [];
+  const freezeDates = streakHistory?.freeze_dates ?? [];
   const currentStreak = streakHistory?.current ?? 0;
   const longestStreak = streakHistory?.longest ?? 0;
   const freezesAvailable = streakHistory?.freezes_available ?? 0;
 
   const rows = useMemo(
-    () => buildCalendarRows(selectedYear, selectedMonth, activeDates, today),
-    [selectedYear, selectedMonth, activeDates]
+    () => buildCalendarRows(selectedYear, selectedMonth, activeDates, freezeDates, today),
+    [selectedYear, selectedMonth, activeDates, freezeDates]
   );
 
   const monthCounts = useMemo(
@@ -212,19 +226,16 @@ export default function StreakPage() {
                       return <div key={i} className="aspect-square" />;
                     }
 
-                    const active = cell.active;
-                    const isToday = cell.isToday;
-                    const cellBg = active ? "#2b7fff" : undefined;
-
                     return (
                       <div
                         key={i}
                         className={`aspect-square rounded-lg flex items-center justify-center transition-colors ${
-                          active ? "text-white font-bold"
-                          : isToday ? "border-2 border-dashed border-amber-400 text-amber-500 font-semibold"
-                          : "bg-neutral-50 text-neutral-400"
+                          cell.state === "active" ? "bg-blue-500 text-white font-bold"
+                          : cell.state === "freeze" ? "bg-blue-50 text-blue-400 font-semibold shadow-[inset_0_0_0_1px_rgba(96,165,250,0.3)]"
+                          : cell.state === "inactive" ? "bg-red-50 text-red-300 font-semibold shadow-[inset_0_0_0_1px_rgba(248,113,113,0.2)]"
+                          : cell.state === "today" ? "border-2 border-dashed border-amber-400 text-amber-500 font-semibold bg-amber-50/50"
+                          : "bg-neutral-50 text-neutral-300"
                         }`}
-                        style={cellBg ? { background: cellBg } : undefined}
                       >
                         <span className="text-[11px] leading-none">{cell.date}</span>
                       </div>
@@ -238,12 +249,16 @@ export default function StreakPage() {
             <div className="flex items-center justify-between mt-3 pt-2 border-t border-neutral-100">
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1">
-                  <div className="w-2.5 h-2.5 rounded-sm" style={{ background: "#2b7fff" }} />
+                  <div className="w-2.5 h-2.5 rounded-sm bg-blue-500" />
                   <span className="text-[10px] text-neutral-400">Aktif</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-2.5 h-2.5 rounded-sm bg-neutral-50 border border-neutral-200" />
-                  <span className="text-[10px] text-neutral-400">Tidak aktif</span>
+                  <div className="w-2.5 h-2.5 rounded-sm bg-blue-50 shadow-[inset_0_0_0_1px_rgba(96,165,250,0.3)]" />
+                  <span className="text-[10px] text-neutral-400">Freeze</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2.5 h-2.5 rounded-sm bg-red-50 shadow-[inset_0_0_0_1px_rgba(248,113,113,0.2)]" />
+                  <span className="text-[10px] text-neutral-400">Terlewat</span>
                 </div>
               </div>
               <span className="text-[10px] text-neutral-500 font-semibold">
