@@ -8,7 +8,7 @@ interface TourState {
   isAllToursCompleted: () => boolean;
 }
 
-const TOUR_IDS = ["tour-1", "tour-2", "tour-3", "tour-4"] as const;
+const TOUR_IDS = ["tour-1", "tour-2", "tour-3", "tour-4", "tour-5"] as const;
 export type TourId = (typeof TOUR_IDS)[number];
 
 const STORAGE_KEY = "gamatutor-tour-state";

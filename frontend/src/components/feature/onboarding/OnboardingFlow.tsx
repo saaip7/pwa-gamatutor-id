@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
 import { Step1Welcome } from "./Step1Welcome";
 import { Step2GoalSetting } from "./Step2GoalSetting";
 import { Step3FeatureIntro } from "./Step3FeatureIntro";
@@ -30,17 +29,7 @@ export function OnboardingFlow() {
     handleNext();
   };
 
-  const handleComplete = async () => {
-    try {
-      await api.put("/api/preferences/onboarding", {
-        completed: true,
-      });
-      // Trigger badge check for initiator
-      const { useBadgesStore } = await import("@/stores/badges");
-      await useBadgesStore.getState().fetchBadges();
-    } catch {
-      // Silent — non-blocking
-    }
+  const handleComplete = () => {
     router.push("/onboarding/guide");
   };
 
