@@ -511,14 +511,17 @@ class Analytics:
 
     @staticmethod
     def _compute_patterns(user_id):
-        """Compute productive time-of-day and productive days of week."""
+        """Compute productive time-of-day and productive days of week (last 30 days)."""
+        now = datetime.utcnow()
+        cutoff = now - timedelta(days=30)
+
         sessions = list(mongo.db.study_sessions.find(
-            {"user_id": user_id, "start_time": {"$ne": None}, "orphan": {"$ne": True}},
+            {"user_id": user_id, "orphan": {"$ne": True}, "start_time": {"$gte": cutoff, "$ne": None}},
             {"start_time": 1}
         ))
 
         if not sessions:
-            return {"productiveTime": "Belum ada data", "productiveDays": "Belum ada data"}
+            return {"productiveTime": "-", "productiveDays": "-"}
 
         # Count sessions per time period
         time_periods = {"pagi": 0, "siang": 0, "sore": 0, "malam": 0, "dini_hari": 0}
@@ -539,28 +542,34 @@ class Analytics:
             else:
                 time_periods["dini_hari"] += 1
 
-            day_name = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"][utc_to_wib(s["start_time"]).weekday()]
+            day_name = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"][st.weekday()]
             day_counts[day_name] = day_counts.get(day_name, 0) + 1
+
+        total = len(sessions)
 
         # Map period to label
         period_labels = {
-            "pagi": "Pagi hari (06:00 - 12:00)",
-            "siang": "Siang hari (12:00 - 15:00)",
-            "sore": "Sore hari (15:00 - 18:00)",
-            "malam": "Malam hari (18:00 - 24:00)",
-            "dini_hari": "Dini hari (00:00 - 06:00)",
+            "pagi": "Pagi (06:00-12:00)",
+            "siang": "Siang (12:00-15:00)",
+            "sore": "Sore (15:00-18:00)",
+            "malam": "Malam (18:00-24:00)",
+            "dini_hari": "Dini hari (00:00-06:00)",
         }
-        top_period = max(time_periods, key=time_periods.get)
-        productive_time = period_labels[top_period]
 
-        # Top 1-2 productive days
+        # Minimum threshold: 7 sessions for meaningful insight
+        if total < 7:
+            return {"productiveTime": "-", "productiveDays": "-"}
+
+        top_period_key = max(time_periods, key=time_periods.get)
+        top_period_count = time_periods[top_period_key]
+        top_period_pct = round((top_period_count / total) * 100)
+        productive_time = f"{period_labels[top_period_key]} ({top_period_pct}%)"
+
+        # Top productive day
         sorted_days = sorted(day_counts.items(), key=lambda x: x[1], reverse=True)
-        if len(sorted_days) == 1:
-            productive_days = sorted_days[0][0]
-        elif len(sorted_days) >= 2:
-            productive_days = f"{sorted_days[0][0]} & {sorted_days[1][0]}"
-        else:
-            productive_days = "Belum ada data"
+        top_day = sorted_days[0]
+        top_day_pct = round((top_day[1] / total) * 100)
+        productive_days = f"{top_day[0]} ({top_day_pct}%)"
 
         return {
             "productiveTime": productive_time,

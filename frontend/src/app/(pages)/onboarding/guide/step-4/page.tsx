@@ -133,7 +133,7 @@ export default function GuideStep4Page() {
       <div className="flex-1 overflow-y-auto no-scrollbar px-6 pt-4 pb-28">
         {/* Insight */}
         <div id="guide-progress-insight">
-          <InsightCard insightText="Waktu produktif: Malam hari | Hari produktif: Senin & Rabu" />
+          <InsightCard productiveTime="Malam (18:00-24:00) (45%)" productiveDays="Senin (30%)" />
         </div>
 
         <PeriodSelector
