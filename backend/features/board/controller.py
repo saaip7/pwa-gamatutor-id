@@ -1,6 +1,7 @@
 from flask import jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from bson import ObjectId
+from datetime import datetime, timezone
 from features.board.model import Board, Card, _ensure_card_indexes
 from features.badge.badge_engine import BadgeEngine
 from shared.db import mongo
@@ -165,11 +166,37 @@ def move_card(card_id):
     if not success:
         return jsonify({"message": "Move failed"}), 500
 
-    # Any card movement counts as meaningful activity for streak
     streak = None
     badge_results = []
 
     if old_column != new_column:
+        now = datetime.now(timezone.utc)
+
+        movement_entry = {
+            "user_id": user_id if isinstance(user_id, str) else str(user_id),
+            "from": old_column,
+            "to": new_column,
+            "task_name": card.get("task_name", ""),
+            "card_id": card_id,
+            "timestamp": now.isoformat(),
+        }
+
+        mongo.db.cards.update_one(
+            {"card_id": card_id, "user_id": ObjectId(user_id) if isinstance(user_id, str) else user_id},
+            {"$push": {"column_movements": movement_entry}}
+        )
+
+        COLUMN_LABELS = {"list1": "Planning", "list2": "Monitoring", "list3": "Controlling", "list4": "Reflection"}
+        from_label = COLUMN_LABELS.get(old_column, old_column)
+        to_label = COLUMN_LABELS.get(new_column, new_column)
+        task_name = card.get("task_name", card_id)
+        Log.create(
+            user_id,
+            "card_moved",
+            f"{task_name}: {from_label} → {to_label}",
+            metadata={"card_id": card_id, "from": old_column, "to": new_column}
+        )
+
         streak = update_streak(user_id)
 
     # Badge triggers when card moves to Done
