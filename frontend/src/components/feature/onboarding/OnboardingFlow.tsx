@@ -41,7 +41,7 @@ export function OnboardingFlow() {
     } catch {
       // Silent — non-blocking
     }
-    router.push("/dashboard");
+    router.push("/onboarding/guide");
   };
 
   return (
