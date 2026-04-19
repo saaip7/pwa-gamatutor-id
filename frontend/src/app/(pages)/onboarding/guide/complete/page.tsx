@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { LayoutGrid, Timer, BarChart3, BookOpenCheck, Palette } from "lucide-react";
 import { useTourStore } from "@/stores/tour";
+import { usePreferencesStore } from "@/stores/preferences";
+import { useBadgesStore } from "@/stores/badges";
 
 const CONFETTI_COLORS = ["#3B82F6", "#10b981", "#f59e0b", "#8CD2FF", "#a78bfa"];
 
@@ -20,10 +22,26 @@ const RECAP_ITEMS = [
 export default function GuideCompletePage() {
   const router = useRouter();
   const markTourCompleted = useTourStore((s) => s.markTourCompleted);
+  const preferences = usePreferencesStore((s) => s.preferences);
+  const updateOnboarding = usePreferencesStore((s) => s.updateOnboarding);
+  const fetchBadges = useBadgesStore((s) => s.fetchBadges);
+  const completed = useRef(false);
 
   useEffect(() => {
     ["tour-1", "tour-2", "tour-3", "tour-4", "tour-5"].forEach((id) => markTourCompleted(id));
   }, [markTourCompleted]);
+
+  useEffect(() => {
+    if (completed.current) return;
+    const isOnboardingDone = preferences?.onboarding?.completed;
+    if (isOnboardingDone === undefined) return;
+    if (!isOnboardingDone) {
+      completed.current = true;
+      updateOnboarding({ completed: true })
+        .then(() => fetchBadges())
+        .catch(() => {});
+    }
+  }, [preferences, updateOnboarding, fetchBadges]);
 
   return (
     <div className="w-full h-screen bg-white flex flex-col font-sans text-neutral-800 relative overflow-hidden max-w-md mx-auto">

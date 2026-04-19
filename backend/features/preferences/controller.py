@@ -59,7 +59,7 @@ def update_onboarding():
         success = Preferences.update_onboarding(user_id, data)
         badge_results = []
         if data.get("completed"):
-            Log.create(user_id, "onboarding_completed", "User completed onboarding")
+            Log.create(user_id, "onboarding_completed", "User completed onboarding + guide")
             badge_results = BadgeEngine.evaluate(user_id, "onboarding_completed")
 
         prefs = Preferences.get(user_id)

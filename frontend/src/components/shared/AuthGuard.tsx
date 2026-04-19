@@ -1,18 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/stores/auth";
 import { usePreferencesStore } from "@/stores/preferences";
 import { useBadgesStore } from "@/stores/badges";
 import { registerFcm, listenForegroundMessages } from "@/lib/fcm";
 import { BadgeCelebrationManager } from "@/components/shared/BadgeCelebrationManager";
 
+const ONBOARDING_PATHS = ["/onboarding", "/onboarding/guide"];
+const ONBOARDING_GUIDE_PREFIX = "/onboarding/guide";
+
+function isOnboardingPath(pathname: string) {
+  return ONBOARDING_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
+}
+
+function isGuidePath(pathname: string) {
+  return pathname === ONBOARDING_GUIDE_PREFIX || pathname.startsWith(ONBOARDING_GUIDE_PREFIX + "/");
+}
+
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const token = useAuthStore((s) => s.token);
   const fetchProfile = useAuthStore((s) => s.fetchProfile);
   const fetchPreferences = usePreferencesStore((s) => s.fetchPreferences);
+  const preferences = usePreferencesStore((s) => s.preferences);
   const fetchBadges = useBadgesStore((s) => s.fetchBadges);
   const [checking, setChecking] = useState(true);
 
@@ -34,6 +47,17 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       setChecking(false);
     }
   }, [token, fetchProfile, fetchPreferences, fetchBadges, router]);
+
+  // Onboarding guard: redirect incomplete users (unless already on onboarding/guide pages)
+  useEffect(() => {
+    if (checking || !preferences) return;
+    if (isOnboardingPath(pathname)) return;
+
+    const onboardingDone = preferences.onboarding?.completed;
+    if (onboardingDone === false || onboardingDone === undefined) {
+      router.replace("/onboarding");
+    }
+  }, [checking, preferences, pathname, router]);
 
   if (checking) {
     return (
