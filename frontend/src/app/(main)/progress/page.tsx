@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -89,21 +89,7 @@ export default function ProgressPage() {
     };
   });
 
-  // Derive insight text from dashboard patterns
-  const insightText = useMemo(() => {
-    const patterns = dashboard?.patterns;
-    if (!patterns || (patterns.productiveTime === "-" && patterns.productiveDays === "-")) {
-      return null;
-    }
-    const parts: string[] = [];
-    if (patterns.productiveTime && patterns.productiveTime !== "-") {
-      parts.push(`Waktu produktif: ${patterns.productiveTime}`);
-    }
-    if (patterns.productiveDays && patterns.productiveDays !== "-") {
-      parts.push(`Hari produktif: ${patterns.productiveDays}`);
-    }
-    return parts.length > 0 ? parts.join(" | ") : null;
-  }, [dashboard]);
+  const hasInsight = dashboard?.patterns && (dashboard.patterns.productiveTime !== "-" || dashboard.patterns.productiveDays !== "-");
 
   // Confidence trend data points for chart
   const trendDataPoints: ConfidenceDataPoint[] = confidenceTrend?.dataPoints ?? [];
@@ -126,10 +112,13 @@ export default function ProgressPage() {
       <ProgressHeader />
 
       <div className="px-6 pt-4 pb-28">
-        {insightText ? (
-          <InsightCard insightText={insightText} />
+        {hasInsight ? (
+          <InsightCard
+            productiveTime={dashboard?.patterns?.productiveTime}
+            productiveDays={dashboard?.patterns?.productiveDays}
+          />
         ) : (
-          <InsightCard insightText="Mulai selesaikan tugas untuk mendapatkan insight personal!" />
+          <InsightCard />
         )}
 
         <PeriodSelector
@@ -180,7 +169,7 @@ export default function ProgressPage() {
             transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-sm font-bold text-neutral-800 flex items-center gap-2 uppercase tracking-wider">
+              <h3 className="text-sm font-bold text-neutral-800 flex items-center gap-2">
                 Catatan Refleksi
               </h3>
               {reflectionNotes && reflectionNotes.length > 0 && (
