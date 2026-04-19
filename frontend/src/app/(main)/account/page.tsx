@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Moon, Bell, Globe, User, ShieldCheck, LogOut, Flame, Archive } from "lucide-react";
+import { Moon, Bell, Globe, User, ShieldCheck, LogOut, Flame, Archive, HelpCircle } from "lucide-react";
 import { AccountHeader } from "@/components/feature/account/AccountHeader";
 import { ProfileCard } from "@/components/feature/account/ProfileCard";
 import { SettingsGroup } from "@/components/feature/account/SettingsGroup";
@@ -95,6 +95,14 @@ export default function AccountPage() {
         </SettingsGroup>
 
         <SettingsGroup title="TENTANG AKUN" delay={0.2}>
+          <SettingItem
+            type="link"
+            icon={HelpCircle}
+            label="Bantuan"
+            href="/onboarding/guide"
+            iconBgClass="bg-primary/10"
+            iconColorClass="text-primary"
+          />
           <SettingItem
             type="link"
             icon={Flame}
