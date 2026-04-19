@@ -147,17 +147,21 @@ class Preferences:
             "updated_at": now,
         }
 
+        # Determine which day the freeze covers (today)
+        today_str = now.date().isoformat()
+
         # If streak was about to break (yesterday no activity), preserve it
         last_active = streak.get("last_active_date")
         if last_active:
             days_since = (now - last_active).days if isinstance(last_active, datetime) else 1
             if days_since >= 1:
-                # Keep the streak alive by pretending yesterday was active
-                yesterday = now - timedelta(days=1)
-                updates["streak.last_active_date"] = yesterday
+                updates["streak.last_active_date"] = now
 
         mongo.db.user_preferences.update_one(
             {"user_id": user_id},
-            {"$set": updates}
+            {
+                "$set": updates,
+                "$addToSet": {"streak.freeze_dates": today_str},
+            }
         )
         return True, "Streak freeze berhasil digunakan"

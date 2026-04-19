@@ -326,25 +326,47 @@ class Analytics:
         current = streak.get("current", 0)
         longest = streak.get("longest", 0)
         active_dates = streak.get("active_dates", [])
+        freeze_dates_list = streak.get("freeze_dates", [])
         freezes_used = streak.get("freezes_used_this_week", 0)
         freeze_used_at = streak.get("freeze_used_at")
+
+        now = datetime.utcnow()
+
+        # Backfill freeze_dates from freeze_used_at for legacy data
+        if not freeze_dates_list and freeze_used_at:
+            if isinstance(freeze_used_at, datetime):
+                freeze_dates_list = [freeze_used_at.date().isoformat()]
+            else:
+                freeze_dates_list = [freeze_used_at.isoformat() if hasattr(freeze_used_at, 'isoformat') else str(freeze_used_at)]
+
+        # Check if streak is stale
+        last_active = streak.get("last_active_date")
+        if current > 0 and last_active:
+            if isinstance(last_active, str):
+                last_active = datetime.fromisoformat(last_active.replace("Z", "+00:00")).replace(tzinfo=None)
+            if isinstance(last_active, datetime):
+                last_active_date = last_active.replace(hour=0, minute=0, second=0, microsecond=0)
+                yesterday = (now - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+                yesterday_str = yesterday.date().isoformat()
+                yesterday_frozen = yesterday_str in freeze_dates_list
+                if last_active_date < yesterday and not yesterday_frozen:
+                    current = 0
 
         freezes_available = 1 if freezes_used < 1 else 0
 
         # Build current week (Mon-Sun)
-        now = datetime.utcnow()
         today = now.date()
         monday = today - timedelta(days=today.weekday())
 
         DAY_LABELS = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"]
 
-        # Determine frozen day: freeze covers the day before freeze_used_at
+        # Determine frozen day: freeze covers the same day it was used
         frozen_date_str = None
         if freeze_used_at:
             if isinstance(freeze_used_at, datetime):
-                frozen_day = (freeze_used_at - timedelta(days=1)).date()
+                frozen_day = freeze_used_at.date()
             else:
-                frozen_day = freeze_used_at - timedelta(days=1)
+                frozen_day = freeze_used_at
             # Only count if within current week
             week_start = monday
             week_end = monday + timedelta(days=6)
@@ -394,7 +416,18 @@ class Analytics:
 
         streak = prefs.get("streak", {})
         active_dates = streak.get("active_dates", [])
+        freeze_dates = streak.get("freeze_dates", [])
         active_dates = sorted(set(active_dates))
+
+        # Backfill freeze_dates from freeze_used_at for legacy data
+        if not freeze_dates:
+            freeze_used_at = streak.get("freeze_used_at")
+            if freeze_used_at:
+                if isinstance(freeze_used_at, datetime):
+                    frozen_day = freeze_used_at.date().isoformat()
+                else:
+                    frozen_day = freeze_used_at.isoformat() if hasattr(freeze_used_at, 'isoformat') else str(freeze_used_at)
+                freeze_dates = [frozen_day]
 
         current = streak.get("current", 0)
         longest = streak.get("longest", 0)
@@ -402,6 +435,20 @@ class Analytics:
         week_start = streak.get("week_start_date")
 
         now = datetime.utcnow()
+        yesterday = (now - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+
+        # Check if streak is stale (last active >= 2 days ago, no freeze for yesterday)
+        last_active = streak.get("last_active_date")
+        if current > 0 and last_active:
+            if isinstance(last_active, str):
+                last_active = datetime.fromisoformat(last_active.replace("Z", "+00:00")).replace(tzinfo=None)
+            if isinstance(last_active, datetime):
+                last_active_date = last_active.replace(hour=0, minute=0, second=0, microsecond=0)
+                yesterday_str = (now - timedelta(days=1)).date().isoformat()
+                yesterday_frozen = yesterday_str in freeze_dates
+                if last_active_date < yesterday and not yesterday_frozen:
+                    current = 0
+
         current_week_start = now - timedelta(days=now.weekday())
         current_week_start = current_week_start.replace(hour=0, minute=0, second=0, microsecond=0)
 
@@ -412,6 +459,7 @@ class Analytics:
 
         return {
             "active_dates": active_dates,
+            "freeze_dates": sorted(set(freeze_dates)),
             "current": current,
             "longest": longest,
             "freezes_available": freezes_available,

@@ -168,6 +168,7 @@ export interface StreakData {
 
 export interface StreakHistoryData {
   active_dates: string[];
+  freeze_dates: string[];
   current: number;
   longest: number;
   freezes_available: number;
