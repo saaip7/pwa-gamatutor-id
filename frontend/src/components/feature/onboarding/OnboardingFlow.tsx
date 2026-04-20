@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import { Step1Welcome } from "./Step1Welcome";
 import { Step2GoalSetting } from "./Step2GoalSetting";
 import { Step3FeatureIntro } from "./Step3FeatureIntro";
+import { Step4Notification } from "./Step4Notification";
 import { api } from "@/lib/api";
 
 export function OnboardingFlow() {
@@ -14,18 +15,15 @@ export function OnboardingFlow() {
   const [step, setStep] = useState(1);
   const [goal, setGoal] = useState("");
 
-  const handleNext = () => setStep((prev) => Math.min(prev + 1, 3));
+  const handleNext = () => setStep((prev) => Math.min(prev + 1, 4));
   const handleBack = () => setStep((prev) => Math.max(prev - 1, 1));
 
   const handleGoalSubmit = (selectedGoal: string) => {
     setGoal(selectedGoal);
-    // Save general goal to BE in background
     api.put("/api/goals/general", {
       textPre: "Aku ingin ",
       textHighlight: selectedGoal,
-    }).catch(() => {
-      // Silent fail — will retry later
-    });
+    }).catch(() => {});
     handleNext();
   };
 
@@ -35,11 +33,9 @@ export function OnboardingFlow() {
 
   return (
     <div className="w-full h-screen bg-white flex flex-col font-sans text-neutral-800 relative overflow-hidden">
-      {/* Shared Background Blobs */}
       <div className="absolute top-[-5%] left-[-10%] w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none z-0"></div>
       <div className="absolute bottom-[10%] right-[-10%] w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none z-0"></div>
 
-      {/* Shared Header with Progress Indicators */}
       <header className="shrink-0 pt-14 px-6 pb-2 z-20 relative flex items-center justify-between bg-white/50 backdrop-blur-sm">
         {step === 1 ? (
           <div className="w-10" />
@@ -53,16 +49,16 @@ export function OnboardingFlow() {
         )}
 
         <div className="flex items-center gap-3">
-          <span className="text-xs font-semibold text-neutral-500">Step {step} of 3</span>
+          <span className="text-xs font-semibold text-neutral-500">Step {step} of 4</span>
           <div className="flex gap-1.5">
             <div className={`w-2 h-2 rounded-full ${step >= 1 ? "bg-primary" : "bg-neutral-200"}`}></div>
             <div className={`w-2 h-2 rounded-full ${step >= 2 ? "bg-primary" : "bg-neutral-200"}`}></div>
             <div className={`w-2 h-2 rounded-full ${step >= 3 ? "bg-primary" : "bg-neutral-200"}`}></div>
+            <div className={`w-2 h-2 rounded-full ${step >= 4 ? "bg-primary" : "bg-neutral-200"}`}></div>
           </div>
         </div>
       </header>
 
-      {/* Main Content Area with Transitions */}
       <main className="flex-1 overflow-y-auto relative z-10 flex flex-col">
         <AnimatePresence mode="wait">
           {step === 1 && (
@@ -94,6 +90,19 @@ export function OnboardingFlow() {
           {step === 3 && (
             <motion.div
               key="step3"
+              className="flex-1 flex flex-col px-6"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Step4Notification onComplete={handleNext} />
+            </motion.div>
+          )}
+
+          {step === 4 && (
+            <motion.div
+              key="step4"
               className="flex-1 flex flex-col px-6"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
