@@ -22,6 +22,7 @@ import { Drawer } from "@/components/ui/Drawer";
 import { Calendar } from "@/components/ui/Calendar";
 import { TimePicker } from "@/components/ui/TimePicker";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { useBoardStore } from "@/stores/board";
 
 const DEFAULT_ADVANCED: AdvancedOptionsData = {
@@ -94,6 +95,7 @@ export default function NewTaskPage() {
         pre_test_grade: advanced.preTestGrade,
       });
 
+      toast.success("Langkah baru dimulai! Tugas siap dikerjakan.", { duration: 3000 });
       router.back();
     } catch {
       // Error handled in store

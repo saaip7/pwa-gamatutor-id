@@ -29,16 +29,9 @@ export default function AccountPage() {
 
   const displayName = user?.name || "Mahasiswa";
 
-  // Derive a title from unlocked badges count
   const unlockedCount = badges.filter((b) => b.unlocked).length;
-  const title =
-    unlockedCount >= 10
-      ? "The Master"
-      : unlockedCount >= 5
-        ? "The Strategist"
-        : unlockedCount >= 1
-          ? "The Learner"
-          : "Pemula";
+  const totalBadges = badges.length || 1;
+  const title = `${unlockedCount} Pencapaian`;
 
   const handleDarkModeToggle = async () => {
     const next = isDarkMode ? "light" : "dark";

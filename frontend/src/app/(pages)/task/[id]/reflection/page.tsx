@@ -243,6 +243,8 @@ export default function GuidedReflectionPage() {
         onConfirm={goToDashboard}
         duration={duration}
         confidence={confidenceLabel}
+        mainGoal={mainGoal}
+        tasksCompleted={0}
       />
 
       {/* Back Confirmation Drawer */}

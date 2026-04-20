@@ -26,18 +26,18 @@ export function LearningStrategies({ strategies }: LearningStrategiesProps) {
       transition={{ duration: 0.6, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="flex justify-between items-center mb-5">
-        <h3 className="text-sm font-bold text-neutral-800">Learning Strategies</h3>
+        <h3 className="text-sm font-bold text-neutral-800">Strategi Belajar</h3>
         {strategies.length > 0 ? (
           <Link
             href="/progress/strategies"
             className="text-[11px] font-bold text-primary flex items-center gap-1 hover:text-primary-hover transition-colors"
           >
-            View details
+            Lihat detail
             <ArrowRight className="w-3 h-3" />
           </Link>
         ) : (
           <span className="text-[11px] font-bold text-neutral-300 flex items-center gap-1 cursor-not-allowed">
-            View details
+            Lihat detail
             <ArrowRight className="w-3 h-3" />
           </span>
         )}
@@ -64,7 +64,7 @@ export function LearningStrategies({ strategies }: LearningStrategiesProps) {
                   <div className={`${barClass} h-full rounded-full transition-all duration-1000 ease-out`} style={{ width: `${progressWidth}%` }}></div>
                 </div>
                 <div className="text-[10px] text-neutral-500 mt-1.5 text-right font-medium">
-                  Used in {strategy.taskCount} tasks
+                  Digunakan di {strategy.taskCount} tugas
                 </div>
               </div>
             );

@@ -103,9 +103,9 @@ export function MasteryTrendChart({
     >
       {/* Header */}
       <div className="mb-3">
-        <h3 className="text-sm font-bold text-neutral-800">Mastery & Growth Trend</h3>
+        <h3 className="text-sm font-bold text-neutral-800">Tren Penguasaan & Pertumbuhan</h3>
         <p className="text-[10px] text-neutral-500 mt-0.5">
-          Confidence trend & your improvement
+          Tren keyakinan diri & peningkatanmu
           {trendLabel && (
             <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded bg-neutral-100 text-[9px] font-bold text-neutral-600">
               {trendLabel}
@@ -142,11 +142,11 @@ export function MasteryTrendChart({
       <div className="flex items-center gap-4 mb-3">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-0.5 bg-primary rounded-full" />
-          <span className="text-[10px] font-medium text-neutral-600">Confidence Level</span>
+          <span className="text-[10px] font-medium text-neutral-600">Tingkat Keyakinan</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-0.5 border-t-2 border-dashed border-emerald-500" />
-          <span className="text-[10px] font-medium text-neutral-600">Learning Gain</span>
+          <span className="text-[10px] font-medium text-neutral-600">Peningkatan Belajar</span>
         </div>
       </div>
 

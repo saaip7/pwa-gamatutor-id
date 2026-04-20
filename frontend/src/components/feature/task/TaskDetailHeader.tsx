@@ -16,7 +16,7 @@ export function TaskDetailHeader() {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-sm font-bold text-neutral-900">Task Details</h1>
+        <h1 className="text-sm font-bold text-neutral-900">Detail Tugas</h1>
       </div>
       <button className="w-10 h-10 flex items-center justify-center text-neutral-400 active:bg-neutral-50 rounded-xl transition-colors">
         <MoreVertical className="w-5 h-5" />
