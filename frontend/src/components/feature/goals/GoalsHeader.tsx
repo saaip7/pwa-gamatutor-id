@@ -6,7 +6,7 @@ export function GoalsHeader() {
   return (
     <PageHeader
       title="Goals"
-      subtitle="Track your course goals"
+      subtitle="Pantau progres menuju target belajarmu"
       rightAction={
         <button
           type="button"
