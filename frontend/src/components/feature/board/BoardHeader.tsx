@@ -13,7 +13,7 @@ export function BoardHeader({ userName, activeTasksCount, hasUnreadNotifications
   return (
     <PageHeader
       title="Board"
-      subtitle={`${activeTasksCount} Active Tasks`}
+      subtitle={`${activeTasksCount} Tugas Aktif`}
       rightAction={
         <>
           <button className="w-10 h-10 rounded-full bg-neutral-50 border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-neutral-100 transition-colors">

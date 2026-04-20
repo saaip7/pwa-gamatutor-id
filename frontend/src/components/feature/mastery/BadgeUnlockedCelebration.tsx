@@ -52,7 +52,8 @@ export function BadgeUnlockedCelebration({ isOpen, onClose, data }: BadgeUnlocke
               transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
               className="text-3xl font-bold text-white tracking-tight mb-2"
             >
-              {data.name} unlocked!
+              {data.name}
+              <span className="text-amber-400 ml-1.5">Terbuka!</span>
             </motion.h1>
 
             {/* Subtitle */}
@@ -131,7 +132,7 @@ export function BadgeUnlockedCelebration({ isOpen, onClose, data }: BadgeUnlocke
                 onClick={onClose}
                 className="flex-1 py-4 rounded-xl font-bold text-white bg-gray-900/80 border border-gray-600 backdrop-blur-sm transition-all active:scale-[0.98]"
               >
-                Equip to Character
+                Pasang ke Karakter
               </button>
               <button
                 onClick={onClose}

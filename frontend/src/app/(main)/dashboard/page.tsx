@@ -18,7 +18,7 @@ import type { BoardCard } from "@/types";
 // --- Helpers ---
 
 function formatRelativeDeadline(deadline?: string): string {
-  if (!deadline) return "No deadline";
+  if (!deadline) return "Tidak Pasti";
   const d = new Date(deadline);
   const now = new Date();
 
@@ -27,13 +27,13 @@ function formatRelativeDeadline(deadline?: string): string {
   const deadlineDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const diffDays = Math.round((deadlineDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-  if (diffDays < 0) return "Overdue";
+  if (diffDays < 0) return "Terlambat";
   if (diffDays === 0) {
-    return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    return d.toLocaleTimeString("id-ID", { hour: "numeric", minute: "2-digit" });
   }
-  if (diffDays === 1) return "Tomorrow";
-  if (diffDays <= 7) return d.toLocaleDateString("en-US", { weekday: "short" });
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  if (diffDays === 1) return "Besok";
+  if (diffDays <= 7) return d.toLocaleDateString("id-ID", { weekday: "short" });
+  return d.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
 }
 
 function boardCardToTask(card: BoardCard): Task {
@@ -188,6 +188,8 @@ export default function DashboardPage() {
       <DashboardHeader
         userName={userName}
         hasUnreadNotifications={hasUnreadNotifications}
+        streak={stats.streak}
+        tasksCompleted={stats.tasksCompleted}
       />
 
       <CharacterShowcase

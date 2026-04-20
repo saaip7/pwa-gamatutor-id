@@ -10,9 +10,11 @@ interface CelebrationDialogProps {
   onConfirm: () => void;
   duration: string;
   confidence: string;
+  mainGoal?: string;
+  tasksCompleted?: number;
 }
 
-export function CelebrationDialog({ isOpen, onConfirm, duration, confidence }: CelebrationDialogProps) {
+export function CelebrationDialog({ isOpen, onConfirm, duration, confidence, mainGoal, tasksCompleted = 0 }: CelebrationDialogProps) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -79,7 +81,10 @@ export function CelebrationDialog({ isOpen, onConfirm, duration, confidence }: C
 
             {/* Text */}
             <p className="text-sm text-neutral-500 font-medium leading-relaxed mb-8 px-1">
-              Satu langkah lebih dekat ke tujuanmu. Teruslah belajar dengan otonom!
+              {mainGoal
+                ? `Satu langkah lebih dekat ke tujuanmu: ${mainGoal}. ${tasksCompleted + 1} tugas selesai, dan itu bukti komitmenmu!`
+                : "Satu langkah lebih dekat ke tujuanmu. Setiap tugas yang tuntas adalah bukti kemajuanmu."
+              }
             </p>
 
             {/* Button */}

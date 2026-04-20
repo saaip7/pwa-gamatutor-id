@@ -56,9 +56,9 @@ export function CharacterShowcase({ stats, onStreakTap }: CharacterShowcaseProps
           <div className="flex flex-col items-center">
             <div className="flex items-center gap-1 mb-1">
               <Timer className="text-primary w-[18px] h-[18px]" />
-              <span className="text-sm font-bold text-neutral-900">{stats.focusHours}h</span>
+              <span className="text-sm font-bold text-neutral-900">{stats.focusHours}j</span>
             </div>
-            <span className="text-xs font-medium text-neutral-500">Focus</span>
+            <span className="text-xs font-medium text-neutral-500">Fokus</span>
           </div>
 
           <div className="w-px h-8 bg-neutral-200/80"></div>
@@ -68,7 +68,7 @@ export function CharacterShowcase({ stats, onStreakTap }: CharacterShowcaseProps
               <CheckCircle2 className="text-success w-[18px] h-[18px]" />
               <span className="text-sm font-bold text-neutral-900">{stats.tasksCompleted}</span>
             </div>
-            <span className="text-xs font-medium text-neutral-500">Tasks</span>
+            <span className="text-xs font-medium text-neutral-500">Tugas</span>
           </div>
         </div>
 
@@ -78,10 +78,12 @@ export function CharacterShowcase({ stats, onStreakTap }: CharacterShowcaseProps
           {/* Center Frame Area */}
           <div className="relative w-full h-[280px] rounded-[24px] border-2 border-blue-200/40 bg-gradient-to-b from-blue-50/60 via-purple-50/40 to-white flex justify-center items-end shadow-sm overflow-hidden">
 
-            {/* The Strategist Badge */}
+            {/* Achievement Badge Area */}
             <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm border border-blue-100 pl-2.5 pr-3.5 py-1.5 rounded-full z-20 flex items-center gap-1.5 shadow-sm">
               <ShieldCheck className="w-[15px] h-[15px] text-blue-600" />
-              <span className="text-xs font-bold text-blue-700 tracking-tight">The Strategist</span>
+              <span className="text-xs font-bold text-blue-700 tracking-tight">
+                {stats.badgesUnlocked > 0 ? `${stats.badgesUnlocked} Pencapaian` : "Mulai Belajar"}
+              </span>
             </div>
 
             {/* Customize Button */}

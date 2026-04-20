@@ -6,7 +6,7 @@ export function ProgressHeader() {
   return (
     <PageHeader
       title="Progress"
-      subtitle="Track your learning journey"
+      subtitle="Pantau perjalanan belajarmu"
       rightAction={
         <button
           type="button"

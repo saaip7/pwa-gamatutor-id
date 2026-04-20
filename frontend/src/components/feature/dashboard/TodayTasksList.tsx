@@ -24,7 +24,7 @@ export function TodayTasksList({ tasks }: TodayTasksListProps) {
           href="/board" 
           className="text-sm font-bold text-primary flex items-center gap-1 hover:text-primary-hover transition-colors"
         >
-          View Board 
+          Lihat Board 
           <ArrowRight className="w-[15px] h-[15px]" />
         </Link>
       </div>

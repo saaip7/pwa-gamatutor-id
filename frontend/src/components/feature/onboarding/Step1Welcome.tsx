@@ -105,11 +105,11 @@ export function Step1Welcome({ onNext }: Step1WelcomeProps) {
         transition={{ delay: 0.1 }}
       >
         <h1 className="text-3xl font-extrabold text-neutral-800 tracking-tight leading-tight">
-          Welcome to <br />
+          Selamat Datang di <br />
           <span className="text-primary">Gamatutor</span>
         </h1>
         <p className="text-neutral-500 text-base leading-relaxed px-2">
-          Level up your learning experience. Manage your study tasks, track your progress, and earn rewards along the way.
+          Tingkatkan pengalaman belajarmu. Kelola tugas, pantau progres, dan raih pencapaian di setiap langkah.
         </p>
       </motion.div>
 
@@ -122,7 +122,7 @@ export function Step1Welcome({ onNext }: Step1WelcomeProps) {
         transition={{ delay: 0.2 }}
       >
         <Button onClick={onNext} className="py-4 text-lg shadow-[0_4px_14px_rgba(59,130,246,0.25)] rounded-xl" rightIcon={<ArrowRight className="w-5 h-5" />}>
-          Get Started
+          Mulai
         </Button>
       </motion.div>
     </div>
