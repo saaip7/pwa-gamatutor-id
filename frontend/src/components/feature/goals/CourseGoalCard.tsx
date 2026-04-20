@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 export interface CourseGoal {
   id: string;
   title: string;
-  icon: string; // Changed from LucideIcon to string
+  icon: string;
   completedTasks: number;
   totalTasks: number;
   theme: "blue" | "teal" | "purple";
@@ -15,10 +15,20 @@ interface CourseGoalCardProps {
   goal: CourseGoal;
 }
 
+function getMicroFrame(completed: number, total: number): string | null {
+  if (total === 0) return null;
+  const pct = Math.round((completed / total) * 100);
+  if (pct === 100) return "Tuntas!";
+  if (pct >= 80) return "Hampir selesai!";
+  if (pct >= 50) return "Lebih dari setengah jalan";
+  if (pct > 0) return null;
+  return null;
+}
+
 export function CourseGoalCard({ goal }: CourseGoalCardProps) {
   const percentage = Math.round((goal.completedTasks / goal.totalTasks) * 100) || 0;
+  const microFrame = getMicroFrame(goal.completedTasks, goal.totalTasks);
 
-  // Dynamic theme mapping based on the HTML design
   const themeStyles = {
     blue: {
       wrapper: "border-blue-100 bg-blue-50/50 hover:bg-blue-50",
@@ -41,7 +51,6 @@ export function CourseGoalCard({ goal }: CourseGoalCardProps) {
   };
 
   const styles = themeStyles[goal.theme];
-  // Dynamically resolve the icon component from the string name
   const Icon = (LucideIcons as any)[goal.icon] || LucideIcons.FileQuestion;
 
   return (
@@ -51,10 +60,15 @@ export function CourseGoalCard({ goal }: CourseGoalCardProps) {
           <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300", styles.iconBg)}>
             <Icon className="w-5 h-5" />
           </div>
-          <h4 className="font-semibold text-neutral-800">{goal.title}</h4>
+          <div className="flex flex-col">
+            <h4 className="font-semibold text-neutral-800">{goal.title}</h4>
+            {microFrame && (
+              <span className="text-[10px] font-bold text-emerald-600">{microFrame}</span>
+            )}
+          </div>
         </div>
         <span className="text-xs font-medium text-neutral-500 bg-white/60 px-2 py-1 rounded-md border border-neutral-100">
-          {goal.completedTasks}/{goal.totalTasks} tasks
+          {goal.completedTasks}/{goal.totalTasks} tugas
         </span>
       </div>
       <div className="flex items-center gap-3">
