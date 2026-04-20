@@ -129,7 +129,12 @@ export default function TaskDetailPage() {
 
   return (
     <div className="w-full h-screen flex flex-col mx-auto bg-white relative overflow-hidden max-w-md">
-      <TaskDetailHeader />
+      <TaskDetailHeader
+        column={card.column}
+        taskId={id}
+        onMoved={(newCol) => setCard((prev) => prev ? { ...prev, column: newCol } : prev)}
+        disabled={isArchived}
+      />
 
       <main className="flex-1 overflow-y-auto no-scrollbar px-6 py-6 space-y-8 pb-32">
         {/* Archived Banner */}

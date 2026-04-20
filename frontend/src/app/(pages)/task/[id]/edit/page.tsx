@@ -65,15 +65,23 @@ export default function EditTaskPage() {
   // Derived task data
   const card = tasks[id] ?? null;
 
-  // Derive status from which column the card is in
   const cardStatus = useMemo<TaskStatus>(() => {
+    if (card?.column) {
+      const colKey = {
+        list1: "planning",
+        list2: "monitoring",
+        list3: "controlling",
+        list4: "reflection",
+      }[card.column] as ColumnKey | undefined;
+      if (colKey) return COLUMN_TO_STATUS[colKey] ?? "Planning";
+    }
     for (const [colKey, cardIds] of Object.entries(columns)) {
       if (cardIds.includes(id)) {
         return COLUMN_TO_STATUS[colKey as ColumnKey] ?? "Planning";
       }
     }
     return "Planning";
-  }, [columns, id]);
+  }, [card?.column, columns, id]);
 
   // Form State — initialized once card is available
   const [status, setStatus] = useState<TaskStatus>(cardStatus);
@@ -247,7 +255,8 @@ export default function EditTaskPage() {
           <div className="-mx-5 -mt-6 mb-2">
             <TaskStatusStepper
               currentStatus={status}
-              onUpdateStatus={() => console.log("Open status update drawer")}
+              taskId={id}
+              onMoved={(newStatus) => setStatus(newStatus)}
             />
           </div>
 
