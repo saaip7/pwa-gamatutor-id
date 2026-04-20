@@ -33,6 +33,7 @@ function badgeToCelebrationData(badge: Badge): BadgeCelebrationData {
     subtitle: badge.description,
     icon: BADGE_ICON_MAP[badge.type] || Award,
     shape: (badge.shape as BadgeShape) || "circle",
+    badgeType: badge.type,
   };
 }
 
