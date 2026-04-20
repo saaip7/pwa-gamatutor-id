@@ -154,8 +154,36 @@ export default function WardrobePage() {
 
   const items = getItemsBySlot(activeTab);
 
+  const handleGenderChange = (newGender: Gender) => {
+    setGender(newGender);
+    const slots: Array<"head" | "top" | "bottom"> = ["head", "top", "bottom"];
+    const safeEquipped = { ...equipped };
+    for (const slot of slots) {
+      const currentLevel = safeEquipped[slot];
+      if (currentLevel) {
+        const itemDef = getItemsBySlot(slot).find((i) => i.id === currentLevel);
+        if (itemDef && !isItemUnlocked(itemDef, unlockedBadgeTypes, newGender)) {
+          safeEquipped[slot] = "base" as SlotLevel;
+        }
+      }
+    }
+    setEquipped(safeEquipped);
+  };
+
   const handleSave = async () => {
-    await updateCharacter({ gender, equipped });
+    const slots: Array<"head" | "top" | "bottom"> = ["head", "top", "bottom"];
+    const safeEquipped = { ...equipped };
+    for (const slot of slots) {
+      const currentLevel = safeEquipped[slot];
+      if (currentLevel) {
+        const itemDef = getItemsBySlot(slot).find((i) => i.id === currentLevel);
+        if (itemDef && !isItemUnlocked(itemDef, unlockedBadgeTypes, gender)) {
+          safeEquipped[slot] = "base" as SlotLevel;
+        }
+      }
+    }
+    setEquipped(safeEquipped);
+    await updateCharacter({ gender, equipped: safeEquipped });
     toast.success("Karakter berhasil disimpan!");
   };
 
@@ -164,7 +192,7 @@ export default function WardrobePage() {
       <SettingsHeader title="Sesuaikan Karakter" onSave={handleSave} />
 
       <main className="flex-1 flex flex-col overflow-y-auto no-scrollbar relative bg-white">
-        <CharacterStage equipped={equipped} gender={gender} onGenderChange={setGender} />
+        <CharacterStage equipped={equipped} gender={gender} onGenderChange={handleGenderChange} />
 
         {/* Category Tabs */}
         <div className="sticky top-0 z-40 bg-white border-b border-neutral-100 flex">
