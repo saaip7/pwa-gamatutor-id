@@ -78,6 +78,7 @@ export default function MasteryPage() {
       subtitle: badge.description,
       icon,
       shape: (badge.shape as BadgeShape) || "circle",
+      badgeType: badge.type,
     });
     setCelebrationOpen(true);
   };
