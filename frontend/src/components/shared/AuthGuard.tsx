@@ -23,6 +23,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const token = useAuthStore((s) => s.token);
+  const user = useAuthStore((s) => s.user);
   const fetchProfile = useAuthStore((s) => s.fetchProfile);
   const fetchPreferences = usePreferencesStore((s) => s.fetchPreferences);
   const preferences = usePreferencesStore((s) => s.preferences);
@@ -48,7 +49,13 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     }
   }, [token, fetchProfile, fetchPreferences, fetchBadges, router]);
 
-  // Onboarding guard: redirect incomplete users (unless already on onboarding/guide pages)
+  useEffect(() => {
+    if (checking || !user) return;
+    if (user.role === "admin") {
+      router.replace("/admin/users");
+    }
+  }, [checking, user, router]);
+
   useEffect(() => {
     if (checking || !preferences) return;
     if (isOnboardingPath(pathname)) return;
