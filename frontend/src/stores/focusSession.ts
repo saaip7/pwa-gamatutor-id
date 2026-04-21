@@ -56,6 +56,7 @@ export const useFocusSessionStore = create<FocusSessionState>()(
           cardId: null,
           taskName: "",
           startTime: 0,
+          lastFinishedCardId: null,
         }),
 
       markFinished: (cardId) => set({ lastFinishedCardId: cardId }),
