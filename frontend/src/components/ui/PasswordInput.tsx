@@ -37,7 +37,7 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
             href={forgotPasswordHref}
             className="text-xs font-medium text-primary hover:text-primary-hover transition-colors"
           >
-            Forgot?
+            Lupa?
           </Link>
         )}
       </div>
