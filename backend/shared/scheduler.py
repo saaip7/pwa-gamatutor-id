@@ -357,7 +357,7 @@ def job_social_presence():
 def job_cleanup_orphan_sessions():
     """End study sessions that have been running for over 3 hours without ending."""
     from features.study_session.model import StudySession
-    cleaned = StudySession.cleanup_orphan_sessions(max_age_hours=3)
+    cleaned = StudySession.cleanup_orphan_sessions(max_age_hours=3, max_age_minutes=10)  # TEST: 10min
     if cleaned:
         logger.info(f"[Scheduler] Orphan session cleanup: {cleaned} sessions ended")
 
@@ -371,23 +371,27 @@ def job_check_idle_sessions():
     logger.info("[Scheduler] Running idle session check")
 
     now = datetime.utcnow()
-    idle_cutoff = now - timedelta(minutes=30)
+    idle_cutoff = now - timedelta(minutes=2)  # TEST: 2 min (prod: 30)
 
-    idle_sessions = mongo.db.study_sessions.find({
+    idle_sessions = list(mongo.db.study_sessions.find({
         "end_time": None,
         "last_heartbeat": {"$exists": True, "$lt": idle_cutoff},
         "idle_notified": {"$ne": True},
-    })
+    }))
+
+    logger.info(f"[Scheduler] Idle check: found {len(idle_sessions)} idle sessions")
 
     notified = 0
     for session in idle_sessions:
         user_id = session["user_id"]
         prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
         if not prefs:
+            logger.warning(f"[Scheduler] Idle check: no prefs for user {user_id}")
             continue
 
         token = prefs.get("fcm_token")
         if not token:
+            logger.warning(f"[Scheduler] Idle check: no FCM token for user {user_id}")
             continue
 
         title = "Masih belajar?"
@@ -395,10 +399,11 @@ def job_check_idle_sessions():
 
         send_push(token, title, body, {"type": "idle_session", "session_id": str(session["_id"])})
 
-        mongo.db.study_sessions.update_one(
-            {"_id": session["_id"]},
+        result = mongo.db.study_sessions.update_one(
+            {"_id": session["_id"], "end_time": None},
             {"$set": {"idle_notified": True}},
         )
+        logger.info(f"[Scheduler] Idle check: session {session['_id']} idle_notified=True, matched={result.matched_count}, modified={result.modified_count}")
 
         notified += 1
 
@@ -417,7 +422,9 @@ def job_auto_end_stale_sessions():
 
     logger.info("[Scheduler] Running auto-end stale sessions")
 
-    ended = StudySession.auto_end_stale(minutes_threshold=90)
+    ended = StudySession.auto_end_stale(minutes_threshold=5)  # TEST: 5 min (prod: 90)
+
+    logger.info(f"[Scheduler] Auto-end stale: {len(ended)} sessions to end")
 
     notified = 0
     for item in ended:
@@ -433,7 +440,7 @@ def job_auto_end_stale_sessions():
             send_push(token, title, body, {"type": "auto_end", "session_id": item["session_id"]})
             notified += 1
 
-        Log.create(item["user_id"], "session_auto_ended", f"Session {item['session_id']} auto-ended after 90 min idle")
+        Log.create(item["user_id"], "session_auto_ended", f"Session {item['session_id']} auto-ended (test: 5min threshold)")
 
     if ended:
         logger.info(f"[Scheduler] Auto-end stale: {len(ended)} sessions ended, {notified} notifications sent")
@@ -492,15 +499,15 @@ def init_scheduler(app):
             id="social_presence", replace_existing=True,
         )
         scheduler.add_job(
-            job_cleanup_orphan_sessions, "interval", hours=6, # [FLAG NOTIF] prod: hours=6, test: minutes=10
+            job_cleanup_orphan_sessions, "interval", minutes=5, # TEST: 5min (prod: hours=6)
             id="orphan_cleanup", replace_existing=True,
         )
         scheduler.add_job(
-            job_check_idle_sessions, "interval", minutes=10,  # [FLAG NOTIF] prod: minutes=10
+            job_check_idle_sessions, "interval", minutes=1,  # TEST: 1min (prod: minutes=10)
             id="check_idle_sessions", replace_existing=True,
         )
         scheduler.add_job(
-            job_auto_end_stale_sessions, "interval", minutes=10, # [FLAG NOTIF] prod: minutes=10
+            job_auto_end_stale_sessions, "interval", minutes=1, # TEST: 1min (prod: minutes=10)
             id="auto_end_stale_sessions", replace_existing=True,
         )
         scheduler.add_job(

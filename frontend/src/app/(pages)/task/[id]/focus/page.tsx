@@ -166,17 +166,15 @@ export default function FocusModePage() {
     if (sessionId && sessionId !== "local") {
       const res = await api.post<{ message: string; duration_ms: number; newlyUnlocked: string[] }>(
         "/api/study-sessions/end",
-        { session_id: sessionId }
+        { session_id: sessionId, hidden_ms: totalHiddenMsRef.current }
       );
-      // If badges unlocked, refresh badges store to trigger celebration later
       if (res.newlyUnlocked && res.newlyUnlocked.length > 0) {
         const { useBadgesStore } = await import("@/stores/badges");
         useBadgesStore.getState().fetchBadges();
       }
       return res.duration_ms ?? 0;
     }
-    // Local session fallback — use wall clock
-    return sessionStartTime ? Date.now() - sessionStartTime : 0;
+    return sessionStartTime ? Date.now() - sessionStartTime - totalHiddenMsRef.current : 0;
   };
 
   // Heartbeat: send to BE every 5 min while page is visible
@@ -218,7 +216,7 @@ export default function FocusModePage() {
   useEffect(() => {
     if (sessionId && sessionId !== "local") {
       sendHeartbeatRef.current(); // Initial heartbeat
-      heartbeatIntervalRef.current = setInterval(() => sendHeartbeatRef.current(), 5 * 60 * 1000);
+      heartbeatIntervalRef.current = setInterval(() => sendHeartbeatRef.current(), 30 * 1000); // TEST: 30s (prod: 5*60*1000)
       return () => {
         if (heartbeatIntervalRef.current) {
           clearInterval(heartbeatIntervalRef.current);
@@ -241,8 +239,7 @@ export default function FocusModePage() {
       } else if (document.visibilityState === "visible") {
         if (hiddenAtRef.current && sessionId) {
           const hiddenDurationMs = Date.now() - hiddenAtRef.current;
-          // Trust threshold: first 30 min of hidden time, we trust user is studying
-          const TRUST_THRESHOLD_MS = 30 * 60 * 1000;
+          const TRUST_THRESHOLD_MS = 1 * 60 * 1000; // TEST: 1min (prod: 30*60*1000)
           const untrustedMs = Math.max(0, hiddenDurationMs - TRUST_THRESHOLD_MS);
           if (untrustedMs > 0) {
             totalHiddenMsRef.current += untrustedMs;
@@ -254,10 +251,10 @@ export default function FocusModePage() {
           const hiddenDurationMin = hiddenDurationMs / 60000;
           idleDurationRef.current = hiddenDurationMin;
 
-          if (hiddenDurationMin > 90) {
+          if (hiddenDurationMin > 3) { // TEST: 3min (prod: 90)
             // Auto-end session
             handleAutoEndRef.current(hiddenDurationMin);
-          } else if (hiddenDurationMin >= 30) {
+          } else if (hiddenDurationMin >= 1) { // TEST: 1min (prod: 30)
             // Show idle popup
             setShowIdlePopup(true);
           }
@@ -265,7 +262,7 @@ export default function FocusModePage() {
 
           // Resume heartbeat
           sendHeartbeatRef.current();
-          heartbeatIntervalRef.current = setInterval(() => sendHeartbeatRef.current(), 5 * 60 * 1000);
+          heartbeatIntervalRef.current = setInterval(() => sendHeartbeatRef.current(), 30 * 1000); // TEST: 30s
         }
         hiddenAtRef.current = null;
       }
