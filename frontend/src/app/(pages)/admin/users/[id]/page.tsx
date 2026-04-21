@@ -506,9 +506,14 @@ function SessionsTab({ sessions }: { sessions: AdminStudySession[] }) {
         {sessions.map((s, i) => (
           <ListRow key={s._id} last={i === sessions.length - 1}>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-neutral-800">
-                {s.status === "active" ? "Sesi Aktif" : "Sesi Selesai"}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium text-neutral-800">
+                  {s.status === "active" ? "Sesi Aktif" : "Sesi Selesai"}
+                </p>
+                <span className="text-[11px] font-mono text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded">
+                  {s._id.length > 8 ? s._id.slice(0, 8) : s._id}
+                </span>
+              </div>
               <p className="text-sm text-neutral-400 mt-0.5">{fmtDateTime(s.start_time)}</p>
             </div>
             <div className="shrink-0 ml-3">
