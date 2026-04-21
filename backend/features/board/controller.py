@@ -153,7 +153,11 @@ def move_card(card_id):
 
     old_column = card.get("column", "list1")
 
-    # Prevent manual drag to reflection (list4) without reflection data
+    if old_column == "list4" and new_column != "list4":
+        return jsonify({
+            "message": "Kartu yang sudah di-refleksi tidak bisa dipindahkan mundur.",
+        }), 403
+
     if new_column == "list4" and old_column != "list4":
         reflection = card.get("reflection")
         if not reflection or not reflection.get("q2_confidence"):

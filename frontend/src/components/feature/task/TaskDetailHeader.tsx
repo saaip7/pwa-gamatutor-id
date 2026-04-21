@@ -31,6 +31,7 @@ export function TaskDetailHeader({ column, taskId, onMoved, disabled }: TaskDeta
 
   const currentBeId = column || "list1";
   const currentIndex = COLUMNS.findIndex((c) => c.beId === currentBeId);
+  const isReflection = currentBeId === "list4";
 
   const handleMove = async (targetKey: ColumnKey) => {
     if (!taskId || moving) return;
@@ -41,8 +42,8 @@ export function TaskDetailHeader({ column, taskId, onMoved, disabled }: TaskDeta
       const col = COLUMNS.find((c) => c.key === targetKey)!;
       toast.success(`Dipindahkan ke ${col.label}`);
       setShowMoveDrawer(false);
-    } catch {
-      toast.error("Gagal memindahkan tugas");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Gagal memindahkan tugas");
     } finally {
       setMoving(null);
     }
@@ -62,11 +63,11 @@ export function TaskDetailHeader({ column, taskId, onMoved, disabled }: TaskDeta
         </div>
         <button
           onClick={() => setShowMoveDrawer(true)}
-          disabled={disabled}
-          title="Pindahkan kolom"
+          disabled={disabled || isReflection}
+          title={isReflection ? "Tugas yang sudah di-refleksi tidak bisa dipindah" : "Pindahkan kolom"}
           className={cn(
             "h-9 px-3 flex items-center justify-center gap-1.5 rounded-lg border text-xs font-bold transition-all",
-            disabled
+            (disabled || isReflection)
               ? "border-neutral-100 text-neutral-200 cursor-not-allowed"
               : "border-neutral-200 text-neutral-500 active:bg-neutral-50 active:scale-95"
           )}
