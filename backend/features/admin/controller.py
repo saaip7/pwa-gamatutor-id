@@ -192,17 +192,54 @@ def list_logs():
         except Exception:
             return jsonify({"message": "Invalid user_id format"}), 400
 
+    search_filter = request.args.get("search", "").strip()
+
+    if search_filter:
+        user_ids = [
+            u["_id"] for u in
+            mongo.db.users.find(
+                {"$or": [
+                    {"name": {"$regex": search_filter, "$options": "i"}},
+                    {"email": {"$regex": search_filter, "$options": "i"}},
+                    {"username": {"$regex": search_filter, "$options": "i"}},
+                ]},
+                {"_id": 1},
+            )
+        ]
+        if user_ids:
+            query["user_id"] = {"$in": user_ids}
+        else:
+            return jsonify({"data": [], "total": 0, "page": page, "per_page": per_page}), 200
+
     total = mongo.db.logs.count_documents(query)
     logs = list(
-        mongo.db.logs.find(query)
-        .sort("created_at", -1)
-        .skip(skip)
-        .limit(per_page)
+        mongo.db.logs.aggregate([
+            {"$match": query},
+            {"$sort": {"created_at": -1}},
+            {"$skip": skip},
+            {"$limit": per_page},
+            {
+                "$lookup": {
+                    "from": "users",
+                    "localField": "user_id",
+                    "foreignField": "_id",
+                    "as": "user",
+                }
+            },
+            {"$unwind": {"path": "$user", "preserveNullAndEmptyArrays": True}},
+            {
+                "$project": {
+                    "_id": {"$toString": "$_id"},
+                    "user_id": {"$toString": "$user_id"},
+                    "user_name": {"$ifNull": ["$user.name", None]},
+                    "user_email": {"$ifNull": ["$user.email", None]},
+                    "action_type": 1,
+                    "description": 1,
+                    "created_at": 1,
+                }
+            },
+        ])
     )
-
-    for log in logs:
-        log["_id"] = str(log["_id"])
-        log["user_id"] = str(log["user_id"])
 
     return jsonify({
         "data": logs,

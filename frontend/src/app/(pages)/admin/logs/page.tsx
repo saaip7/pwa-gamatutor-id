@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -15,6 +15,12 @@ import {
   UserPlus,
   Loader2,
   AlertCircle,
+  Trash2,
+  PenLine,
+  Settings2,
+  Sparkles,
+  CalendarClock,
+  Flag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
@@ -22,7 +28,8 @@ import { api } from "@/lib/api";
 interface LogEntry {
   _id: string;
   user_id: string;
-  username: string;
+  user_name: string | null;
+  user_email: string | null;
   action_type: string;
   description: string;
   created_at: string;
@@ -35,20 +42,23 @@ interface LogsResponse {
   per_page: number;
 }
 
-const ACTION_META: Record<
-  string,
-  { label: string; icon: React.ElementType; color: string }
-> = {
-  login: { label: "Login", icon: LogIn, color: "text-blue-600 bg-blue-50" },
-  register: { label: "Register", icon: UserPlus, color: "text-emerald-600 bg-emerald-50" },
-  card_done: { label: "Task Done", icon: CheckCircle2, color: "text-emerald-600 bg-emerald-50" },
-  card_move: { label: "Card Moved", icon: Move, color: "text-blue-600 bg-blue-50" },
-  badge_unlock: { label: "Badge", icon: Award, color: "text-amber-600 bg-amber-50" },
-  session_start: { label: "Session", icon: Play, color: "text-blue-600 bg-blue-50" },
-  session_end: { label: "Session End", icon: CheckCircle2, color: "text-neutral-600 bg-neutral-100" },
-  reflection: { label: "Reflection", icon: CheckCircle2, color: "text-purple-600 bg-purple-50" },
-  streak_freeze: { label: "Streak Freeze", icon: Snowflake, color: "text-blue-600 bg-blue-50" },
+const ACTION_META: Record<string, { label: string; icon: React.ElementType; color: string }> = {
+  session_start: { label: "Login", icon: LogIn, color: "text-blue-600 bg-blue-50" },
+  onboarding_started: { label: "Register", icon: UserPlus, color: "text-emerald-600 bg-emerald-50" },
+  session_end: { label: "Logout", icon: LogIn, color: "text-neutral-600 bg-neutral-100" },
+  task_done: { label: "Task Done", icon: CheckCircle2, color: "text-emerald-600 bg-emerald-50" },
+  card_moved: { label: "Card Moved", icon: Move, color: "text-blue-600 bg-blue-50" },
+  badge_unlocked: { label: "Badge", icon: Award, color: "text-amber-600 bg-amber-50" },
+  session_completed: { label: "Session", icon: Play, color: "text-blue-600 bg-blue-50" },
+  reflection_completed: { label: "Reflection", icon: PenLine, color: "text-purple-600 bg-purple-50" },
+  streak_freeze_used: { label: "Streak Freeze", icon: Snowflake, color: "text-blue-600 bg-blue-50" },
   goal_set: { label: "Goal Set", icon: Target, color: "text-primary bg-primary/10" },
+  task_created: { label: "Task Created", icon: Sparkles, color: "text-emerald-600 bg-emerald-50" },
+  task_deleted: { label: "Task Deleted", icon: Trash2, color: "text-red-600 bg-red-50" },
+  strategy_used: { label: "Strategy", icon: Settings2, color: "text-purple-600 bg-purple-50" },
+  grade_updated: { label: "Grade", icon: Flag, color: "text-amber-600 bg-amber-50" },
+  onboarding_completed: { label: "Onboarding Done", icon: CheckCircle2, color: "text-emerald-600 bg-emerald-50" },
+  session_auto_ended: { label: "Auto-ended", icon: CalendarClock, color: "text-neutral-500 bg-neutral-100" },
 };
 
 const ALL_ACTIONS = Object.keys(ACTION_META);
@@ -70,15 +80,14 @@ export default function AdminLogsPage() {
   const [search, setSearch] = useState("");
   const [filterAction, setFilterAction] = useState<string>("all");
 
-  useEffect(() => {
-    fetchLogs();
-  }, []);
-
-  async function fetchLogs() {
+  const fetchLogs = useCallback(async (action = "all", q = "") => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get<LogsResponse>("/admin/logs?page=1&per_page=100");
+      let url = "/admin/logs?page=1&per_page=100";
+      if (action !== "all") url += `&action=${encodeURIComponent(action)}`;
+      if (q) url += `&search=${encodeURIComponent(q)}`;
+      const res = await api.get<LogsResponse>(url);
       setLogs(res.data);
       setTotal(res.total);
     } catch (err: unknown) {
@@ -87,56 +96,51 @@ export default function AdminLogsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
+
+  const handleSearch = (value: string) => {
+    setSearch(value);
+    fetchLogs(filterAction, value);
+  };
+
+  const handleFilterAction = (value: string) => {
+    setFilterAction(value);
+    fetchLogs(value, search);
+  };
 
   const filtered = useMemo(() => {
-    const q = search.toLowerCase();
-    return logs
-      .filter((log) => {
-        if (filterAction !== "all" && log.action_type !== filterAction) return false;
-        if (q) {
-          const userName = log.username || log.user_id || "";
-          return (
-            userName.toLowerCase().includes(q) ||
-            log.description.toLowerCase().includes(q)
-          );
-        }
-        return true;
-      })
-      .sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-  }, [logs, search, filterAction]);
+    if (filterAction !== "all") {
+      return logs;
+    }
+    return logs;
+  }, [logs, filterAction]);
 
   return (
     <div className="mx-auto space-y-5">
-      {/* Header */}
       <div>
-        <h1 className="text-lg font-semibold text-neutral-800">
-          Activity Logs
-        </h1>
-        <p className="text-sm text-neutral-500 mt-0.5">
-          Riwayat aktivitas semua user
-        </p>
+        <h1 className="text-lg font-semibold text-neutral-800">Activity Logs</h1>
+        <p className="text-sm text-neutral-500 mt-0.5">Riwayat aktivitas semua user</p>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
           <input
             type="text"
-            placeholder="Cari user atau deskripsi..."
+            placeholder="Cari nama, email, atau deskripsi..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
             className="w-full pr-4 py-2.5 bg-white border border-neutral-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             style={{ paddingLeft: "36px" }}
           />
         </div>
         <select
           value={filterAction}
-          onChange={(e) => setFilterAction(e.target.value)}
+          onChange={(e) => handleFilterAction(e.target.value)}
           className="px-3 py-2.5 bg-white border border-neutral-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-neutral-700"
         >
           <option value="all">Semua Aksi</option>
@@ -148,7 +152,6 @@ export default function AdminLogsPage() {
         </select>
       </div>
 
-      {/* Loading */}
       {loading && (
         <div className="flex items-center justify-center gap-2 py-16 text-sm text-neutral-400">
           <Loader2 className="w-5 h-5 animate-spin" />
@@ -156,27 +159,26 @@ export default function AdminLogsPage() {
         </div>
       )}
 
-      {/* Error */}
       {error && !loading && (
         <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-50 text-red-600 text-sm">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
-          <button onClick={fetchLogs} className="ml-auto underline text-red-700 hover:text-red-800 text-xs">
+          <button onClick={() => fetchLogs(filterAction, search)} className="ml-auto underline text-red-700 hover:text-red-800 text-xs">
             Coba lagi
           </button>
         </div>
       )}
 
-      {/* Logs list */}
       {!loading && !error && (
         <div className="bg-white rounded-lg border border-neutral-200 divide-y divide-neutral-100">
           {filtered.map((log) => {
             const meta = ACTION_META[log.action_type] ?? {
-              label: log.action_type,
+              label: log.action_type.replace(/_/g, " "),
               icon: ArrowUpDown,
               color: "text-neutral-600 bg-neutral-100",
             };
             const Icon = meta.icon;
+            const displayName = log.user_name || log.user_email || log.user_id;
             return (
               <div
                 key={log._id}
@@ -196,15 +198,13 @@ export default function AdminLogsPage() {
                       href={`/admin/users/${log.user_id}`}
                       className="text-sm font-medium text-neutral-800 hover:text-primary transition-colors"
                     >
-                      {log.username || log.user_id}
+                      {displayName}
                     </Link>
                     <span className={cn("text-xs font-medium px-1.5 py-0.5 rounded", meta.color)}>
                       {meta.label}
                     </span>
                   </div>
-                  <p className="text-xs text-neutral-500 mt-0.5">
-                    {log.description}
-                  </p>
+                  <p className="text-xs text-neutral-500 mt-0.5">{log.description}</p>
                 </div>
                 <span className="text-xs text-neutral-400 whitespace-nowrap shrink-0 mt-0.5">
                   {fmtDateTime(log.created_at)}
