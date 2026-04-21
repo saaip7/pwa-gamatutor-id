@@ -66,8 +66,8 @@ export function LoginForm() {
              <img src="/logo-only.svg" alt="Gamatutor Logo" className="w-full h-full object-contain relative z-10 drop-shadow-sm" />
           </div>
         </div>
-        <h1 className="text-2xl font-bold text-neutral-800 tracking-tight">Welcome back</h1>
-        <p className="text-neutral-500 mt-1.5 text-sm">Log in to manage your study tasks</p>
+        <h1 className="text-2xl font-bold text-neutral-800 tracking-tight">Selamat datang kembali</h1>
+        <p className="text-neutral-500 mt-1.5 text-sm">Masuk untuk mengelola tugas belajarmu</p>
       </motion.div>
 
       {/* Login Form */}
@@ -103,7 +103,7 @@ export function LoginForm() {
 
         <div className="pt-4">
           <Button type="submit" isLoading={isLoading}>
-            Login
+            Masuk
           </Button>
         </div>
       </motion.form>
@@ -117,12 +117,12 @@ export function LoginForm() {
         transition={{ delay: 0.3 }}
       >
         <p className="text-sm text-neutral-500">
-          Don't have an account?{" "}
+          Belum punya akun?{" "}
           <Link
             href="/register"
             className="font-semibold text-primary hover:text-primary-hover transition-colors"
           >
-            Create one
+            Daftar
           </Link>
         </p>
       </motion.div>

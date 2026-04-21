@@ -71,8 +71,8 @@ export function RegisterForm() {
             <path d="M193.835 313.392L233.206 278.165L334.504 359.6C311.984 382.253 280.796 396.279 246.33 396.279C177.665 396.279 122 340.614 122 271.949C122 222.042 151.405 179.003 193.835 159.213V313.392Z" fill="#3B82F6"/>
           </svg>
         </div>
-        <h1 className="text-2xl font-bold text-neutral-800 tracking-tight">Create an account</h1>
-        <p className="text-neutral-500 mt-1.5 text-sm">Sign up to start managing your study tasks</p>
+        <h1 className="text-2xl font-bold text-neutral-800 tracking-tight">Buat akun baru</h1>
+        <p className="text-neutral-500 mt-1.5 text-sm">Daftar untuk mulai mengelola tugas belajarmu</p>
       </motion.div>
 
       {/* Register Form */}
@@ -85,10 +85,10 @@ export function RegisterForm() {
         transition={{ delay: 0.1 }}
       >
         <Input
-          label="Full Name"
+          label="Nama Lengkap"
           type="text"
           id="name"
-          placeholder="John Doe"
+          placeholder="Budi Santoso"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
@@ -129,20 +129,20 @@ export function RegisterForm() {
             />
           </div>
           <label htmlFor="terms" className="text-xs text-neutral-500 font-medium leading-tight">
-            I agree to the{" "}
+            Saya setuju dengan{" "}
             <Link href="/terms" className="text-primary hover:text-primary-hover transition-colors">
-              Terms & Conditions
+              Syarat & Ketentuan
             </Link>{" "}
-            and{" "}
+            dan{" "}
             <Link href="/privacy" className="text-primary hover:text-primary-hover transition-colors">
-              Privacy Policy
+              Kebijakan Privasi
             </Link>
           </label>
         </div>
 
         <div className="pt-4">
           <Button type="submit" isLoading={isLoading} disabled={!termsAccepted}>
-            Create Account
+            Daftar
           </Button>
         </div>
       </motion.form>
@@ -156,12 +156,12 @@ export function RegisterForm() {
         transition={{ delay: 0.3 }}
       >
         <p className="text-sm text-neutral-500">
-          Already have an account?{" "}
+          Sudah punya akun?{" "}
           <Link
             href="/login"
             className="font-semibold text-primary hover:text-primary-hover transition-colors"
           >
-            Log in
+            Masuk
           </Link>
         </p>
       </motion.div>
