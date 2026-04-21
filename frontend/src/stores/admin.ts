@@ -142,6 +142,7 @@ export interface AdminUserDetail {
   task_goals: AdminTaskGoal[];
   board: AdminBoard | null;
   recent_study_sessions: AdminStudySession[];
+  total_session_sec: number;
   streak: AdminPreferences["streak"] | null;
 }
 

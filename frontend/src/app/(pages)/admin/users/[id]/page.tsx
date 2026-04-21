@@ -480,8 +480,8 @@ function BadgesTab({ badges }: { badges: AdminBadge[] }) {
 
 // ========== SESSIONS TAB ==========
 
-function SessionsTab({ sessions }: { sessions: AdminStudySession[] }) {
-  const totalMin = sessions.reduce((acc, s) => acc + (s.duration ? Math.round(s.duration / 60) : 0), 0);
+function SessionsTab({ sessions, totalSessionSec }: { sessions: AdminStudySession[]; totalSessionSec: number }) {
+  const totalMin = Math.round(totalSessionSec / 60);
   return (
     <div style={col(16)}>
       <div style={grid2}>
@@ -1275,7 +1275,7 @@ export default function UserDetailPage({
     );
   }
 
-  const { user, preferences, badges, goals, task_goals, board, recent_study_sessions, streak } = userDetail;
+  const { user, preferences, badges, goals, task_goals, board, recent_study_sessions, total_session_sec, streak } = userDetail;
 
   return (
     <div className="mx-auto" style={col(20)}>
@@ -1337,7 +1337,7 @@ export default function UserDetailPage({
       {activeTab === "board" && <BoardTab board={board} />}
       {activeTab === "goals" && <GoalsTab goals={goals} taskGoals={task_goals} />}
       {activeTab === "badges" && <BadgesTab badges={badges} />}
-      {activeTab === "sessions" && <SessionsTab sessions={recent_study_sessions} />}
+      {activeTab === "sessions" && <SessionsTab sessions={recent_study_sessions} totalSessionSec={total_session_sec ?? 0} />}
       {activeTab === "analytics" && <AnalyticsTab userId={user._id} />}
       {activeTab === "streak" && (
         <StreakTab streak={streak} currentStreak={streak?.current ?? 0} />
