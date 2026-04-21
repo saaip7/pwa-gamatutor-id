@@ -129,21 +129,24 @@ def get_user_detail(user_id):
     board_doc = mongo.db.boards.find_one({"user_id": oid})
     board = _build_board_with_cards(board_doc, user_id)
 
-    # Recent study sessions (last 20) — compute duration from timestamps
+    # Study sessions (all) + total time
     study_sessions = list(
         mongo.db.study_sessions.find({"user_id": oid})
         .sort("start_time", -1)
-        .limit(20)
     )
+    total_session_sec = 0
     for s in study_sessions:
         s["_id"] = str(s["_id"])
         s["user_id"] = str(s["user_id"])
         if s.get("card_id"):
             s["card_id"] = str(s["card_id"])
-        # Compute duration (seconds) and status
         if s.get("start_time") and s.get("end_time"):
-            s["duration"] = int((s["end_time"] - s["start_time"]).total_seconds())
+            wall_sec = int((s["end_time"] - s["start_time"]).total_seconds())
+            hidden_sec = int(s.get("hidden_ms", 0) / 1000)
+            net_sec = max(0, wall_sec - hidden_sec)
+            s["duration"] = net_sec
             s["status"] = "completed"
+            total_session_sec += net_sec
         else:
             s["status"] = "active"
 
@@ -160,6 +163,7 @@ def get_user_detail(user_id):
         "task_goals": task_goals,
         "board": board,
         "recent_study_sessions": study_sessions,
+        "total_session_sec": total_session_sec,
         "streak": streak_info,
     }), 200
 

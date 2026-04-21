@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Moon, Bell, Globe, User, ShieldCheck, LogOut, Flame, Archive, HelpCircle } from "lucide-react";
+import { Moon, Bell, Globe, User, ShieldCheck, LogOut, Flame, Archive, HelpCircle, Clock } from "lucide-react";
 import { AccountHeader } from "@/components/feature/account/AccountHeader";
 import { ProfileCard } from "@/components/feature/account/ProfileCard";
 import { SettingsGroup } from "@/components/feature/account/SettingsGroup";
@@ -95,6 +95,14 @@ export default function AccountPage() {
             href="/onboarding/guide"
             iconBgClass="bg-primary/10"
             iconColorClass="text-primary"
+          />
+          <SettingItem
+            type="link"
+            icon={Clock}
+            label="Riwayat Belajar"
+            href="/account/sessions"
+            iconBgClass="bg-blue-100"
+            iconColorClass="text-blue-600"
           />
           <SettingItem
             type="link"
