@@ -31,9 +31,12 @@ class Analytics:
         focus_pipeline = [
             {"$match": {"user_id": user_id, "end_time": {"$ne": None}, "orphan": {"$ne": True}}},
             {"$project": {
-                "duration_hours": {"$divide": [{"$subtract": ["$end_time", "$start_time"]}, 3600000]},
+                "net_hours": {"$subtract": [
+                    {"$divide": [{"$subtract": ["$end_time", "$start_time"]}, 3600000]},
+                    {"$divide": [{"$ifNull": ["$hidden_ms", 0]}, 3600000]},
+                ]},
             }},
-            {"$group": {"_id": None, "total": {"$sum": "$duration_hours"}}},
+            {"$group": {"_id": None, "total": {"$sum": "$net_hours"}}},
         ]
         focus_result = list(mongo.db.study_sessions.aggregate(focus_pipeline))
         focus_hours = round(focus_result[0]["total"], 1) if focus_result else 0
@@ -75,14 +78,17 @@ class Analytics:
         pb_pipeline = [
             {"$match": {"user_id": user_id, "end_time": {"$ne": None}, "orphan": {"$ne": True}}},
             {"$project": {
-                "duration_min": {"$divide": [{"$subtract": ["$end_time", "$start_time"]}, 60000]},
+                "net_min": {"$subtract": [
+                    {"$divide": [{"$subtract": ["$end_time", "$start_time"]}, 60000]},
+                    {"$divide": [{"$ifNull": ["$hidden_ms", 0]}, 60000]},
+                ]},
             }},
-            {"$sort": {"duration_min": -1}},
+            {"$sort": {"net_min": -1}},
             {"$limit": 1},
         ]
         pb_result = list(mongo.db.study_sessions.aggregate(pb_pipeline))
         if pb_result:
-            mins = int(pb_result[0]["duration_min"])
+            mins = int(pb_result[0]["net_min"])
             hours, remainder = divmod(mins, 60)
             personal_best = f"{hours}h {remainder}m" if hours > 0 else f"{remainder}m"
         else:

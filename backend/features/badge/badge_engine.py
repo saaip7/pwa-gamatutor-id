@@ -99,9 +99,12 @@ class BadgeEngine:
             }},
             {"$project": {
                 "card_id": 1,
-                "duration_min": {"$divide": [{"$subtract": ["$end_time", "$start_time"]}, 60000]},
+                "net_min": {"$subtract": [
+                    {"$divide": [{"$subtract": ["$end_time", "$start_time"]}, 60000]},
+                    {"$divide": [{"$ifNull": ["$hidden_ms", 0]}, 60000]},
+                ]},
             }},
-            {"$match": {"duration_min": {"$gte": 60}}},
+            {"$match": {"net_min": {"$gte": 60}}},
         ]
         long_sessions = list(mongo.db.study_sessions.aggregate(pipeline))
 
