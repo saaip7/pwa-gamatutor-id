@@ -6,6 +6,15 @@ from datetime import datetime, timedelta
 class StudySession:
     @staticmethod
     def create(user_id, card_id):
+        existing = mongo.db.study_sessions.find_one({
+            "user_id": ObjectId(user_id),
+            "card_id": card_id,
+            "end_time": None,
+        })
+        if existing:
+            existing["_id"] = str(existing["_id"])
+            existing["user_id"] = str(existing["user_id"])
+            return existing
         doc = {
             "user_id": ObjectId(user_id),
             "card_id": card_id,

@@ -64,13 +64,14 @@ export default function FocusModePage() {
   const totalHiddenMsRef = useRef<number>(0); // Accumulated hidden duration for timer offset
   const [, forceUpdate] = useState(0); // Trigger re-render when timer offset changes
 
-  // Guard: if this card was just finished, redirect away
+  // Guard: clear stale lastFinishedCardId and stale session for different card
   useEffect(() => {
-    const finishedId = useFocusSessionStore.getState().lastFinishedCardId;
-    if (finishedId === id) {
-      clearFinished(id);
-      router.replace("/board");
-      return;
+    const state = useFocusSessionStore.getState();
+    if (state.lastFinishedCardId === id) {
+      state.clearFinished(id);
+    }
+    if (state.isActive && state.cardId && state.cardId !== id) {
+      state.endSession();
     }
   }, [id]);
 
