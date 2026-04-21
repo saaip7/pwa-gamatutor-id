@@ -43,6 +43,7 @@ export function TaskStatusStepper({ currentStatus, taskId, onMoved }: TaskStatus
   ];
 
   const currentIndex = steps.findIndex(s => s.id === currentStatus);
+  const isReflection = currentStatus === "Reflection";
 
   const handleMove = async (targetKey: ColumnKey) => {
     if (!taskId || moving) return;
@@ -53,8 +54,8 @@ export function TaskStatusStepper({ currentStatus, taskId, onMoved }: TaskStatus
       toast.success(`Dipindahkan ke ${col.label}`);
       onMoved?.(col.status);
       setShowDrawer(false);
-    } catch {
-      toast.error("Gagal memindahkan tugas");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Gagal memindahkan tugas");
     } finally {
       setMoving(null);
     }
@@ -100,13 +101,15 @@ export function TaskStatusStepper({ currentStatus, taskId, onMoved }: TaskStatus
           })}
         </div>
 
-        <button
-          onClick={() => setShowDrawer(true)}
-          className="mt-8 w-full py-3.5 rounded-2xl border border-neutral-200 bg-white text-sm font-bold text-neutral-700 flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-sm"
-        >
-          <ArrowRightLeft className="w-4 h-4 text-neutral-400" />
-          Ubah Status
-        </button>
+        {!isReflection && (
+          <button
+            onClick={() => setShowDrawer(true)}
+            className="mt-8 w-full py-3.5 rounded-2xl border border-neutral-200 bg-white text-sm font-bold text-neutral-700 flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-sm"
+          >
+            <ArrowRightLeft className="w-4 h-4 text-neutral-400" />
+            Ubah Status
+          </button>
+        )}
       </section>
 
       <Drawer isOpen={showDrawer} onClose={() => setShowDrawer(false)} title="Ubah Status">
