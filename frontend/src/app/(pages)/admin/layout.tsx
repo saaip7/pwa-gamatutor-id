@@ -27,9 +27,11 @@ const navItems = [
 function SidebarContent({
   pathname,
   onNavigate,
+  onLogout,
 }: {
   pathname: string;
   onNavigate?: () => void;
+  onLogout?: () => void;
 }) {
   return (
     <>
@@ -77,16 +79,16 @@ function SidebarContent({
 
       {/* Footer */}
       <div className="p-3" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-        <Link
-          href="/login"
-          className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors"
+        <button
+          onClick={onLogout}
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors"
           style={{ color: "#94a3b8" }}
           onMouseEnter={(e) => { e.currentTarget.style.color = "#f8fafc"; }}
           onMouseLeave={(e) => { e.currentTarget.style.color = "#94a3b8"; }}
         >
           <LogOut className="w-4 h-4" />
-          Back to App
-        </Link>
+          Keluar
+        </button>
       </div>
     </>
   );
@@ -103,6 +105,11 @@ export default function AdminLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
+
+  const handleLogout = async () => {
+    await useAuthStore.getState().logout();
+    window.location.href = "/login";
+  };
 
   // Auth guard
   useEffect(() => {
@@ -148,7 +155,7 @@ export default function AdminLayout({
           className="flex flex-col shrink-0"
           style={{ backgroundColor: "#111827", width: "240px", height: "100%" }}
         >
-          <SidebarContent pathname={pathname} />
+          <SidebarContent pathname={pathname} onLogout={handleLogout} />
         </aside>
       )}
 
