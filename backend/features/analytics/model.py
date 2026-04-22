@@ -455,10 +455,12 @@ class Analytics:
                 if last_active_date < yesterday and not yesterday_frozen:
                     current = 0
 
-        current_week_start = now - timedelta(days=now.weekday())
-        current_week_start = current_week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+        # Use date comparison to avoid timezone issues
+        today = now.date()
+        current_week_start_date = today - timedelta(days=today.weekday())
 
-        if not week_start or week_start < current_week_start:
+        week_start_date = week_start.date() if week_start else None
+        if not week_start_date or week_start_date < current_week_start_date:
             freezes_used = 0
 
         freezes_available = 1 if freezes_used < 1 else 0

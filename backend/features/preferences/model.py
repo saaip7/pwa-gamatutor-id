@@ -128,12 +128,14 @@ class Preferences:
         week_start = streak.get("week_start_date")
 
         now = datetime.utcnow()
-        # Calculate start of current week (Monday)
-        current_week_start = now - timedelta(days=now.weekday())
-        current_week_start = current_week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+        # Use date comparison to avoid timezone issues
+        today = now.date()
+        # Calculate start of current week (Monday) - use date for comparison
+        current_week_start_date = today - timedelta(days=today.weekday())
 
-        # Reset counter if new week
-        if not week_start or week_start < current_week_start:
+        # Reset counter if new week - compare dates only
+        week_start_date = week_start.date() if week_start else None
+        if not week_start_date or week_start_date < current_week_start_date:
             freezes_used = 0
 
         if freezes_used >= 1:
@@ -142,7 +144,7 @@ class Preferences:
         # Apply freeze: update streak data
         updates = {
             "streak.freezes_used_this_week": freezes_used + 1,
-            "streak.week_start_date": current_week_start,
+            "streak.week_start_date": current_week_start_date,
             "streak.freeze_used_at": now,
             "updated_at": now,
         }
