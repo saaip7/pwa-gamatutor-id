@@ -23,8 +23,9 @@ def init_firebase():
 
     try:
         if sa_json:
-            import io
-            cred = credentials.Certificate(io.StringIO(sa_json))
+            import json
+            cred_dict = json.loads(sa_json)
+            cred = credentials.Certificate(cred_dict)
         else:
             cred = credentials.Certificate(sa_path)
         _firebase_app = initialize_app(cred)
