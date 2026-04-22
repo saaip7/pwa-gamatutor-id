@@ -33,6 +33,11 @@ interface SessionEntry {
 interface HistoryResponse {
   sessions: SessionEntry[];
   available_courses: { name: string; code: string }[];
+  summary: {
+    total_sessions: number;
+    total_study_sec: number;
+    total_courses: number;
+  };
 }
 
 type SortMode = "time" | "longest";
@@ -113,6 +118,14 @@ export default function SessionsPage() {
   }, [fetchData, activeFilter, sortMode]);
 
   const sessions = data?.sessions ?? [];
+  const summary = data?.summary;
+
+  const fmtSec = (sec: number) => {
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    if (h > 0) return m > 0 ? `${h}j ${m}m` : `${h} jam`;
+    return `${m} mnt`;
+  };
 
   return (
     <div className="w-full h-screen flex flex-col mx-auto bg-white relative overflow-hidden max-w-md">
@@ -155,6 +168,23 @@ export default function SessionsPage() {
           )}
 
           <div className="flex-1 overflow-y-auto no-scrollbar">
+            {summary && (
+              <div className="px-5 pt-4 pb-1 flex gap-3">
+                <div className="flex-1 rounded-2xl bg-primary/5 border border-primary/10 px-4 py-3">
+                  <p className="text-[10px] font-bold text-primary/50 uppercase tracking-wider">Total Sesi</p>
+                  <p className="text-xl font-black text-primary mt-0.5">{summary.total_sessions}</p>
+                </div>
+                <div className="flex-1 rounded-2xl bg-primary/5 border border-primary/10 px-4 py-3">
+                  <p className="text-[10px] font-bold text-primary/50 uppercase tracking-wider">Waktu Belajar</p>
+                  <p className="text-xl font-black text-primary mt-0.5">{fmtSec(summary.total_study_sec)}</p>
+                </div>
+                <div className="flex-1 rounded-2xl bg-primary/5 border border-primary/10 px-4 py-3">
+                  <p className="text-[10px] font-bold text-primary/50 uppercase tracking-wider">Mata Kuliah</p>
+                  <p className="text-xl font-black text-primary mt-0.5">{summary.total_courses}</p>
+                </div>
+              </div>
+            )}
+
             {sessions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
                 <div className="w-14 h-14 rounded-2xl bg-neutral-50 border border-neutral-100 flex items-center justify-center mb-4">

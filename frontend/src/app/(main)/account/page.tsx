@@ -101,8 +101,8 @@ export default function AccountPage() {
             icon={Clock}
             label="Riwayat Belajar"
             href="/account/sessions"
-            iconBgClass="bg-blue-100"
-            iconColorClass="text-blue-600"
+            iconBgClass="bg-indigo-100"
+            iconColorClass="text-indigo-600"
           />
           <SettingItem
             type="link"
@@ -125,8 +125,8 @@ export default function AccountPage() {
             icon={User}
             label="Edit Profil"
             href="/account/edit"
-            iconBgClass="bg-blue-100"
-            iconColorClass="text-blue-600"
+            iconBgClass="bg-violet-100"
+            iconColorClass="text-violet-600"
           />
           <SettingItem
             type="link"

@@ -121,6 +121,31 @@ def get_history():
 
     available_courses = [{"name": n, "code": course_code_map.get(n, n)} for n in sorted(course_names)]
 
+    total_sec = 0
+    for s in sessions:
+        if s.get("start_time") and s.get("end_time"):
+            wall = int((s["end_time"] - s["start_time"]).total_seconds())
+            hid = int(s.get("hidden_ms", 0) / 1000)
+            total_sec += max(0, wall - hid)
+    summary = {
+        "total_sessions": len(sessions),
+        "total_study_sec": total_sec,
+        "total_courses": len(available_courses),
+    }
+
+    if course_code:
+        name_from_code = None
+        for cname, ccode in course_code_map.items():
+            if ccode == course_code:
+                name_from_code = cname
+                break
+        if name_from_code:
+            filtered_session_ids = set()
+            for cid, c in card_map.items():
+                if c.get("course_name") == name_from_code:
+                    filtered_session_ids.add(cid)
+            sessions = [s for s in sessions if s.get("card_id") in filtered_session_ids]
+
     result = []
     for s in sessions:
         card = card_map.get(s.get("card_id"), {})
@@ -154,4 +179,5 @@ def get_history():
     return jsonify({
         "sessions": result,
         "available_courses": available_courses,
+        "summary": summary,
     }), 200
