@@ -15,12 +15,18 @@ def init_firebase():
         return _firebase_app
 
     sa_path = os.getenv("FIREBASE_SERVICE_ACCOUNT_PATH")
-    if not sa_path:
-        logger.warning("FIREBASE_SERVICE_ACCOUNT_PATH not set — push notifications disabled")
+    sa_json = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
+
+    if not sa_path and not sa_json:
+        logger.warning("Firebase credentials not set — push notifications disabled")
         return None
 
     try:
-        cred = credentials.Certificate(sa_path)
+        if sa_json:
+            import io
+            cred = credentials.Certificate(io.StringIO(sa_json))
+        else:
+            cred = credentials.Certificate(sa_path)
         _firebase_app = initialize_app(cred)
         logger.info("Firebase Admin SDK initialized")
         return _firebase_app
