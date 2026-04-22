@@ -480,21 +480,33 @@ function BadgesTab({ badges }: { badges: AdminBadge[] }) {
 
 // ========== SESSIONS TAB ==========
 
-function SessionsTab({ sessions, totalSessionSec }: { sessions: AdminStudySession[]; totalSessionSec: number }) {
+function SessionsTab({ sessions, totalSessionSec, totalSessionSecValid, totalSessionsOrphan }: { 
+  sessions: AdminStudySession[]; 
+  totalSessionSec: number;
+  totalSessionSecValid: number;
+  totalSessionsOrphan: number;
+}) {
   const totalMin = Math.round(totalSessionSec / 60);
+  const validMin = Math.round(totalSessionSecValid / 60);
   return (
     <div style={col(16)}>
-      <div style={grid2}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <Card>
           <div className="p-4">
             <p className="text-sm text-neutral-500">Total Sessions</p>
             <p className="text-2xl font-bold text-neutral-800 mt-1">{sessions.length}</p>
+            {totalSessionsOrphan > 0 && (
+              <p className="text-xs text-neutral-400 mt-1">{totalSessionsOrphan} orphan</p>
+            )}
           </div>
         </Card>
         <Card>
           <div className="p-4">
-            <p className="text-sm text-neutral-500">Total Waktu</p>
-            <p className="text-2xl font-bold text-neutral-800 mt-1">{fmtDuration(totalMin)}</p>
+            <p className="text-sm text-neutral-500">Total Waktu (Valid)</p>
+            <p className="text-2xl font-bold text-neutral-800 mt-1">{fmtDuration(validMin)}</p>
+            {totalSessionsOrphan > 0 && (
+              <p className="text-xs text-neutral-400 mt-1">All: {fmtDuration(totalMin)}</p>
+            )}
           </div>
         </Card>
       </div>
@@ -1275,7 +1287,7 @@ export default function UserDetailPage({
     );
   }
 
-  const { user, preferences, badges, goals, task_goals, board, recent_study_sessions, total_session_sec, streak } = userDetail;
+  const { user, preferences, badges, goals, task_goals, board, recent_study_sessions, total_session_sec, total_session_sec_valid, total_sessions_orphan, streak } = userDetail;
 
   return (
     <div className="mx-auto" style={col(20)}>
@@ -1337,7 +1349,7 @@ export default function UserDetailPage({
       {activeTab === "board" && <BoardTab board={board} />}
       {activeTab === "goals" && <GoalsTab goals={goals} taskGoals={task_goals} />}
       {activeTab === "badges" && <BadgesTab badges={badges} />}
-      {activeTab === "sessions" && <SessionsTab sessions={recent_study_sessions} totalSessionSec={total_session_sec ?? 0} />}
+      {activeTab === "sessions" && <SessionsTab sessions={recent_study_sessions} totalSessionSec={total_session_sec ?? 0} totalSessionSecValid={total_session_sec_valid ?? 0} totalSessionsOrphan={total_sessions_orphan ?? 0} />}
       {activeTab === "analytics" && <AnalyticsTab userId={user._id} />}
       {activeTab === "streak" && (
         <StreakTab streak={streak} currentStreak={streak?.current ?? 0} />
