@@ -143,6 +143,8 @@ export interface AdminUserDetail {
   board: AdminBoard | null;
   recent_study_sessions: AdminStudySession[];
   total_session_sec: number;
+  total_session_sec_valid: number;
+  total_sessions_orphan: number;
   streak: AdminPreferences["streak"] | null;
 }
 

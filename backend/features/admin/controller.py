@@ -135,11 +135,16 @@ def get_user_detail(user_id):
         .sort("start_time", -1)
     )
     total_session_sec = 0
+    total_session_sec_valid = 0
+    total_sessions_orphan = 0
     for s in study_sessions:
         s["_id"] = str(s["_id"])
         s["user_id"] = str(s["user_id"])
         if s.get("card_id"):
             s["card_id"] = str(s["card_id"])
+        is_orphan = s.get("orphan") == True
+        if is_orphan:
+            total_sessions_orphan += 1
         if s.get("start_time") and s.get("end_time"):
             wall_sec = int((s["end_time"] - s["start_time"]).total_seconds())
             hidden_sec = int(s.get("hidden_ms", 0) / 1000)
@@ -147,6 +152,8 @@ def get_user_detail(user_id):
             s["duration"] = net_sec
             s["status"] = "completed"
             total_session_sec += net_sec
+            if not is_orphan:
+                total_session_sec_valid += net_sec
         else:
             s["status"] = "active"
 
@@ -164,6 +171,8 @@ def get_user_detail(user_id):
         "board": board,
         "recent_study_sessions": study_sessions,
         "total_session_sec": total_session_sec,
+        "total_session_sec_valid": total_session_sec_valid,
+        "total_sessions_orphan": total_sessions_orphan,
         "streak": streak_info,
     }), 200
 
