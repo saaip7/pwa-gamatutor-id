@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { CheckCircle, MinusCircle, XCircle } from "lucide-react";
+import { CheckCircle, MinusCircle, XCircle, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
@@ -10,35 +10,54 @@ export interface ReflectionData {
   q2_confidence: number | null;
   q3_improvement: string;
   q4_value: string | null;
+  post_test_grade?: number | null;
 }
 
 interface ReflectionFormProps {
   strategyName: string;
   mainGoal: string;
+  preTestGrade?: number | null;
   onChange: (data: ReflectionData, isValid: boolean) => void;
 }
 
-export function ReflectionForm({ strategyName, mainGoal, onChange }: ReflectionFormProps) {
+export function ReflectionForm({ strategyName, mainGoal, preTestGrade, onChange }: ReflectionFormProps) {
   const [strategyRating, setStrategyRating] = useState<number | null>(null);
   const [confidenceRating, setConfidenceRating] = useState<number | null>(null);
   const [goalAlignment, setGoalAlignment] = useState<string | null>(null);
   const [futureNotes, setFutureNotes] = useState("");
+  const [postGrade, setPostGrade] = useState<string>("");
+  const [postGradeError, setPostGradeError] = useState("");
 
-  // Check if required fields are filled
   const isValid = strategyRating !== null && confidenceRating !== null && goalAlignment !== null;
 
-  // Notify parent of changes
   useEffect(() => {
     onChange(
       {
-        q1_strategy: strategyRating,  // numeric 1-5 (label derived on display)
+        q1_strategy: strategyRating,
         q2_confidence: confidenceRating,
         q3_improvement: futureNotes,
         q4_value: goalAlignment,
+        post_test_grade: postGrade !== "" ? parseFloat(postGrade) : null,
       },
       isValid
     );
-  }, [strategyRating, confidenceRating, goalAlignment, futureNotes, onChange, isValid]);
+  }, [strategyRating, confidenceRating, goalAlignment, futureNotes, postGrade, onChange, isValid]);
+
+  const handlePostGradeChange = (value: string) => {
+    if (value === "") {
+      setPostGrade("");
+      setPostGradeError("");
+      return;
+    }
+    const num = parseFloat(value);
+    if (isNaN(num)) return;
+    if (num < 0 || num > 100) {
+      setPostGradeError("Nilai harus antara 0-100");
+    } else {
+      setPostGradeError("");
+    }
+    setPostGrade(value);
+  };
 
   const strategyEmojis = ["😟", "😐", "😊", "😁", "🤩"];
   const confidenceEmojis = ["🤔", "🙂", "😌", "😎", "🚀"];
@@ -92,7 +111,7 @@ export function ReflectionForm({ strategyName, mainGoal, onChange }: ReflectionF
         </div>
       </motion.section>
 
-      {/* Q2: Mastery Confidence — same style as Q1 */}
+      {/* Q2: Mastery Confidence */}
       <motion.section variants={itemVariants} className="space-y-4">
         <h3 className="text-base font-bold text-neutral-800 leading-snug">
           Seberapa yakin kamu menguasai materi ini sekarang?
@@ -133,24 +152,9 @@ export function ReflectionForm({ strategyName, mainGoal, onChange }: ReflectionF
         </h3>
         <div className="flex gap-3">
           {[
-            {
-              id: "ya",
-              label: "Ya",
-              icon: CheckCircle,
-              active: "border-emerald-500 bg-emerald-50 text-emerald-700",
-            },
-            {
-              id: "sebagian",
-              label: "Sebagian",
-              icon: MinusCircle,
-              active: "border-amber-500 bg-amber-50 text-amber-700",
-            },
-            {
-              id: "tidak",
-              label: "Tidak",
-              icon: XCircle,
-              active: "border-rose-500 bg-rose-50 text-rose-700",
-            },
+            { id: "ya", label: "Ya", icon: CheckCircle, active: "border-emerald-500 bg-emerald-50 text-emerald-700" },
+            { id: "sebagian", label: "Sebagian", icon: MinusCircle, active: "border-amber-500 bg-amber-50 text-amber-700" },
+            { id: "tidak", label: "Tidak", icon: XCircle, active: "border-rose-500 bg-rose-50 text-rose-700" },
           ].map((opt) => (
             <button
               key={opt.id}
@@ -163,12 +167,7 @@ export function ReflectionForm({ strategyName, mainGoal, onChange }: ReflectionF
                   : "border-neutral-100 bg-white text-neutral-400 hover:bg-neutral-50"
               )}
             >
-              <opt.icon
-                className={cn(
-                  "w-5 h-5",
-                  goalAlignment === opt.id ? "" : "opacity-50"
-                )}
-              />
+              <opt.icon className={cn("w-5 h-5", goalAlignment === opt.id ? "" : "opacity-50")} />
               <span className="text-sm font-black">{opt.label}</span>
             </button>
           ))}
@@ -187,6 +186,56 @@ export function ReflectionForm({ strategyName, mainGoal, onChange }: ReflectionF
           className="w-full h-32 p-4 bg-neutral-50 border border-neutral-200 rounded-[24px] text-base text-neutral-900 placeholder:text-neutral-400 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all resize-none leading-relaxed"
           placeholder="Misal: Perlu latihan lebih banyak di bagian iterasi dalam..."
         ></textarea>
+      </motion.section>
+
+      {/* Post-Test Grade (Optional) */}
+      <motion.section variants={itemVariants} className="space-y-3">
+        <div className="flex items-center gap-2">
+          <FileText className="w-4 h-4 text-neutral-400" />
+          <h3 className="text-base font-bold text-neutral-800 leading-snug">
+            Nilai Post-Test
+          </h3>
+          <span className="text-neutral-400 font-medium text-sm">(Opsional)</span>
+        </div>
+
+        <p className="text-xs text-neutral-400 font-medium leading-relaxed -mt-1">
+          Bandingkan dengan pre-test untuk melihat seberapa besar peningkatanmu.
+        </p>
+
+        {preTestGrade !== null && preTestGrade !== undefined && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-xl border border-blue-100">
+            <span className="text-xs font-semibold text-blue-600">Pre-test: {preTestGrade}</span>
+          </div>
+        )}
+
+        {preTestGrade === null || preTestGrade === undefined ? (
+          <div className="px-3 py-2 bg-amber-50 rounded-xl border border-amber-100">
+            <p className="text-xs text-amber-700 font-medium">
+              Belum ada nilai pre-test. Peningkatan nilai hanya bisa dihitung jika keduanya terisi.
+            </p>
+          </div>
+        ) : null}
+
+        <div className="relative">
+          <input
+            type="number"
+            value={postGrade}
+            onChange={(e) => handlePostGradeChange(e.target.value)}
+            min={0}
+            max={100}
+            placeholder="Contoh: 85"
+            className={cn(
+              "w-full h-12 px-4 pr-14 bg-neutral-50 border rounded-2xl text-base text-neutral-900 placeholder:text-neutral-400 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all",
+              postGradeError ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-neutral-200"
+            )}
+          />
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-neutral-400">
+            / 100
+          </span>
+        </div>
+        {postGradeError && (
+          <p className="text-xs text-red-500 font-medium -mt-1">{postGradeError}</p>
+        )}
       </motion.section>
     </motion.div>
   );

@@ -124,6 +124,9 @@ export default function GuidedReflectionPage() {
 
       await updateCard(id, {
         reflection: reflectionPayload as BoardCard["reflection"],
+        ...(reflectionData.post_test_grade !== null && reflectionData.post_test_grade !== undefined
+          ? { post_test_grade: reflectionData.post_test_grade }
+          : {}),
         ...(goalCheckPayload ? { goal_check: goalCheckPayload } : {}),
       });
 
@@ -211,6 +214,7 @@ export default function GuidedReflectionPage() {
           <ReflectionForm
             strategyName={strategyName}
             mainGoal={mainGoal}
+            preTestGrade={card?.pre_test_grade}
             onChange={handleReflectionChange}
           />
         </div>
