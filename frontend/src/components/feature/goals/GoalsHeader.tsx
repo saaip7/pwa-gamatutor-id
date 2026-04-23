@@ -31,11 +31,7 @@ export function GoalsHeader() {
                 title="Progres Per Mata Kuliah"
                 description="Setiap mata kuliah menampilkan jumlah tugas yang selesai dari total tugas. Progres akan terupdate otomatis saat kamu menyelesaikan tugas di board."
               />
-              <HelpItem
-                icon={<ChevronRight className="w-4 h-4" />}
-                title="Pesang Kata Motivasi"
-                description="Pesan motivasi di kartu tujuan utama berubah dinamis sesuai persentase penyelesaian tugasmu."
-              />
+
             </div>
             <div className="pt-1">
               <h3 className="text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Tips</h3>
