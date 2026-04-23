@@ -93,8 +93,9 @@ def health():
     return jsonify({"status": "ok", "service": "gamatutor-pwa"}), 200
 
 
+init_scheduler(app)
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     debug = os.getenv("FLASK_DEBUG", "True") == "True"
-    init_scheduler(app)
     app.run(debug=debug, host="0.0.0.0", port=port)
