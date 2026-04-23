@@ -4,6 +4,7 @@ from datetime import datetime as dt
 from features.badge.model import Badge, BADGE_DEFINITIONS
 from features.notification.model import Notification
 from shared.timezone_utils import utc_to_wib
+from shared.fcm import send_push
 
 
 class BadgeEngine:
@@ -45,6 +46,11 @@ class BadgeEngine:
                         f"Badge Terbuka: {name}!",
                         desc
                     )
+                    prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
+                    if prefs:
+                        token = prefs.get("fcm_token")
+                        if token:
+                            send_push(token, f"Badge Terbuka: {name}!", desc, {"type": "badge_unlock", "badge_type": badge_type})
 
         return newly_unlocked
 
