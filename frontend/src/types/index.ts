@@ -125,15 +125,36 @@ export interface ProgressData {
 export interface StrategyEffectiveness {
   name: string;
   taskCount: number;
+  doneCount: number;
   subjective: {
     avgRating: number;
     totalRated: number;
     positivePercent: number;
   };
-  objective: {
-    avgImprovement: number;
-    totalTracked: number;
-    isDataInsufficient: boolean;
+  confidence: {
+    avgConfidence: number;
+    confidencePercent: number;
+    totalReflections: number;
+  };
+  completion: {
+    doneCount: number;
+    completionRate: number;
+  };
+  combinedScore: number;
+  hasSufficientData: boolean;
+}
+
+export interface StrategyEffectivenessCard {
+  name: string;
+  taskCount: number;
+  subjective: {
+    avgRating: number;
+    totalRated: number;
+    positivePercent: number;
+  };
+  completion: {
+    doneCount: number;
+    completionRate: number;
   };
 }
 

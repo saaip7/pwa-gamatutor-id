@@ -118,7 +118,7 @@ class Analytics:
 
     @staticmethod
     def get_strategy_effectiveness(user_id):
-        """Per-strategy subjective ratings and objective improvements."""
+        """Per-strategy effectiveness based on confidence and task completion."""
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
 
@@ -130,7 +130,6 @@ class Analytics:
         if not cards:
             return {"strategies": []}
 
-        # Collect all cards grouped by learning_strategy
         strategy_data = {}
         for card in cards:
             strat = card.get("learning_strategy")
@@ -140,62 +139,75 @@ class Analytics:
                 strategy_data[strat] = {
                     "cards": [],
                     "q1_ratings": [],
-                    "improvements": [],
+                    "q2_confidences": [],
+                    "done_count": 0,
                 }
             strategy_data[strat]["cards"].append(card)
 
-            # Subjective: Q1 effectiveness rating (ensure numeric)
-            q1 = (card.get("reflection") or {}).get("q1_strategy")
+            reflection = card.get("reflection") or {}
+
+            q1 = reflection.get("q1_strategy")
             if q1 is not None:
                 try:
                     strategy_data[strat]["q1_ratings"].append(float(q1))
                 except (ValueError, TypeError):
                     pass
 
-            # Objective: grade improvement (ensure numeric)
-            pre = card.get("pre_test_grade")
-            post = card.get("post_test_grade")
-            try:
-                pre = float(pre) if pre is not None else None
-                post = float(post) if post is not None else None
-            except (ValueError, TypeError):
-                pre = post = None
-            if pre is not None and post is not None and pre > 0:
-                imp = ((post - pre) / pre) * 100
-                strategy_data[strat]["improvements"].append(imp)
+            q2 = reflection.get("q2_confidence")
+            if q2 is not None:
+                try:
+                    strategy_data[strat]["q2_confidences"].append(float(q2))
+                except (ValueError, TypeError):
+                    pass
+
+            if card.get("column") == "list4":
+                strategy_data[strat]["done_count"] += 1
 
         strategies = []
         for name, data in strategy_data.items():
             q1_ratings = data["q1_ratings"]
-            improvements = data["improvements"]
+            q2_confidences = data["q2_confidences"]
             total_cards = len(data["cards"])
+            done_count = data["done_count"]
 
-            # Subjective stats
             avg_rating = round(sum(q1_ratings) / len(q1_ratings), 1) if q1_ratings else 0
             total_rated = len(q1_ratings)
             positive_pct = round(
                 (sum(1 for r in q1_ratings if r >= 4) / len(q1_ratings)) * 100, 1
             ) if q1_ratings else 0
 
-            # Objective stats
-            avg_improvement = round(sum(improvements) / len(improvements), 1) if improvements else 0
-            total_tracked = len(improvements)
-            is_insufficient = total_tracked < 3
+            avg_confidence = round(sum(q2_confidences) / len(q2_confidences), 1) if q2_confidences else 0
+            confidence_pct = round((avg_confidence / 5) * 100) if avg_confidence > 0 else 0
+
+            completion_rate = round((done_count / total_cards) * 100, 1) if total_cards > 0 else 0
+
+            combined_score = (confidence_pct * 0.6) + (completion_rate * 0.4)
+
+            has_sufficient_data = len(q2_confidences) >= 2 or done_count >= 2
 
             strategies.append({
                 "name": name,
                 "taskCount": total_cards,
+                "doneCount": done_count,
                 "subjective": {
                     "avgRating": avg_rating,
                     "totalRated": total_rated,
                     "positivePercent": positive_pct,
                 },
-                "objective": {
-                    "avgImprovement": avg_improvement,
-                    "totalTracked": total_tracked,
-                    "isDataInsufficient": is_insufficient,
+                "confidence": {
+                    "avgConfidence": avg_confidence,
+                    "confidencePercent": confidence_pct,
+                    "totalReflections": len(q2_confidences),
                 },
+                "completion": {
+                    "doneCount": done_count,
+                    "completionRate": completion_rate,
+                },
+                "combinedScore": round(combined_score, 1),
+                "hasSufficientData": has_sufficient_data,
             })
+
+        strategies.sort(key=lambda s: s["combinedScore"], reverse=True)
 
         return {"strategies": strategies}
 
