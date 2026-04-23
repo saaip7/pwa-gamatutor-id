@@ -357,7 +357,7 @@ def job_social_presence():
 def job_cleanup_orphan_sessions():
     """End study sessions that have been running for over 3 hours without ending."""
     from features.study_session.model import StudySession
-    cleaned = StudySession.cleanup_orphan_sessions(max_age_hours=3, max_age_minutes=18)  # [FLAG STUDY] test: 18min, prod: max_age_hours=3 only
+    cleaned = StudySession.cleanup_orphan_sessions(max_age_hours=3, max_age_minutes=10)  # [FLAG STUDY] test: 10min, prod: max_age_hours=3 only
     if cleaned:
         logger.info(f"[Scheduler] Orphan session cleanup: {cleaned} sessions ended")
 
@@ -371,7 +371,7 @@ def job_check_idle_sessions():
     logger.info("[Scheduler] Running idle session check")
 
     now = datetime.utcnow()
-    idle_cutoff = now - timedelta(minutes=6)  # [FLAG STUDY] test: 6min, prod: 30min
+    idle_cutoff = now - timedelta(minutes=2)  # [FLAG STUDY] test: 2min, prod: 30min
 
     idle_sessions = list(mongo.db.study_sessions.find({
         "end_time": None,
@@ -422,7 +422,7 @@ def job_auto_end_stale_sessions():
 
     logger.info("[Scheduler] Running auto-end stale sessions")
 
-    ended = StudySession.auto_end_stale(minutes_threshold=9)  # [FLAG STUDY] test: 9min, prod: 90min
+    ended = StudySession.auto_end_stale(minutes_threshold=5)  # [FLAG STUDY] test: 5min, prod: 90min
 
     logger.info(f"[Scheduler] Auto-end stale: {len(ended)} sessions to end")
 
