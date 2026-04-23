@@ -140,6 +140,11 @@ export interface StrategyEffectiveness {
     doneCount: number;
     completionRate: number;
   };
+  objective: {
+    avgImprovement: number;
+    totalTracked: number;
+    isDataInsufficient: boolean;
+  };
   combinedScore: number;
   hasSufficientData: boolean;
 }

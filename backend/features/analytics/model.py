@@ -140,6 +140,7 @@ class Analytics:
                     "cards": [],
                     "q1_ratings": [],
                     "q2_confidences": [],
+                    "improvements": [],
                     "done_count": 0,
                 }
             strategy_data[strat]["cards"].append(card)
@@ -163,6 +164,17 @@ class Analytics:
             if card.get("column") == "list4":
                 strategy_data[strat]["done_count"] += 1
 
+            pre = card.get("pre_test_grade")
+            post = card.get("post_test_grade")
+            try:
+                pre = float(pre) if pre is not None else None
+                post = float(post) if post is not None else None
+            except (ValueError, TypeError):
+                pre = post = None
+            if pre is not None and post is not None and pre > 0:
+                imp = round(((post - pre) / pre) * 100, 1)
+                strategy_data[strat]["improvements"].append(imp)
+
         strategies = []
         for name, data in strategy_data.items():
             q1_ratings = data["q1_ratings"]
@@ -183,6 +195,10 @@ class Analytics:
 
             combined_score = (confidence_pct * 0.6) + (completion_rate * 0.4)
 
+            improvements = data["improvements"]
+            avg_improvement = round(sum(improvements) / len(improvements), 1) if improvements else 0
+            total_tracked = len(improvements)
+
             has_sufficient_data = len(q2_confidences) >= 2 or done_count >= 2
 
             strategies.append({
@@ -202,6 +218,11 @@ class Analytics:
                 "completion": {
                     "doneCount": done_count,
                     "completionRate": completion_rate,
+                },
+                "objective": {
+                    "avgImprovement": avg_improvement,
+                    "totalTracked": total_tracked,
+                    "isDataInsufficient": total_tracked < 2,
                 },
                 "combinedScore": round(combined_score, 1),
                 "hasSufficientData": has_sufficient_data,

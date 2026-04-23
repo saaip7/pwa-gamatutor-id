@@ -61,6 +61,11 @@ export default function StrategyEffectivenessPage() {
                 doneCount: s.completion.doneCount,
                 completionRate: s.completion.completionRate,
               },
+              objective: {
+                improvement: s.objective.avgImprovement,
+                totalTasks: s.objective.totalTracked,
+                isDataInsufficient: s.objective.isDataInsufficient,
+              },
             }
           : {}),
       };

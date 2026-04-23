@@ -24,6 +24,11 @@ export interface StrategyPerformanceData {
     doneCount: number;
     completionRate: number;
   };
+  objective?: {
+    improvement: number;
+    totalTasks: number;
+    isDataInsufficient?: boolean;
+  };
 }
 
 interface StrategyPerformanceCardProps {
@@ -147,22 +152,45 @@ export function StrategyPerformanceCard({ data, index }: StrategyPerformanceCard
           </div>
         )}
 
-        {/* Row 3: Peningkatan Nilai — data kurang */}
-        <div className="bg-amber-50/40 rounded-xl p-3.5 border border-amber-100/40">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-amber-100/80 text-amber-500 flex items-center justify-center shrink-0">
-              <Target className="w-3.5 h-3.5" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-amber-800">Data Belum Cukup</p>
+        {/* Row 3: Peningkatan Nilai */}
+        {data.objective && !data.objective.isDataInsufficient ? (
+          <div className="bg-blue-50/40 rounded-xl p-3.5 border border-blue-100/40">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Target className="w-3.5 h-3.5 text-blue-500" />
+                <p className="text-xs text-neutral-500 font-medium">
+                  Peningkatan Nilai <span className="text-neutral-400">({data.objective.totalTasks} tugas)</span>
+                </p>
               </div>
-              <p className="text-[11px] text-amber-700/70 font-medium mt-0.5 leading-snug">
-                Mulai tracking nilai pre-test &amp; post-test di tugas untuk melihat peningkatan.
-              </p>
+              <span className="text-sm font-black text-neutral-900">+{data.objective.improvement}%</span>
+            </div>
+            <div className="w-full bg-neutral-200/80 h-[6px] rounded-full overflow-hidden">
+              <motion.div
+                className="bg-blue-500 h-full rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min(data.objective.improvement, 100)}%` }}
+                transition={{ duration: 1, delay: 0.7 + (index * 0.1) }}
+              />
+            </div>
+            <p className="text-[10px] font-semibold text-neutral-400 text-right mt-1">
+              {data.objective.improvement > 20 ? "Sangat signifikan" : data.objective.improvement > 0 ? "Stabil naik" : "Perlu evaluasi"}
+            </p>
+          </div>
+        ) : (
+          <div className="bg-amber-50/40 rounded-xl p-3.5 border border-amber-100/40">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-amber-100/80 text-amber-500 flex items-center justify-center shrink-0">
+                <Target className="w-3.5 h-3.5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-amber-800">Data Belum Cukup</p>
+                <p className="text-[11px] text-amber-700/70 font-medium mt-0.5 leading-snug">
+                  Mulai tracking nilai pre-test &amp; post-test di tugas untuk melihat peningkatan.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Fallback: no data at all */}
         {(!data.subjective || data.subjective.totalTasks === 0) && (!data.completion || data.completion.doneCount === 0) && (
