@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { LucideIcon, TrendingUp, AlertTriangle, BarChart2, Sparkles } from "lucide-react";
+import { LucideIcon, TrendingUp, BarChart2, Sparkles, CheckCircle2, Target, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
@@ -15,15 +15,14 @@ export interface StrategyPerformanceData {
   isTop?: boolean;
   isUnused?: boolean;
   subjective?: {
-    rating: number; // e.g., 4.8
+    rating: number;
     totalTasks: number;
     positivePercent: number;
     emoji: string;
   };
-  objective?: {
-    improvement: number; // e.g., 40
-    totalTasks: number;
-    isDataInsufficient?: boolean;
+  completion?: {
+    doneCount: number;
+    completionRate: number;
   };
 }
 
@@ -94,75 +93,81 @@ export function StrategyPerformanceCard({ data, index }: StrategyPerformanceCard
         )}
       </div>
 
-      {/* Dual-Data Panels */}
+      {/* Stats */}
       <div className="space-y-3">
-        {/* Subjective Panel */}
-        {data.subjective && (
-          <div className="bg-neutral-50/80 rounded-[16px] p-4 border border-neutral-100/80">
-            <div className="flex justify-between items-center mb-3">
+        {/* Row 1: Rating Kamu */}
+        {data.subjective && data.subjective.totalTasks > 0 && (
+          <div className="bg-neutral-50/80 rounded-xl p-3.5 border border-neutral-100/80">
+            <div className="flex items-center gap-2 mb-2">
+              <Star className="w-3.5 h-3.5 text-purple-500" />
               <p className="text-xs text-neutral-500 font-medium">
                 Rating Kamu <span className="text-neutral-400">(Berdasarkan {data.subjective.totalTasks} tugas)</span>
               </p>
-              <span className="text-base font-black text-neutral-900 flex items-center gap-1">
+            </div>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-black text-neutral-900 flex items-center gap-1">
                 {data.subjective.emoji} {data.subjective.rating}
-                <span className="text-xs text-neutral-400 font-bold">/5</span>
+                <span className="text-[10px] text-neutral-400 font-bold">/5</span>
+              </span>
+              <span className="text-[10px] font-semibold text-neutral-400">
+                {data.subjective.positivePercent}% positif
               </span>
             </div>
-            <div className="w-full bg-neutral-200/80 h-2 rounded-full overflow-hidden mb-1.5">
-              <motion.div 
-                className="bg-purple-500 h-full rounded-full" 
+            <div className="w-full bg-neutral-200/80 h-[6px] rounded-full overflow-hidden">
+              <motion.div
+                className="bg-purple-500 h-full rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${data.subjective.positivePercent}%` }}
-                transition={{ duration: 1, delay: 0.5 + (index * 0.1) }}
+                transition={{ duration: 1, delay: 0.3 + (index * 0.1) }}
               />
             </div>
-            <p className="text-[11px] font-bold text-neutral-500 text-right">
-              {data.subjective.positivePercent}% rating positif
-            </p>
           </div>
         )}
 
-        {/* Objective Panel */}
-        {data.objective && (
-          <div className={cn(
-            "rounded-[16px] p-4 border",
-            data.objective.isDataInsufficient 
-              ? "bg-amber-50/40 border-amber-100/60" 
-              : "bg-blue-50/50 border-blue-100/50"
-          )}>
-            <p className="text-xs text-neutral-500 font-medium mb-3">
-              Peningkatan Nilai <span className="text-neutral-400">(Berdasarkan {data.objective.totalTasks} tugas)</span>
-            </p>
-            
-            {data.objective.isDataInsufficient ? (
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-amber-100/80 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
-                  <AlertTriangle className="w-4.5 h-4.5" />
-                </div>
-                <div>
-                  <span className="text-sm font-bold text-amber-800">Data Kurang</span>
-                  <p className="text-xs text-amber-700/80 font-medium mt-0.5 leading-snug">
-                    Aktifkan tracking nilai pada tugas untuk melihat insight objektif.
-                  </p>
-                </div>
+        {/* Row 2: Tingkat Penyelesaian */}
+        {data.completion && data.completion.doneCount > 0 && (
+          <div className="bg-emerald-50/40 rounded-xl p-3.5 border border-emerald-100/40">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                <p className="text-xs text-neutral-500 font-medium">
+                  Tingkat Penyelesaian <span className="text-neutral-400">({data.completion.doneCount} tugas)</span>
+                </p>
               </div>
-            ) : (
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 shadow-sm border border-emerald-200/50">
-                  <TrendingUp className="w-5 h-5" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <div className="flex items-end gap-1.5 mb-0.5">
-                    <span className="text-xl font-black text-neutral-900 leading-none">
-                      +{data.objective.improvement}%
-                    </span>
-                  </div>
-                  <p className="text-xs text-emerald-600 font-bold">
-                    Peningkatan {data.objective.improvement > 20 ? 'signifikan' : 'stabil'}
-                  </p>
-                </div>
+              <span className="text-sm font-black text-neutral-900">{data.completion.completionRate}%</span>
+            </div>
+            <div className="w-full bg-neutral-200/80 h-[6px] rounded-full overflow-hidden">
+              <motion.div
+                className="bg-emerald-500 h-full rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${data.completion.completionRate}%` }}
+                transition={{ duration: 1, delay: 0.5 + (index * 0.1) }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Row 3: Peningkatan Nilai — data kurang */}
+        <div className="bg-amber-50/40 rounded-xl p-3.5 border border-amber-100/40">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-amber-100/80 text-amber-500 flex items-center justify-center shrink-0">
+              <Target className="w-3.5 h-3.5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-amber-800">Data Belum Cukup</p>
               </div>
-            )}
+              <p className="text-[11px] text-amber-700/70 font-medium mt-0.5 leading-snug">
+                Mulai tracking nilai pre-test &amp; post-test di tugas untuk melihat peningkatan.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Fallback: no data at all */}
+        {(!data.subjective || data.subjective.totalTasks === 0) && (!data.completion || data.completion.doneCount === 0) && (
+          <div className="text-center py-4">
+            <p className="text-xs text-neutral-400">Belum ada data refleksi</p>
           </div>
         )}
       </div>

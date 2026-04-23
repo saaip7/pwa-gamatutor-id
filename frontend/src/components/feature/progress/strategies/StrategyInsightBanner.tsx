@@ -6,10 +6,17 @@ import { motion } from "framer-motion";
 
 interface StrategyInsightBannerProps {
   strategyName: string;
-  impactPercent: number;
+  confidencePercent: number;
+  completionRate: number;
+  totalDone: number;
 }
 
-export function StrategyInsightBanner({ strategyName, impactPercent }: StrategyInsightBannerProps) {
+export function StrategyInsightBanner({
+  strategyName,
+  confidencePercent,
+  completionRate,
+  totalDone,
+}: StrategyInsightBannerProps) {
   return (
     <motion.section 
       initial={{ opacity: 0, y: 12 }}
@@ -17,7 +24,6 @@ export function StrategyInsightBanner({ strategyName, impactPercent }: StrategyI
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="bg-blue-50 rounded-2xl p-5 border border-blue-100 shadow-sm relative overflow-hidden group">
-        {/* Decorative background icon */}
         <div className="absolute -right-4 -top-4 opacity-[0.07] rotate-12 group-hover:rotate-0 transition-transform duration-700">
           <Lightbulb className="w-32 h-32 text-blue-600" />
         </div>
@@ -30,7 +36,11 @@ export function StrategyInsightBanner({ strategyName, impactPercent }: StrategyI
             <h2 className="font-bold text-blue-900 text-base tracking-tight">Insight Khusus Untukmu</h2>
           </div>
           <p className="text-blue-800 text-sm leading-relaxed pr-2">
-            Strategi <strong className="font-extrabold text-blue-900">{strategyName}</strong> terbukti meningkatkan keyakinan dirimu hingga <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-white font-black text-blue-700 shadow-sm mx-0.5">{impactPercent}%</span>. Gunakan lebih sering untuk tugas yang sulit!
+            Berdasarkan data belajarmu, strategi <strong className="font-extrabold text-blue-900">{strategyName}</strong> menunjukkan keyakinan diri hingga{" "}
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-white font-black text-blue-700 shadow-sm mx-0.5">{confidencePercent}%</span>{" "}
+            dengan tingkat penyelesaian tugas{" "}
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-white font-black text-blue-700 shadow-sm mx-0.5">{completionRate}%</span>{" "}
+            ({totalDone} tugas selesai). Pertimbangkan untuk menggunakannya lebih sering.
           </p>
         </div>
       </div>

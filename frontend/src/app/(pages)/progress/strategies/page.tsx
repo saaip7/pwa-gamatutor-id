@@ -37,17 +37,17 @@ export default function StrategyEffectivenessPage() {
     if (!strategies?.strategies) return [];
     return strategies.strategies.map((s, i) => {
       const icon = strategyIcon(s.name);
-      const isTop = i === 0;
+      const isTop = i === 0 && s.hasSufficientData;
       const hasData = s.taskCount > 0;
 
       return {
         id: `strat-${i}`,
         name: s.name,
-        category: "", // API doesn't provide category; can be derived later
+        category: "",
         icon,
         iconBg: hasData ? "bg-purple-50" : "bg-neutral-50",
         iconColor: hasData ? "text-purple-600" : "text-neutral-400",
-        isTop: isTop && hasData,
+        isTop,
         isUnused: !hasData,
         ...(hasData
           ? {
@@ -57,10 +57,9 @@ export default function StrategyEffectivenessPage() {
                 positivePercent: s.subjective.positivePercent,
                 emoji: ratingEmoji(s.subjective.avgRating),
               },
-              objective: {
-                improvement: s.objective.avgImprovement,
-                totalTasks: s.objective.totalTracked,
-                isDataInsufficient: s.objective.isDataInsufficient,
+              completion: {
+                doneCount: s.completion.doneCount,
+                completionRate: s.completion.completionRate,
               },
             }
           : {}),
@@ -68,10 +67,12 @@ export default function StrategyEffectivenessPage() {
     });
   }, [strategies]);
 
-  // Top strategy for insight banner
   const topStrategy = strategies?.strategies?.[0];
-  const topName = topStrategy?.name ?? "—";
-  const topImprovement = topStrategy?.objective?.avgImprovement ?? 0;
+  const topName = topStrategy?.name ?? "";
+  const topConfidence = topStrategy?.confidence?.confidencePercent ?? 0;
+  const topCompletion = topStrategy?.completion?.completionRate ?? 0;
+  const topDone = topStrategy?.completion?.doneCount ?? 0;
+  const showBanner = topStrategy?.hasSufficientData && topStrategy.taskCount > 0;
 
   return (
     <div className="w-full h-screen bg-neutral-50 flex flex-col mx-auto overflow-hidden relative max-w-md">
@@ -97,10 +98,12 @@ export default function StrategyEffectivenessPage() {
           </div>
         ) : (
           <>
-            {topStrategy && topStrategy.taskCount > 0 && (
+            {showBanner && (
               <StrategyInsightBanner
                 strategyName={topName}
-                impactPercent={topImprovement}
+                confidencePercent={topConfidence}
+                completionRate={topCompletion}
+                totalDone={topDone}
               />
             )}
 
