@@ -38,7 +38,9 @@ export function AdvancedOptions({ onChange, defaultValue }: AdvancedOptionsProps
   const [difficulty, setDifficulty] = useState<"Easy" | "Medium" | "Hard">(
     defaultValue?.difficulty ?? "Medium"
   );
-  const [isTrackNilai, setTrackNilai] = useState(false);
+  const [isTrackNilai, setTrackNilai] = useState(
+    defaultValue?.preTestGrade != null && defaultValue.preTestGrade > 0
+  );
   const [preTestGrade, setPreTestGrade] = useState<string>(
     defaultValue?.preTestGrade != null ? String(defaultValue.preTestGrade) : ""
   );
