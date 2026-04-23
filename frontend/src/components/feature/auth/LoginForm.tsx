@@ -83,7 +83,7 @@ export function LoginForm() {
           label="Email"
           type="email"
           id="email"
-          placeholder="student@university.edu"
+          placeholder="nama@ugm.ac.id"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
