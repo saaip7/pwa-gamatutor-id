@@ -240,7 +240,7 @@ export default function FocusModePage() {
       } else if (document.visibilityState === "visible") {
         if (hiddenAtRef.current && sessionId) {
           const hiddenDurationMs = Date.now() - hiddenAtRef.current;
-          const TRUST_THRESHOLD_MS = 3 * 60 * 1000; // [FLAG STUDY] test: 3min, prod: 30*60*1000 (30min)
+          const TRUST_THRESHOLD_MS = 1 * 60 * 1000; // [FLAG STUDY] test: 1min, prod: 30*60*1000 (30min)
           const untrustedMs = Math.max(0, hiddenDurationMs - TRUST_THRESHOLD_MS);
           if (untrustedMs > 0) {
             totalHiddenMsRef.current += untrustedMs;
@@ -252,10 +252,10 @@ export default function FocusModePage() {
           const hiddenDurationMin = hiddenDurationMs / 60000;
           idleDurationRef.current = hiddenDurationMin;
 
-          if (hiddenDurationMin > 9) { // [FLAG STUDY] test: 9min, prod: 90min (auto-end)
+          if (hiddenDurationMin > 5) { // [FLAG STUDY] test: 5min, prod: 90min (auto-end)
             // Auto-end session
             handleAutoEndRef.current(hiddenDurationMin);
-          } else if (hiddenDurationMin >= 3) { // [FLAG STUDY] test: 3min, prod: 30min (idle popup)
+          } else if (hiddenDurationMin >= 1.5) { // [FLAG STUDY] test: 1.5min, prod: 30min (idle popup)
             // Show idle popup
             setShowIdlePopup(true);
           }

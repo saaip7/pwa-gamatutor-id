@@ -105,7 +105,7 @@ class StudySession:
 
         ended = []
         for session in stale_sessions:
-            grace_end = session["last_heartbeat"] + timedelta(minutes=5)
+            grace_end = session["last_heartbeat"] + timedelta(minutes=1)  # [FLAG STUDY] test: 1min grace, prod: 5min
             idle_ms = int((grace_end - session["start_time"]).total_seconds() * 1000)
             active_ms = int((session["last_heartbeat"] - session["start_time"]).total_seconds() * 1000)
             hidden_ms = max(0, idle_ms - active_ms)
