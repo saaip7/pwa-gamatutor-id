@@ -110,6 +110,7 @@ export default function EditTaskPage() {
     checklists: card?.checklists ?? [],
     links: (card?.links ?? []).map((l) => ({ ...l, id: l.id || "" })),
     preTestGrade: card?.pre_test_grade,
+    postTestGrade: card?.post_test_grade,
   });
 
   // Sync form when card loads
@@ -171,6 +172,7 @@ export default function EditTaskPage() {
         checklists: advanced.checklists.length > 0 ? advanced.checklists : undefined,
         links: advanced.links.length > 0 ? advanced.links : undefined,
         pre_test_grade: advanced.preTestGrade,
+        post_test_grade: advanced.postTestGrade,
       });
     } finally {
       setSaving(false);

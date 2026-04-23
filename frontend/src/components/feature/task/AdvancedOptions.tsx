@@ -26,6 +26,7 @@ export interface AdvancedOptionsData {
   checklists: { id: string; title: string; isCompleted: boolean }[];
   links: { id: string; title: string; url: string }[];
   preTestGrade?: number;
+  postTestGrade?: number;
 }
 
 interface AdvancedOptionsProps {
@@ -44,6 +45,10 @@ export function AdvancedOptions({ onChange, defaultValue }: AdvancedOptionsProps
   const [preTestGrade, setPreTestGrade] = useState<string>(
     defaultValue?.preTestGrade != null ? String(defaultValue.preTestGrade) : ""
   );
+  const [postTestGrade, setPostTestGrade] = useState<string>(
+    defaultValue?.postTestGrade != null ? String(defaultValue.postTestGrade) : ""
+  );
+  const [postGradeError, setPostGradeError] = useState("");
 
   // Subtasks State (mapped to checklists for BE)
   const [subtasks, setSubtasks] = useState<{ id: string; text: string }[]>(
@@ -66,8 +71,25 @@ export function AdvancedOptions({ onChange, defaultValue }: AdvancedOptionsProps
         .map((s) => ({ id: s.id, title: s.text, isCompleted: false })),
       links: links.filter((l) => l.title.trim() && l.url.trim()),
       preTestGrade: preTestGrade ? Number(preTestGrade) : undefined,
+      postTestGrade: postTestGrade ? Number(postTestGrade) : undefined,
     });
-  }, [difficulty, subtasks, links, preTestGrade, onChange]);
+  }, [difficulty, subtasks, links, preTestGrade, postTestGrade, onChange]);
+
+  const handlePostGradeChange = (value: string) => {
+    if (value === "") {
+      setPostTestGrade("");
+      setPostGradeError("");
+      return;
+    }
+    const num = parseFloat(value);
+    if (isNaN(num)) return;
+    if (num < 0 || num > 100) {
+      setPostGradeError("Nilai harus antara 0-100");
+    } else {
+      setPostGradeError("");
+    }
+    setPostTestGrade(value);
+  };
 
   // Subtask Actions
   const addSubtask = () => {
@@ -211,7 +233,7 @@ export function AdvancedOptions({ onChange, defaultValue }: AdvancedOptionsProps
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
-                      className="mt-4 pt-4 border-t border-neutral-100"
+                      className="mt-4 pt-4 border-t border-neutral-100 space-y-4"
                     >
                       <label className="text-xs font-medium text-neutral-600 mb-2 block">
                         Nilai Pre-test (Opsional)
@@ -227,8 +249,39 @@ export function AdvancedOptions({ onChange, defaultValue }: AdvancedOptionsProps
                           className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none text-sm transition-all"
                         />
                         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 text-sm font-medium">
-                          %
+                          / 100
                         </span>
+                      </div>
+
+                      <div className="pt-3 border-t border-neutral-100">
+                        <label className="text-xs font-medium text-neutral-600 mb-2 block">
+                          Nilai Post-test (Opsional)
+                        </label>
+                        <p className="text-[11px] text-neutral-400 font-medium mb-2">
+                          Isi setelah menyelesaikan tugas untuk melihat peningkatan.
+                        </p>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            placeholder="0"
+                            value={postTestGrade}
+                            onChange={(e) => handlePostGradeChange(e.target.value)}
+                            min="0"
+                            max="100"
+                            className={cn(
+                              "w-full px-4 py-3 rounded-xl border focus:ring-4 focus:ring-primary/10 outline-none text-sm transition-all",
+                              postGradeError
+                                ? "border-red-300 focus:border-red-400 focus:ring-red-100"
+                                : "border-neutral-200 focus:border-primary"
+                            )}
+                          />
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 text-sm font-medium">
+                            / 100
+                          </span>
+                        </div>
+                        {postGradeError && (
+                          <p className="text-xs text-red-500 font-medium mt-1">{postGradeError}</p>
+                        )}
                       </div>
                     </motion.div>
                   )}
