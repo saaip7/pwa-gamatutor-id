@@ -9,6 +9,7 @@ import { Task } from "@/components/ui/TaskCard";
 import { StreakHub } from "@/components/feature/streak/StreakHub";
 import type { StreakData as ComponentStreakData } from "@/components/feature/streak/StreakHub";
 import { StreakFreezeCelebration } from "@/components/feature/streak/StreakFreezeCelebration";
+import { AnnouncementModal } from "@/components/feature/dashboard/AnnouncementModal";
 import { useAuthStore } from "@/stores/auth";
 import { useAnalyticsStore } from "@/stores/analytics";
 import { useBoardStore } from "@/stores/board";
@@ -214,6 +215,8 @@ export default function DashboardPage() {
         isOpen={isCelebrationOpen}
         onClose={() => setIsCelebrationOpen(false)}
       />
+
+      <AnnouncementModal />
     </>
   );
 }

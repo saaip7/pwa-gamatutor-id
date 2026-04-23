@@ -67,31 +67,26 @@ def send_push(token, title, body, data=None):
 
 
 def send_push_batch(tokens, title, body, data=None):
-    """Send FCM push to multiple devices.
-
-    Args:
-        tokens: List of FCM registration tokens
-        title: Notification title
-        body: Notification body text
-        data: Optional dict of key-value data payload
-
-    Returns:
-        Dict with 'success' and 'failure' counts.
-    """
     if not tokens:
         return {"success": 0, "failure": 0}
+
+    cleaned = [t.strip() for t in tokens if t and isinstance(t, str) and t.strip()]
+    if not cleaned:
+        logger.warning("send_push_batch: no valid tokens after cleaning")
+        return {"success": 0, "failure": 0}
+
+    logger.info(f"send_push_batch: {len(cleaned)}/{len(tokens)} valid tokens, sending...")
 
     message = messaging.MulticastMessage(
         notification=messaging.Notification(title=title, body=body),
         data=data or {},
-        tokens=tokens,
+        tokens=cleaned,
         android=messaging.AndroidConfig(priority="high"),
     )
 
     try:
-        response = messaging.send_multicast(message)
-        logger.info(f"Batch push: {response.success_count} success, {response.failure_count} failure")
-        return {"success": response.success_count, "failure": response.failure_count}
+        batch_response = messaging.send_each_for_multicast(message)
+        return {"success": batch_response.success_count, "failure": batch_response.failure_count}
     except Exception as e:
         logger.error(f"Batch push failed: {e}")
-        return {"success": 0, "failure": len(tokens)}
+        return {"success": 0, "failure": len(cleaned)}

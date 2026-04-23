@@ -259,6 +259,15 @@ export interface NotificationPreferences {
   };
 }
 
+export interface Announcement {
+  _id: string;
+  title: string;
+  body: string;
+  is_active: boolean;
+  dismissed_count: number;
+  created_at: string;
+}
+
 export interface UserPreferences {
   theme: "light" | "dark" | "auto";
   notifications: NotificationPreferences;
