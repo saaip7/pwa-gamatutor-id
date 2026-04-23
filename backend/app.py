@@ -34,6 +34,7 @@ from features.notification.routes import notification_bp
 from features.analytics.routes import analytics_bp
 from features.character.routes import character_bp
 from features.admin.routes import admin_bp
+from features.announcement.routes import announcement_bp
 
 load_dotenv()
 
@@ -81,6 +82,7 @@ app.register_blueprint(notification_bp)
 app.register_blueprint(analytics_bp)
 app.register_blueprint(character_bp)
 app.register_blueprint(admin_bp)
+app.register_blueprint(announcement_bp)
 
 
 @app.route("/", methods=["GET"])

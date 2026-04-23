@@ -1,6 +1,7 @@
 from flask import jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from features.notification.model import Notification
+from features.announcement.model import Announcement
 from shared.db import mongo
 from shared.fcm import send_push
 from bson import ObjectId
@@ -102,3 +103,25 @@ def test_push():
         "push_sent": push_ok,
         "has_token": bool(token),
     }), 200
+
+
+@jwt_required()
+def get_active_announcements():
+    user_id = get_jwt_identity()
+    try:
+        announcements = Announcement.get_active(user_id)
+        return jsonify({"announcements": announcements}), 200
+    except Exception as e:
+        return jsonify({"message": "An error occurred", "error": str(e)}), 500
+
+
+@jwt_required()
+def dismiss_announcement(announcement_id):
+    user_id = get_jwt_identity()
+    try:
+        success = Announcement.dismiss(announcement_id, user_id)
+        if not success:
+            return jsonify({"message": "Pengumuman tidak ditemukan"}), 404
+        return jsonify({"message": "Pengumuman ditutup"}), 200
+    except Exception as e:
+        return jsonify({"message": "An error occurred", "error": str(e)}), 500

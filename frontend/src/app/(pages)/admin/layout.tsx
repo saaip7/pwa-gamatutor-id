@@ -13,6 +13,7 @@ import {
   BookOpen,
   Lightbulb,
   Loader2,
+  Megaphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth";
@@ -21,6 +22,7 @@ const navItems = [
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/courses", label: "Courses", icon: BookOpen },
   { href: "/admin/strategies", label: "Strategies", icon: Lightbulb },
+  { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
   { href: "/admin/logs", label: "Logs", icon: ScrollText },
 ];
 
@@ -146,14 +148,14 @@ export default function AdminLayout({
 
   return (
     <div
-      className="flex flex-1 min-h-0 font-sans text-neutral-800 overflow-hidden"
+      className="flex flex-1 min-h-screen font-sans text-neutral-800"
       style={{ background: "#f8f9fa" }}
     >
       {/* Desktop sidebar — always in flow */}
       {isDesktop && (
         <aside
-          className="flex flex-col shrink-0"
-          style={{ backgroundColor: "#111827", width: "240px", height: "100%" }}
+          className="fixed top-0 left-0 bottom-0 flex flex-col"
+          style={{ backgroundColor: "#111827", width: "240px" }}
         >
           <SidebarContent pathname={pathname} onLogout={handleLogout} />
         </aside>
@@ -242,7 +244,7 @@ export default function AdminLayout({
       )}
 
       {/* Main area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 lg:pl-[240px]">
         {/* Top bar */}
         <header className="h-14 bg-white border-b border-neutral-200 flex items-center px-4 gap-3 shrink-0">
           {!isDesktop && (
@@ -265,6 +267,8 @@ export default function AdminLayout({
                 ? "Courses"
                 : pathname === "/admin/strategies"
                 ? "Strategies"
+                : pathname === "/admin/announcements"
+                ? "Announcements"
                 : pathname === "/admin/logs"
                 ? "Logs"
                 : "Dashboard"}
