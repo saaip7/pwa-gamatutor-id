@@ -12,6 +12,7 @@ interface SettingItemBase {
   description?: string;
   iconBgClass?: string;
   iconColorClass?: string;
+  disabled?: boolean;
 }
 
 interface SettingLinkProps extends SettingItemBase {
@@ -37,9 +38,12 @@ type SettingItemProps = SettingLinkProps | SettingToggleProps | SettingSelectPro
 export function SettingItem(props: SettingItemProps) {
   const [isOpen, setIsOpen] = useState(false);
   const Icon = props.icon;
-  const { label, iconBgClass = "bg-neutral-100", iconColorClass = "text-neutral-600" } = props;
+  const { label, iconBgClass = "bg-neutral-100", iconColorClass = "text-neutral-600", disabled } = props;
 
-  const baseContainerClasses = "flex items-center justify-between px-4 py-4 border-b border-neutral-50 hover:bg-neutral-50/50 transition-colors cursor-pointer last:border-b-0";
+  const baseContainerClasses = cn(
+    "flex items-center justify-between px-4 py-4 border-b border-neutral-50 transition-colors last:border-b-0",
+    disabled ? "opacity-40 cursor-not-allowed" : "hover:bg-neutral-50/50 cursor-pointer"
+  );
 
   const renderIconAndLabel = () => (
     <div className={cn("flex gap-3.5", props.description ? "items-start" : "items-center")}>
@@ -47,7 +51,14 @@ export function SettingItem(props: SettingItemProps) {
         <Icon className="w-5 h-5" />
       </div>
       <div className="flex flex-col gap-0.5">
-        <span className="text-base font-semibold text-neutral-800 leading-tight">{label}</span>
+        <span className="text-base font-semibold text-neutral-800 leading-tight flex items-center gap-2">
+          {label}
+          {disabled && (
+            <span className="text-[10px] font-bold uppercase tracking-wider bg-neutral-100 text-neutral-400 px-1.5 py-0.5 rounded-full">
+              Segera hadir
+            </span>
+          )}
+        </span>
         {props.description && (
           <p className="text-xs text-neutral-500 leading-snug pr-4">{props.description}</p>
         )}
@@ -67,8 +78,8 @@ export function SettingItem(props: SettingItemProps) {
   if (props.type === "toggle") {
     return (
       <div 
-        className={cn(baseContainerClasses, "cursor-pointer active:bg-neutral-50/80")} 
-        onClick={props.onToggle}
+        className={cn(baseContainerClasses, !disabled && "active:bg-neutral-50/80")} 
+        onClick={disabled ? undefined : props.onToggle}
       >
         {renderIconAndLabel()}
         <div
@@ -92,8 +103,9 @@ export function SettingItem(props: SettingItemProps) {
     return (
       <div className="flex flex-col border-b border-neutral-50 last:border-b-0">
         <div 
-          className="flex items-center justify-between px-4 py-4 hover:bg-neutral-50/50 transition-colors cursor-pointer"
-          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center justify-between px-4 py-4 transition-colors"
+          style={disabled ? { cursor: "not-allowed", opacity: 0.4 } : { cursor: "pointer" }}
+          onClick={disabled ? undefined : () => setIsOpen(!isOpen)}
         >
           {renderIconAndLabel()}
           <div className="flex items-center gap-2">

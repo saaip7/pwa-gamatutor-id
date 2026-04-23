@@ -61,6 +61,7 @@ export default function AccountPage() {
             label="Mode Gelap"
             isActive={isDarkMode}
             onToggle={handleDarkModeToggle}
+            disabled
             iconBgClass="bg-neutral-100"
             iconColorClass="text-neutral-600"
           />
@@ -78,6 +79,7 @@ export default function AccountPage() {
             label="Bahasa"
             value={language}
             onChange={setLanguage}
+            disabled
             options={[
               { label: "ID", value: "id" },
               { label: "EN", value: "en" },
