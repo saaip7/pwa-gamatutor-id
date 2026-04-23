@@ -7,6 +7,7 @@ from flask_jwt_extended import (
 )
 from features.auth.model import User
 from features.board.model import Board
+from features.preferences.model import Preferences
 from shared.log_model import Log
 import re
 import random
@@ -98,6 +99,7 @@ def logout():
         user = User.find_by_id(user_id)
         if user:
             Log.create(user_id, "session_end", f"{user.get('email')} ended session")
+        Preferences.update_fcm_token(user_id, None)
     except Exception:
         pass
     return jsonify({"message": "Logged out successfully"}), 200
