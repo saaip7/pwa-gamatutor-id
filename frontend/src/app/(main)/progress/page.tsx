@@ -6,7 +6,6 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { ProgressHeader } from "@/components/feature/progress/ProgressHeader";
 import { InsightCard } from "@/components/feature/progress/InsightCard";
-import { PeriodSelector } from "@/components/feature/progress/PeriodSelector";
 import { ProgressSummary, SummaryData } from "@/components/feature/progress/ProgressSummary";
 import { MasteryTrendChart } from "@/components/feature/progress/MasteryTrendChart";
 import { TaskDistributionChart, TaskDistributionData } from "@/components/feature/progress/TaskDistributionChart";
@@ -18,7 +17,6 @@ import { useBadgesStore } from "@/stores/badges";
 import type { ConfidenceDataPoint, ReflectionNote } from "@/types";
 
 export default function ProgressPage() {
-  const [activePeriod, setActivePeriod] = useState<"week" | "month" | "all">("week");
   const {
     progress,
     strategies,
@@ -120,11 +118,6 @@ export default function ProgressPage() {
         ) : (
           <InsightCard />
         )}
-
-        <PeriodSelector
-          activePeriod={activePeriod}
-          onPeriodChange={setActivePeriod}
-        />
 
         <AchievementBanner
           unlockedCount={unlockedCount}
