@@ -61,7 +61,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     if (isOnboardingPath(pathname)) return;
 
     const onboardingDone = preferences.onboarding?.completed;
-    if (onboardingDone === false || onboardingDone === undefined) {
+    console.log("[AuthGuard] onboarding check:", { pathname, onboardingDone, completed: preferences.onboarding?.completed, step: preferences.onboarding?.step });
+    if (onboardingDone === false) {
+      console.log("[AuthGuard] redirecting to /onboarding because completed=false");
       router.replace("/onboarding");
     }
   }, [checking, preferences, pathname, router]);

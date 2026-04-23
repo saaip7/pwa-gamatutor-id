@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -8,6 +8,7 @@ import { LayoutGrid, Timer, BarChart3, BookOpenCheck, Palette } from "lucide-rea
 import { useTourStore } from "@/stores/tour";
 import { usePreferencesStore } from "@/stores/preferences";
 import { useBadgesStore } from "@/stores/badges";
+import { toast } from "sonner";
 
 const CONFETTI_COLORS = ["#3B82F6", "#10b981", "#f59e0b", "#8CD2FF", "#a78bfa"];
 
@@ -24,8 +25,10 @@ export default function GuideCompletePage() {
   const markTourCompleted = useTourStore((s) => s.markTourCompleted);
   const preferences = usePreferencesStore((s) => s.preferences);
   const updateOnboarding = usePreferencesStore((s) => s.updateOnboarding);
+  const fetchPreferences = usePreferencesStore((s) => s.fetchPreferences);
   const fetchBadges = useBadgesStore((s) => s.fetchBadges);
   const completed = useRef(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     ["tour-1", "tour-2", "tour-3", "tour-4", "tour-5"].forEach((id) => markTourCompleted(id));
@@ -33,13 +36,29 @@ export default function GuideCompletePage() {
 
   useEffect(() => {
     if (completed.current) return;
-    const isOnboardingDone = preferences?.onboarding?.completed;
+    if (!preferences) {
+      fetchPreferences();
+      return;
+    }
+    const isOnboardingDone = preferences.onboarding?.completed;
     if (isOnboardingDone === undefined) return;
     if (!isOnboardingDone) {
       completed.current = true;
       updateOnboarding({ completed: true })
         .then(() => fetchBadges())
-        .catch(() => {});
+        .then(() => setReady(true))
+        .catch((e) => {
+          toast.error("Gagal menyimpan progres, coba lagi");
+          setTimeout(() => {
+            completed.current = false;
+            updateOnboarding({ completed: true })
+              .then(() => fetchBadges())
+              .then(() => setReady(true))
+              .catch(() => {});
+          }, 2000);
+        });
+    } else {
+      setReady(true);
     }
   }, [preferences, updateOnboarding, fetchBadges]);
 
@@ -210,7 +229,12 @@ export default function GuideCompletePage() {
         className="px-6 pb-10 pt-4 z-10 relative"
       >
         <button
-          onClick={() => router.push("/dashboard")}
+          onClick={async () => {
+            if (!ready) {
+              await fetchPreferences();
+            }
+            router.push("/dashboard");
+          }}
           className="w-full py-4 bg-primary text-white rounded-2xl font-bold text-[15px] flex items-center justify-center gap-2 hover:bg-primary-hover active:scale-[0.98] transition-all shadow-[0_4px_20px_rgba(59,130,246,0.35)]"
         >
           Mulai Belajar

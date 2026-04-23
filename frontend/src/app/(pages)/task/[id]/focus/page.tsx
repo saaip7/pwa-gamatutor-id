@@ -60,6 +60,7 @@ export default function FocusModePage() {
   const hiddenAtRef = useRef<number | null>(null);
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [showIdlePopup, setShowIdlePopup] = useState(false);
+  const [idleEnding, setIdleEnding] = useState(false);
   const idleDurationRef = useRef<number>(0);
   const totalHiddenMsRef = useRef<number>(0); // Accumulated hidden duration for timer offset
   const [, forceUpdate] = useState(0); // Trigger re-render when timer offset changes
@@ -535,6 +536,7 @@ export default function FocusModePage() {
                   setShowIdlePopup(false);
                   if (!finishingRef.current) {
                     finishingRef.current = true;
+                    setIdleEnding(true);
                     try {
                       await endSessionInDBRef.current();
                     } catch {}
@@ -543,9 +545,11 @@ export default function FocusModePage() {
                     router.replace("/board");
                   }
                 }}
-                className="flex-1 py-3 bg-white border border-neutral-200 text-neutral-700 rounded-xl font-bold text-sm active:scale-95 transition-all"
+                disabled={idleEnding}
+                className="flex-1 py-3 bg-white border border-neutral-200 text-neutral-700 rounded-xl font-bold text-sm active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                Akhiri Sesi
+                {idleEnding && <div className="w-4 h-4 border-2 border-neutral-300 border-t-neutral-600 rounded-full animate-spin" />}
+                {idleEnding ? "Mengakhiri..." : "Akhiri Sesi"}
               </button>
             </div>
           </div>
