@@ -126,12 +126,23 @@ class Preferences:
             return False, "Preferences not found"
 
         streak = prefs.get("streak", {})
+        now = datetime.utcnow()
+        today = now.date()
+
+        last_active = streak.get("last_active_date")
+        if last_active:
+            if isinstance(last_active, str):
+                last_active_date = datetime.fromisoformat(last_active.replace("Z", "+00:00")).date()
+            elif isinstance(last_active, datetime):
+                last_active_date = last_active.date()
+            else:
+                last_active_date = None
+            if last_active_date == today:
+                return False, "Kamu hari ini sudah aktif, tidak perlu streak freeze"
+
         freezes_used = streak.get("freezes_used_this_week", 0)
         week_start = streak.get("week_start_date")
 
-        now = datetime.utcnow()
-        # Use date comparison to avoid timezone issues
-        today = now.date()
         # Calculate start of current week (Monday) - use date for comparison
         current_week_start_date = today - timedelta(days=today.weekday())
 
