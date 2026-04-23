@@ -1,9 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, type Variants } from "framer-motion";
-import { Map, ArrowRight, LayoutGrid, Timer, BarChart3, Shirt, Trophy } from "lucide-react";
+import { Map, ArrowRight, LayoutGrid, Timer, BarChart3, Trophy } from "lucide-react";
+import { usePreferencesStore } from "@/stores/preferences";
+import { useBadgesStore } from "@/stores/badges";
+import { toast } from "sonner";
 
 const TOUR_STEPS = [
   { num: 1, label: "Mengenal Kanban Board", desc: "Kelola tugas dengan board", icon: LayoutGrid, accent: "bg-blue-500", text: "text-blue-600" },
@@ -28,6 +31,10 @@ const itemVariants: Variants = {
 
 export default function GuideIntroPage() {
   const router = useRouter();
+  const updateOnboarding = usePreferencesStore((s) => s.updateOnboarding);
+  const fetchBadges = useBadgesStore((s) => s.fetchBadges);
+  const [isSkipping, setIsSkipping] = useState(false);
+  const skipDone = useRef(false);
 
   return (
     <div className="w-full h-screen bg-white flex flex-col mx-auto overflow-hidden relative max-w-md">
@@ -64,10 +71,10 @@ export default function GuideIntroPage() {
             className="text-center relative z-10"
           >
             <h1 className="text-[22px] font-extrabold text-neutral-900 tracking-tight leading-tight">
-              Tur Fitur Gamatutor
+              Kenali Fitur Gamatutor
             </h1>
             <p className="text-[13px] text-neutral-400 mt-2 leading-relaxed max-w-[260px] mx-auto">
-              Pelajari fitur utama dalam 4 langkah singkat.
+              Panduan singkat 5 langkah, atau langsung mulai belajar.
             </p>
           </motion.div>
         </div>
@@ -124,12 +131,34 @@ export default function GuideIntroPage() {
           onClick={() => router.push("/onboarding/guide/step-1")}
           className="w-full py-3.5 bg-primary text-white rounded-2xl font-bold text-[14px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-[0_2px_12px_rgba(59,130,246,0.25)]"
         >
-          Mulai Tur
+          Mulai Panduan
           <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
         </button>
-        <p className="text-center text-[10px] text-neutral-300 mt-2.5 font-medium">
-          5 langkah &middot; ~3 menit
-        </p>
+        <button
+          onClick={async () => {
+            if (skipDone.current || isSkipping) return;
+            skipDone.current = true;
+            setIsSkipping(true);
+            try {
+              await updateOnboarding({ completed: true, skipped_tour: true });
+              await fetchBadges();
+              await usePreferencesStore.getState().fetchPreferences();
+              router.push("/dashboard");
+            } catch {
+              skipDone.current = false;
+              setIsSkipping(false);
+              toast.error("Gagal menyimpan progres, coba lagi");
+            }
+          }}
+          disabled={isSkipping}
+          className="w-full py-3 mt-2 text-neutral-400 font-semibold text-[13px] flex items-center justify-center gap-1.5 hover:text-neutral-600 active:scale-[0.98] transition-all disabled:opacity-50"
+        >
+          {isSkipping ? (
+            <div className="w-3.5 h-3.5 border-2 border-neutral-300 border-t-transparent rounded-full animate-spin" />
+          ) : (
+            "Lewati, langsung belajar"
+          )}
+        </button>
       </motion.div>
     </div>
   );

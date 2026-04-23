@@ -83,6 +83,8 @@ class Preferences:
             updates["onboarding.completed"] = data["completed"]
         if "current_step" in data:
             updates["onboarding.current_step"] = data["current_step"]
+        if "skipped_tour" in data:
+            updates["onboarding.skipped_tour"] = data["skipped_tour"]
         if data.get("completed"):
             updates["onboarding.completed_at"] = datetime.utcnow()
 

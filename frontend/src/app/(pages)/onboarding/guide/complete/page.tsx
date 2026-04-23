@@ -230,9 +230,7 @@ export default function GuideCompletePage() {
       >
         <button
           onClick={async () => {
-            if (!ready) {
-              await fetchPreferences();
-            }
+            await fetchPreferences();
             router.push("/dashboard");
           }}
           className="w-full py-4 bg-primary text-white rounded-2xl font-bold text-[15px] flex items-center justify-center gap-2 hover:bg-primary-hover active:scale-[0.98] transition-all shadow-[0_4px_20px_rgba(59,130,246,0.35)]"
