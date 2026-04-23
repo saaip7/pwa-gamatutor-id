@@ -319,3 +319,19 @@ body {
     @apply font-sans;
   }
 }
+
+@keyframes drawer-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.drawer-backdrop-enter {
+  animation: drawer-backdrop-in 150ms ease-out forwards;
+}
+
+@keyframes drawer-sheet-in {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.drawer-sheet-enter {
+  animation: drawer-sheet-in 200ms ease-out forwards;
+}
