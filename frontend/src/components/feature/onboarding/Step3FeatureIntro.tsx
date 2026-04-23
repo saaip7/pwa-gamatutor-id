@@ -118,7 +118,7 @@ export function Step3FeatureIntro({ onComplete }: Step3FeatureIntroProps) {
             className="py-4 text-lg shadow-[0_8px_16px_-4px_rgba(59,130,246,0.3)] rounded-xl"
             leftIcon={<Sparkles className="w-5 h-5" />}
           >
-            Mulai Tour
+            Mulai Panduan
           </Button>
         </div>
       </motion.footer>

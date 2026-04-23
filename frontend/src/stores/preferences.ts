@@ -11,7 +11,7 @@ interface PreferencesState {
   fetchPreferences: () => Promise<void>;
   updateNotifications: (data: Record<string, unknown>) => Promise<void>;
   updateTheme: (theme: "light" | "dark" | "auto") => Promise<void>;
-  updateOnboarding: (data: { completed?: boolean; step?: number }) => Promise<void>;
+  updateOnboarding: (data: { completed?: boolean; step?: number; skipped_tour?: boolean }) => Promise<void>;
   updateFcmToken: (token: string) => Promise<void>;
   useStreakFreeze: () => Promise<void>;
   updateCharacter: (data: Partial<CharacterData>) => Promise<void>;
