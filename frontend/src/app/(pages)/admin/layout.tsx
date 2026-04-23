@@ -222,6 +222,21 @@ export default function AdminLayout({
                 );
               })}
             </nav>
+            <div className="p-3" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+              <button
+                onClick={() => {
+                  setSidebarOpen(false);
+                  handleLogout();
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors"
+                style={{ color: "#94a3b8" }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "#f8fafc"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "#94a3b8"; }}
+              >
+                <LogOut className="w-4 h-4" />
+                Keluar
+              </button>
+            </div>
           </aside>
         </>
       )}
