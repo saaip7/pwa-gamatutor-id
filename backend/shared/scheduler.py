@@ -66,11 +66,12 @@ def _classify_activity(prefs):
 def _sent_today(user_id, notif_type):
     """Check if a notification of this type was already sent today. Dedup by type."""
     today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
-    return mongo.db.notifications.find_one({
+    result = mongo.db.notifications.find_one({
         "user_id": user_id,
         "type": notif_type,
         "created_at": {"$gte": today_start},
     })
+    return result is not None
 
 
 SMART_REMINDER_MESSAGES = {
