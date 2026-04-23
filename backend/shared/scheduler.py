@@ -169,7 +169,7 @@ def job_deadline_reminder():
         if _is_quiet_hours(prefs):
             continue
 
-        # Dedup: max 1 deadline_reminder per card per 12 hours
+        # [FLAG NOTIF] test: disabled dedup, prod: enabled
         task_name = card.get("task_name", "Tugas")
         existing = mongo.db.notifications.find_one({
             "user_id": user_id,
@@ -217,6 +217,7 @@ def job_smart_reminder():
     })
 
     counts = {"A": 0, "B": 0, "C": 0}
+    sent_tokens = set()  # Token-level dedup: prevent duplicate push to same FCM token
 
     for prefs in users:
         user_id = prefs["user_id"]
@@ -224,7 +225,7 @@ def job_smart_reminder():
         if _is_quiet_hours(prefs):
             continue
 
-        # Dedup: max 1 smart_reminder per day per user
+        # [FLAG NOTIF] test: disabled dedup, prod: enabled
         if _sent_today(user_id, "smart_reminder"):
             continue
 
@@ -236,12 +237,13 @@ def job_smart_reminder():
             title=title, description=body,
         )
         token = prefs.get("fcm_token")
-        if token:
+        if token and token not in sent_tokens:
             send_push(token, title, body, {"type": "smart_reminder", "tier": tier})
+            sent_tokens.add(token)
 
         counts[tier] += 1
 
-    logger.info(f"[Scheduler] Smart reminder: A={counts['A']} B={counts['B']} C={counts['C']}")
+    logger.info(f"[Scheduler] Smart reminder: A={counts['A']} B={counts['B']} C={counts['C']} (unique tokens: {len(sent_tokens)})")
 
 
 # ---------------------------------------------------------------------------
@@ -257,6 +259,7 @@ def job_streak_nudge():
     })
 
     nudged = 0
+    sent_tokens = set()  # Token-level dedup: prevent duplicate push to same FCM token
     for prefs in users:
         user_id = prefs["user_id"]
 
@@ -272,7 +275,7 @@ def job_streak_nudge():
         if streak_count < 2:
             continue
 
-        # Dedup: max 1 streak_nudge per day
+        # [FLAG NOTIF] test: disabled dedup, prod: enabled
         if _sent_today(user_id, "streak_nudge"):
             continue
 
@@ -284,12 +287,13 @@ def job_streak_nudge():
             title=title, description=body,
         )
         token = prefs.get("fcm_token")
-        if token:
+        if token and token not in sent_tokens:
             send_push(token, title, body, {"type": "streak_nudge"})
+            sent_tokens.add(token)
 
         nudged += 1
 
-    logger.info(f"[Scheduler] Streak nudge: {nudged} sent")
+    logger.info(f"[Scheduler] Streak nudge: {nudged} sent (unique tokens: {len(sent_tokens)})")
 
 
 # ---------------------------------------------------------------------------
@@ -323,6 +327,7 @@ def job_social_presence():
     })
 
     notified = 0
+    sent_tokens = set()  # Token-level dedup: prevent duplicate push to same FCM token
     for prefs in users:
         user_id = prefs["user_id"]
 
@@ -331,7 +336,7 @@ def job_social_presence():
         if _is_quiet_hours(prefs):
             continue
 
-        # Dedup: max 1 per day
+        # [FLAG NOTIF] test: disabled dedup, prod: enabled
         if _sent_today(user_id, "social"):
             continue
 
@@ -343,12 +348,13 @@ def job_social_presence():
             title=title, description=body,
         )
         token = prefs.get("fcm_token")
-        if token:
+        if token and token not in sent_tokens:
             send_push(token, title, body, {"type": "social_presence"})
+            sent_tokens.add(token)
 
         notified += 1
 
-    logger.info(f"[Scheduler] Social presence: {notified} sent ({count} active users)")
+    logger.info(f"[Scheduler] Social presence: {notified} sent ({count} active users, unique tokens: {len(sent_tokens)})")
 
 
 # ---------------------------------------------------------------------------
