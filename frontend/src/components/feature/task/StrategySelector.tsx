@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { Brain, ChevronDown, Check, Loader2 } from "lucide-react";
+import { Brain, ChevronDown, Check, Loader2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
+import { useAnalyticsStore } from "@/stores/analytics";
 
 interface LearningStrategy {
   _id: string;
@@ -22,6 +23,13 @@ export function StrategySelector({ value, onChange }: StrategySelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const analyticsStrategies = useAnalyticsStore((s) => s.strategies);
+  const fetchStrategies = useAnalyticsStore((s) => s.fetchStrategies);
+
+  const topStrategyName = analyticsStrategies?.strategies?.[0]?.hasSufficientData
+    ? analyticsStrategies.strategies[0].name
+    : null;
+
   useEffect(() => {
     api
       .get<LearningStrategy[]>("/learningstrats")
@@ -29,6 +37,12 @@ export function StrategySelector({ value, onChange }: StrategySelectorProps) {
       .catch(() => setStrategies([]))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!analyticsStrategies) {
+      fetchStrategies().catch(() => {});
+    }
+  }, [analyticsStrategies, fetchStrategies]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -91,6 +105,7 @@ export function StrategySelector({ value, onChange }: StrategySelectorProps) {
         <div className="mt-1 bg-white border border-neutral-200 rounded-xl shadow-lg overflow-hidden z-50">
           {strategies.map((strat) => {
             const isSelected = value === strat.learning_strat_name;
+            const isRecommended = topStrategyName === strat.learning_strat_name && !isSelected;
             return (
               <button
                 key={strat._id}
@@ -117,14 +132,22 @@ export function StrategySelector({ value, onChange }: StrategySelectorProps) {
                   {isSelected && <Check className="w-3 h-3" />}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p
-                    className={cn(
-                      "text-sm font-medium truncate",
-                      isSelected && "font-bold"
+                  <div className="flex items-center gap-2">
+                    <p
+                      className={cn(
+                        "text-sm font-medium truncate",
+                        isSelected && "font-bold"
+                      )}
+                    >
+                      {strat.learning_strat_name}
+                    </p>
+                    {isRecommended && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-[1px] rounded-md bg-purple-50 text-purple-600 text-[10px] font-bold shrink-0">
+                        <Sparkles className="w-2.5 h-2.5" />
+                        Rekomendasi
+                      </span>
                     )}
-                  >
-                    {strat.learning_strat_name}
-                  </p>
+                  </div>
                   {strat.description && (
                     <p className="text-[11px] text-neutral-400 truncate mt-0.5">
                       {strat.description}
