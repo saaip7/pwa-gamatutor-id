@@ -112,8 +112,8 @@ export default function AdminCoursesPage() {
         style={{ background: "#fff" }}
       >
         <form onSubmit={handleAdd}>
-          <div className="flex items-end gap-3">
-            <div className="flex-1" style={{ minWidth: 0 }}>
+          <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+            <div className="flex-1 sm:flex-none sm:w-[140px]" style={{ minWidth: 0 }}>
               <label className="block text-sm font-medium text-neutral-700 mb-1.5">Course Code</label>
               <input
                 type="text"
@@ -125,7 +125,7 @@ export default function AdminCoursesPage() {
                 style={{ background: "#f9fafb" }}
               />
             </div>
-            <div style={{ flex: 2, minWidth: 0 }}>
+            <div className="flex-1" style={{ minWidth: 0 }}>
               <label className="block text-sm font-medium text-neutral-700 mb-1.5">Course Name</label>
               <input
                 type="text"
@@ -140,7 +140,7 @@ export default function AdminCoursesPage() {
             <button
               type="submit"
               disabled={adding}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-white shrink-0 disabled:opacity-50"
+              className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-white shrink-0 disabled:opacity-50"
               style={{ background: "#3B82F6" }}
               onMouseEnter={(e) => { if (!adding) e.currentTarget.style.background = "#2563eb"; }}
               onMouseLeave={(e) => { if (!adding) e.currentTarget.style.background = "#3B82F6"; }}
@@ -206,7 +206,7 @@ export default function AdminCoursesPage() {
                       <button
                         onClick={() => handleDelete(course.course_code)}
                         disabled={deleting === course.course_code}
-                        className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
+                        className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs text-red-500 hover:bg-red-50 active:bg-red-100 transition-colors disabled:opacity-50"
                         title="Hapus course"
                       >
                         {deleting === course.course_code ? (

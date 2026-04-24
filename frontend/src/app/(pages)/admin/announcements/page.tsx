@@ -139,8 +139,8 @@ export default function AdminAnnouncementsPage() {
           <span className="text-xs text-neutral-400">ke semua device</span>
         </div>
         <form onSubmit={handleSendPush}>
-          <div className="flex items-end gap-3">
-            <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+            <div className="flex-1" style={{ minWidth: 0 }}>
               <label className="block text-sm font-medium text-neutral-700 mb-1.5">Title</label>
               <input
                 type="text"
@@ -152,7 +152,7 @@ export default function AdminAnnouncementsPage() {
                 style={{ background: "#f9fafb" }}
               />
             </div>
-            <div style={{ flex: 2, minWidth: 0 }}>
+            <div className="flex-1" style={{ minWidth: 0 }}>
               <label className="block text-sm font-medium text-neutral-700 mb-1.5">Body</label>
               <input
                 type="text"
@@ -164,27 +164,29 @@ export default function AdminAnnouncementsPage() {
                 style={{ background: "#f9fafb" }}
               />
             </div>
-            <label className="flex items-center gap-1.5 shrink-0 pb-2.5 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={pushSaveDb}
-                onChange={(e) => setPushSaveDb(e.target.checked)}
-                disabled={pushSending}
-                className="rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
-              />
-              <span className="text-xs text-neutral-500 whitespace-nowrap">Simpan ke inbox</span>
-            </label>
-            <button
-              type="submit"
-              disabled={pushSending || !pushTitle.trim() || !pushBody.trim()}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-white shrink-0 disabled:opacity-50"
-              style={{ background: "#3B82F6" }}
-              onMouseEnter={(e) => { if (!pushSending) e.currentTarget.style.background = "#2563eb"; }}
-              onMouseLeave={(e) => { if (!pushSending) e.currentTarget.style.background = "#3B82F6"; }}
-            >
-              {pushSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-              Kirim
-            </button>
+            <div className="flex items-center gap-3 sm:gap-2">
+              <label className="flex items-center gap-1.5 shrink-0 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={pushSaveDb}
+                  onChange={(e) => setPushSaveDb(e.target.checked)}
+                  disabled={pushSending}
+                  className="rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-xs text-neutral-500 whitespace-nowrap">Simpan ke inbox</span>
+              </label>
+              <button
+                type="submit"
+                disabled={pushSending || !pushTitle.trim() || !pushBody.trim()}
+                className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-white shrink-0 disabled:opacity-50"
+                style={{ background: "#3B82F6" }}
+                onMouseEnter={(e) => { if (!pushSending) e.currentTarget.style.background = "#2563eb"; }}
+                onMouseLeave={(e) => { if (!pushSending) e.currentTarget.style.background = "#3B82F6"; }}
+              >
+                {pushSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                Kirim
+              </button>
+            </div>
           </div>
         </form>
       </div>
@@ -199,8 +201,8 @@ export default function AdminAnnouncementsPage() {
           <span className="text-xs text-neutral-400">modal popup saat user buka app</span>
         </div>
         <form onSubmit={handleCreate}>
-          <div className="flex items-end gap-3">
-            <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+            <div className="flex-1" style={{ minWidth: 0 }}>
               <label className="block text-sm font-medium text-neutral-700 mb-1.5">Title</label>
               <input
                 type="text"
@@ -212,7 +214,7 @@ export default function AdminAnnouncementsPage() {
                 style={{ background: "#f9fafb" }}
               />
             </div>
-            <div style={{ flex: 2, minWidth: 0 }}>
+            <div className="flex-1" style={{ minWidth: 0 }}>
               <label className="block text-sm font-medium text-neutral-700 mb-1.5">Body</label>
               <input
                 type="text"
@@ -227,7 +229,7 @@ export default function AdminAnnouncementsPage() {
             <button
               type="submit"
               disabled={annCreating || !annTitle.trim() || !annBody.trim()}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-white shrink-0 disabled:opacity-50"
+              className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-white shrink-0 disabled:opacity-50"
               style={{ background: "#d97706" }}
               onMouseEnter={(e) => { if (!annCreating) e.currentTarget.style.background = "#b45309"; }}
               onMouseLeave={(e) => { if (!annCreating) e.currentTarget.style.background = "#d97706"; }}
@@ -282,7 +284,7 @@ export default function AdminAnnouncementsPage() {
                   <button
                     onClick={() => handleToggle(a._id, a.is_active)}
                     disabled={togglingId === a._id}
-                    className="p-1.5 rounded text-neutral-400 hover:bg-neutral-50 transition-colors disabled:opacity-50"
+                    className="p-2 rounded-lg text-neutral-400 hover:bg-neutral-50 active:bg-neutral-100 transition-colors disabled:opacity-50"
                     title={a.is_active ? "Nonaktifkan" : "Aktifkan"}
                   >
                     {togglingId === a._id ? (
@@ -296,7 +298,7 @@ export default function AdminAnnouncementsPage() {
                   <button
                     onClick={() => handleDelete(a._id)}
                     disabled={deletingId === a._id}
-                    className="p-1.5 rounded text-neutral-400 hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-50"
+                    className="p-2 rounded-lg text-neutral-400 hover:bg-red-50 hover:text-red-500 active:bg-red-100 transition-colors disabled:opacity-50"
                     title="Hapus"
                   >
                     {deletingId === a._id ? (

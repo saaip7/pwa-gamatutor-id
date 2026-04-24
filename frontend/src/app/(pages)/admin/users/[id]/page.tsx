@@ -87,7 +87,7 @@ const LIST_ID_TO_COL: Record<string, string> = {
 
 // --- Layout helpers (inline styles for Tailwind v4 safety) ---
 const col = (gap: number): React.CSSProperties => ({ display: "flex", flexDirection: "column", gap: `${gap}px` });
-const grid2: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" };
+const grid2: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "12px" };
 
 function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
@@ -442,7 +442,7 @@ function BadgesTab({ badges }: { badges: AdminBadge[] }) {
         </span>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "10px" }}>
         {badges.map((badge) => (
           <div
             key={badge._id || badge.type || badge.name}
@@ -651,7 +651,7 @@ function AnalyticsTab({ userId }: { userId: string }) {
     <div style={col(20)}>
       {/* --- 1. Dashboard Stats --- */}
       <SectionLabel>Dashboard</SectionLabel>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
         <Card>
           <div className="flex items-center gap-3 p-4">
             <div
