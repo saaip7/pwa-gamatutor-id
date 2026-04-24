@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
 import { Trophy, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -17,24 +16,18 @@ export function AchievementBanner({ unlockedCount, totalCount, variant = "dashbo
   const percent = (unlockedCount / totalCount) * 100;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+    <div
       className={cn(
-        "relative overflow-hidden p-5",
+        "relative overflow-hidden p-5 active:scale-[0.98] transition-transform",
         variant === "dashboard" && "bg-white rounded-[24px] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.04)] border border-neutral-100",
-        variant === "progress" && "bg-white rounded-xl shadow-sm border border-neutral-200",
+        variant === "progress" && "bg-white rounded-xl shadow-sm border border-neutral-200 anim-fade-in-up",
         className
       )}
     >
       <Link href="/mastery" className="block group">
-        {/* Background Accent */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/10 transition-colors" />
 
         <div className="flex items-center gap-4 relative z-10">
-          {/* Trophy Icon Area */}
           <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500 border border-amber-100/50 shrink-0">
             <Trophy className="w-6 h-6" />
           </div>
@@ -61,6 +54,6 @@ export function AchievementBanner({ unlockedCount, totalCount, variant = "dashbo
           </div>
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 }

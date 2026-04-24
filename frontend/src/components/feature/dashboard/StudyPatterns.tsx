@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
 import { Brain, Clock, Calendar, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
@@ -29,11 +28,9 @@ export function StudyPatterns({ patterns }: StudyPatternsProps) {
   const days = parseInsight(patterns.productiveDays ?? "-");
 
   return (
-    <motion.div
-      className="px-6 mb-8"
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+    <div
+      className="px-6 mb-8 anim-fade-in-up"
+      style={{ animationDelay: "0.3s" }}
     >
       <div className="bg-white rounded-[24px] p-5 shadow-[0_8px_30px_-4px_rgba(0,0,0,0.04)] border border-neutral-100">
         <div className="flex items-center gap-3 mb-5">
@@ -67,11 +64,9 @@ export function StudyPatterns({ patterns }: StudyPatternsProps) {
                 </div>
                 {time.pct !== null && (
                   <div className="h-1.5 bg-neutral-200/60 rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full bg-primary rounded-full"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${time.pct}%` }}
-                      transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    <div
+                      className="h-full bg-primary rounded-full anim-grow-width"
+                      style={{ width: `${time.pct}%`, animationDelay: "0.4s" }}
                     />
                   </div>
                 )}
@@ -92,11 +87,9 @@ export function StudyPatterns({ patterns }: StudyPatternsProps) {
                 </div>
                 {days.pct !== null && (
                   <div className="h-1.5 bg-neutral-200/60 rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full bg-primary rounded-full"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${days.pct}%` }}
-                      transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    <div
+                      className="h-full bg-primary rounded-full anim-grow-width"
+                      style={{ width: `${days.pct}%`, animationDelay: "0.5s" }}
                     />
                   </div>
                 )}
@@ -115,6 +108,6 @@ export function StudyPatterns({ patterns }: StudyPatternsProps) {
           </Link>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
