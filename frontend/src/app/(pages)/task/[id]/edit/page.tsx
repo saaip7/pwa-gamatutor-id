@@ -229,10 +229,10 @@ export default function EditTaskPage() {
   }
 
   return (
-    <div className="w-full h-screen flex flex-col mx-auto bg-neutral-50 relative overflow-hidden max-w-md">
+    <div className="w-full h-screen flex flex-col bg-neutral-50 relative overflow-hidden">
 
       {/* Header */}
-      <header className="shrink-0 pt-14 pb-4 px-6 bg-white border-b border-neutral-100 flex items-center justify-between sticky top-0 z-40">
+      <header className="shrink-0 pt-14 pb-4 px-6 lg:pt-4 bg-white border-b border-neutral-100 flex items-center justify-between sticky top-0 z-40">
         <button
           onClick={() => router.back()}
           className="w-10 h-10 -ml-2 flex items-center justify-center text-neutral-500 hover:text-neutral-900 active:scale-95 transition-all"
@@ -249,11 +249,11 @@ export default function EditTaskPage() {
         </button>
       </header>
 
-      {/* MATCHING NEW TASK STRUCTURE: main with px-5 */}
-      <main className="flex-1 overflow-y-auto no-scrollbar px-5 pt-6 pb-28 relative">
+      <main className="flex-1 overflow-y-auto no-scrollbar relative">
+        <div className="max-w-md lg:max-w-2xl mx-auto px-5 pt-6 pb-28">
         <form className="flex flex-col gap-6" onSubmit={(e) => e.preventDefault()}>
 
-          {/* 1. Status Indicator (Needs -mx-5 to counteract main padding) */}
+          {/* Status Stepper */}
           <div className="-mx-5 -mt-6 mb-2">
             <TaskStatusStepper
               currentStatus={status}
@@ -262,10 +262,7 @@ export default function EditTaskPage() {
             />
           </div>
 
-          <CourseSelector
-            value={course}
-            onChange={setCourse}
-          />
+          <CourseSelector value={course} onChange={setCourse} />
 
           <div className="flex flex-col gap-2">
             <label className="text-sm font-bold text-neutral-900 flex items-center gap-2">
@@ -321,7 +318,6 @@ export default function EditTaskPage() {
             </div>
           </div>
 
-          {/* Opsi Lanjutan - Now will work perfectly with -mx-5 */}
           <AdvancedOptions onChange={setAdvanced} defaultValue={advanced} />
 
           {/* Meta & Danger Zone */}
@@ -347,6 +343,7 @@ export default function EditTaskPage() {
             </div>
           </section>
         </form>
+        </div>
       </main>
 
       <Drawer isOpen={isDateDrawerOpen} onClose={() => setIsDateDrawerOpen(false)} title="Ubah Tanggal">
