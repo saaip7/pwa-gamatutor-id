@@ -4,50 +4,67 @@ import React, { useState } from "react";
 import { Check, Sparkles, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-
-interface Subtask {
-  id: string;
-  text: string;
-  completed: boolean;
-}
+import type { BoardCard } from "@/types";
 
 interface FocusSubtaskListProps {
-  initialSubtasks: Subtask[];
-  onToggle: (id: string) => void;
-  onAdd: (text: string) => void;
-  onRemove: (id: string) => void;
+  card: BoardCard;
+  onToggle: (checklistId: string) => void;
+  onAdd: (title: string) => void;
+  onRemove: (checklistId: string) => void;
 }
 
-export function FocusSubtaskList({ initialSubtasks, onToggle, onAdd, onRemove }: FocusSubtaskListProps) {
-  const [newText, setNewText] = useState("");
+export function FocusSubtaskList({ card, onToggle, onAdd, onRemove }: FocusSubtaskListProps) {
+  const [newTitle, setNewTitle] = useState("");
   const [showInput, setShowInput] = useState(false);
 
-  const subtasks = initialSubtasks;
-  const allDone = subtasks.length > 0 && subtasks.every((s) => s.completed);
+  const checklists = card.checklists ?? [];
+  const completedCount = checklists.filter((c) => c.isCompleted).length;
+  const allDone = checklists.length > 0 && completedCount === checklists.length;
 
   const handleAdd = () => {
-    if (!newText.trim()) return;
-    onAdd(newText.trim());
-    setNewText("");
+    if (!newTitle.trim()) return;
+    onAdd(newTitle.trim());
+    setNewTitle("");
     setShowInput(false);
   };
 
   return (
     <section className="space-y-4">
-      <h3 className="text-[11px] font-black text-neutral-400 tracking-widest uppercase px-1">
-        Langkah-Langkah
-      </h3>
+      <div className="flex items-center justify-between px-1">
+        <h3 className="text-[11px] font-black text-neutral-400 tracking-widest uppercase">
+          Langkah-Langkah
+        </h3>
+        {checklists.length > 0 && (
+          <span className="text-[11px] font-bold text-neutral-400">
+            {completedCount}/{checklists.length}
+          </span>
+        )}
+      </div>
+
+      {checklists.length > 0 && (
+        <div className="px-1 w-full h-2 bg-neutral-100 rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-emerald-500 rounded-full"
+            initial={false}
+            animate={{ width: `${checklists.length > 0 ? (completedCount / checklists.length) * 100 : 0}%` }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          />
+        </div>
+      )}
 
       <div className="space-y-3">
         <AnimatePresence>
-          {subtasks.map((s) => (
-            <motion.button
-              key={s.id}
+          {checklists.map((c) => (
+            <motion.div
+              key={c.id}
               layout
-              onClick={() => onToggle(s.id)}
+              role="button"
+              tabIndex={0}
+              onClick={() => onToggle(c.id)}
+              onKeyDown={(e) => e.key === "Enter" && onToggle(c.id)}
               className={cn(
-                "w-full flex items-start gap-4 p-4 rounded-2xl border transition-all text-left group active:scale-[0.98]",
-                s.completed
+                "w-full flex items-start gap-4 p-4 rounded-2xl border transition-all text-left group active:scale-[0.98] cursor-pointer",
+                c.isCompleted
                   ? "bg-emerald-50 border-emerald-200 shadow-sm"
                   : "bg-white border-neutral-200 hover:border-neutral-300 shadow-sm"
               )}
@@ -55,33 +72,33 @@ export function FocusSubtaskList({ initialSubtasks, onToggle, onAdd, onRemove }:
               <div
                 className={cn(
                   "mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-300",
-                  s.completed
+                  c.isCompleted
                     ? "bg-emerald-500 border-emerald-500 text-white"
                     : "bg-white border-neutral-300 group-hover:border-primary"
                 )}
               >
-                {s.completed && <Check className="w-3.5 h-3.5 stroke-[4]" />}
+                {c.isCompleted && <Check className="w-3.5 h-3.5 stroke-[4]" />}
               </div>
               <span
                 className={cn(
                   "flex-1 text-base font-bold transition-all duration-300",
-                  s.completed
+                  c.isCompleted
                     ? "text-emerald-900/50 line-through"
                     : "text-neutral-800"
                 )}
               >
-                {s.text}
+                {c.title}
               </span>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onRemove(s.id);
+                  onRemove(c.id);
                 }}
-                className="shrink-0 w-7 h-7 flex items-center justify-center text-neutral-300 hover:text-error transition-colors"
+                className="shrink-0 w-7 h-7 flex items-center justify-center text-neutral-300 hover:text-red-500 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
-            </motion.button>
+            </motion.div>
           ))}
         </AnimatePresence>
 
@@ -106,8 +123,8 @@ export function FocusSubtaskList({ initialSubtasks, onToggle, onAdd, onRemove }:
           >
             <input
               type="text"
-              value={newText}
-              onChange={(e) => setNewText(e.target.value)}
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAdd()}
               placeholder="Langkah baru..."
               autoFocus
