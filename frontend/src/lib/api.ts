@@ -5,7 +5,6 @@ class ApiError extends Error {
   data: unknown;
 
   constructor(status: number, data: unknown) {
-    // Extract human-readable message from BE response
     let message = `API Error: ${status}`;
     if (data && typeof data === "object" && "message" in data) {
       message = String((data as { message: string }).message);
@@ -23,9 +22,71 @@ function getToken(): string | null {
   return localStorage.getItem("token");
 }
 
+function getRefreshToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("refreshToken");
+}
+
+function setTokens(access: string, refresh?: string) {
+  localStorage.setItem("token", access);
+  if (refresh) {
+    localStorage.setItem("refreshToken", refresh);
+  }
+}
+
+function clearTokens() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("refreshToken");
+}
+
+let refreshPromise: Promise<string | null> | null = null;
+
+async function attemptRefresh(): Promise<string | null> {
+  const rt = getRefreshToken();
+  if (!rt) return null;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken: rt }),
+    });
+
+    if (!res.ok) {
+      clearTokens();
+      return null;
+    }
+
+    const data = await res.json();
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+      return data.token;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function refreshAccessToken(): Promise<string | null> {
+  if (refreshPromise) return refreshPromise;
+  refreshPromise = attemptRefresh().finally(() => {
+    refreshPromise = null;
+  });
+  return refreshPromise;
+}
+
+function isNetworkError(e: unknown): boolean {
+  return (
+    e instanceof TypeError ||
+    (e instanceof Error && e.message === "Failed to fetch")
+  );
+}
+
 async function request<T>(
   path: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  _isRetry = false
 ): Promise<T> {
   const token = getToken();
   const headers: Record<string, string> = {
@@ -33,7 +94,6 @@ async function request<T>(
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 
-  // Merge caller headers (don't overwrite Content-Type if they set it)
   if (options.headers) {
     const caller = options.headers as Record<string, string>;
     Object.entries(caller).forEach(([k, v]) => {
@@ -54,13 +114,16 @@ async function request<T>(
       data = await res.text();
     }
 
-    // Handle 401 globally — clear token, redirect to login
-    if (res.status === 401 && typeof window !== "undefined") {
-      localStorage.removeItem("token");
+    if (res.status === 401 && !_isRetry && typeof window !== "undefined") {
+      const newToken = await refreshAccessToken();
+      if (newToken) {
+        return request<T>(path, options, true);
+      }
+
+      clearTokens();
       import("sonner").then(({ toast }) => {
         toast.error("Sesi berakhir", { description: "Silakan login kembali" });
       });
-      // Redirect to login if not already there
       if (!window.location.pathname.includes("/login")) {
         window.location.href = "/login";
       }
@@ -69,7 +132,6 @@ async function request<T>(
     throw new ApiError(res.status, data);
   }
 
-  // 204 No Content
   if (res.status === 204) return undefined as T;
 
   return res.json();
@@ -90,4 +152,4 @@ export const api = {
   delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
 };
 
-export { ApiError };
+export { ApiError, setTokens, clearTokens, isNetworkError };

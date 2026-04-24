@@ -12,9 +12,9 @@ import { usePreferencesStore } from "@/stores/preferences";
 import { useBadgesStore } from "@/stores/badges";
 
 export default function AccountPage() {
-  const { user, fetchProfile, logout } = useAuthStore();
-  const { preferences, fetchPreferences, updateTheme } = usePreferencesStore();
-  const { badges, fetchBadges } = useBadgesStore();
+  const { user, logout } = useAuthStore();
+  const { preferences, updateTheme } = usePreferencesStore();
+  const { badges } = useBadgesStore();
 
   const [language, setLanguage] = useState("id");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -22,10 +22,7 @@ export default function AccountPage() {
   const isDarkMode = preferences?.theme === "dark";
 
   useEffect(() => {
-    fetchProfile();
-    fetchPreferences();
-    fetchBadges();
-  }, [fetchProfile, fetchPreferences, fetchBadges]);
+  }, []);
 
   const displayName = user?.name || "Mahasiswa";
 
