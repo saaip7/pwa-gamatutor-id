@@ -35,6 +35,7 @@ from features.analytics.routes import analytics_bp
 from features.character.routes import character_bp
 from features.admin.routes import admin_bp
 from features.announcement.routes import announcement_bp
+from features.report.routes import report_bp
 
 load_dotenv()
 
@@ -83,6 +84,7 @@ app.register_blueprint(analytics_bp)
 app.register_blueprint(character_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(announcement_bp)
+app.register_blueprint(report_bp)
 
 
 @app.route("/", methods=["GET"])

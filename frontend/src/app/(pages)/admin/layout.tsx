@@ -14,6 +14,7 @@ import {
   Lightbulb,
   Loader2,
   Megaphone,
+  MessageCircleWarning,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth";
@@ -23,6 +24,7 @@ const navItems = [
   { href: "/admin/courses", label: "Courses", icon: BookOpen },
   { href: "/admin/strategies", label: "Strategies", icon: Lightbulb },
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
+  { href: "/admin/reports", label: "Laporan", icon: MessageCircleWarning },
   { href: "/admin/logs", label: "Logs", icon: ScrollText },
 ];
 
@@ -269,6 +271,8 @@ export default function AdminLayout({
                 ? "Strategies"
                 : pathname === "/admin/announcements"
                 ? "Announcements"
+                : pathname === "/admin/reports"
+                ? "Laporan"
                 : pathname === "/admin/logs"
                 ? "Logs"
                 : "Dashboard"}
