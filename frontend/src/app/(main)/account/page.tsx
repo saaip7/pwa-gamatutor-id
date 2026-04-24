@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Moon, Bell, Globe, User, ShieldCheck, LogOut, Flame, Archive, HelpCircle, Clock } from "lucide-react";
+import { Moon, Bell, Globe, User, ShieldCheck, LogOut, Flame, Archive, HelpCircle, Clock, MessageCircleWarning } from "lucide-react";
 import { AccountHeader } from "@/components/feature/account/AccountHeader";
 import { ProfileCard } from "@/components/feature/account/ProfileCard";
 import { SettingsGroup } from "@/components/feature/account/SettingsGroup";
@@ -137,12 +137,23 @@ export default function AccountPage() {
           />
         </SettingsGroup>
 
+        <SettingsGroup title="LAINNYA" delay={0.3}>
+          <SettingItem
+            type="link"
+            icon={MessageCircleWarning}
+            label="Laporkan Masalah"
+            href="/account/reports"
+            iconBgClass="bg-rose-100"
+            iconColorClass="text-rose-600"
+          />
+        </SettingsGroup>
+
         {/* Logout Section */}
         <motion.div
           className="pt-2"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.5, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
           <button
             onClick={handleLogout}
