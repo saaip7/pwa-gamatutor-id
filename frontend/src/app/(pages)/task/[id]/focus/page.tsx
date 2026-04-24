@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { FocusTimer } from "@/components/feature/task/focus/FocusTimer";
 import { FocusStrategyTip } from "@/components/feature/task/focus/FocusStrategyTip";
+import { FocusSubtaskList } from "@/components/feature/task/focus/FocusSubtaskList";
 import { Drawer } from "@/components/ui/Drawer";
 import { useBoardStore } from "@/stores/board";
 import { useFocusSessionStore } from "@/stores/focusSession";
@@ -417,10 +418,15 @@ export default function FocusModePage() {
           <Minimize2 className="w-5 h-5" />
         </button>
 
-        <div className="flex-1 px-4 text-center">
+        <div className="flex-1 px-4 text-center min-w-0">
           <h1 className="text-sm font-bold text-neutral-900 truncate">
             {card?.task_name ?? "Fokus Belajar"}
           </h1>
+          {card?.course_name && (
+            <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider truncate mt-0.5">
+              {card.course_name}
+            </p>
+          )}
         </div>
 
         <button
@@ -444,6 +450,49 @@ export default function FocusModePage() {
           personalBest={personalBestDisplay}
           startTime={(sessionStartTime || Date.now()) + totalHiddenMsRef.current}
         />
+
+        {card && (card.checklists?.length ?? 0) > 0 && (
+          <FocusSubtaskList
+            card={card}
+            onToggle={async (checklistId) => {
+              const updated = (card.checklists ?? []).map((c) =>
+                c.id === checklistId ? { ...c, isCompleted: !c.isCompleted } : c
+              );
+              setCard({ ...card, checklists: updated });
+              try {
+                await updateCard(id, { checklists: updated });
+              } catch {
+                setCard(card);
+                toast.error("Gagal memperbarui subtask");
+              }
+            }}
+            onAdd={async (title) => {
+              const newItem = {
+                id: crypto.randomUUID(),
+                title,
+                isCompleted: false,
+              };
+              const updated = [...(card.checklists ?? []), newItem];
+              setCard({ ...card, checklists: updated });
+              try {
+                await updateCard(id, { checklists: updated });
+              } catch {
+                setCard(card);
+                toast.error("Gagal menambahkan subtask");
+              }
+            }}
+            onRemove={async (checklistId) => {
+              const updated = (card.checklists ?? []).filter((c) => c.id !== checklistId);
+              setCard({ ...card, checklists: updated });
+              try {
+                await updateCard(id, { checklists: updated });
+              } catch {
+                setCard(card);
+                toast.error("Gagal menghapus subtask");
+              }
+            }}
+          />
+        )}
       </main>
 
       {/* Footer CTA — two buttons */}
