@@ -431,7 +431,14 @@ function KanbanBoardContent() {
         }
       }).catch((err) => {
         const msg = err instanceof Error ? err.message : "";
-        if (msg) toast.error(msg, { duration: 4000 });
+        if (msg.includes("refleksi")) {
+          toast("Isi refleksi terlebih dahulu untuk menyelesaikan tugas.", {
+            description: "Buka detail tugas, lalu ubah status ke Reflection.",
+            duration: 4000,
+          });
+        } else if (msg) {
+          toast.error(msg, { duration: 4000 });
+        }
         setColumns(storeColumns);
       });
       return;
