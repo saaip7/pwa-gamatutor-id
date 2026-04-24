@@ -149,7 +149,7 @@ export default function ProgressPage() {
           onCourseChange={handleCourseChange}
         />
 
-        <div className="flex flex-col gap-1 lg:grid lg:grid-cols-2 lg:gap-6 lg:items-stretch">
+        <div className="flex flex-col gap-1">
           {taskDistData ? (
             <TaskDistributionChart data={taskDistData} />
           ) : (
@@ -160,88 +160,87 @@ export default function ProgressPage() {
 
           <LearningStrategies
             strategies={strategyItems.length > 0 ? strategyItems : []}
-            className="mt-4 mb-4 lg:my-0 lg:h-full"
+            className="mt-4"
           />
-        </div>
-
-        <motion.div
-          className="bg-white border border-neutral-200 rounded-xl px-5 pb-5 pt-6 shadow-sm md:mt-4 mb-4 w-full"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-sm font-bold text-neutral-800 flex items-center gap-2">
-              Catatan Refleksi
-            </h3>
-            {reflectionNotes && reflectionNotes.length > 0 && (
-              <Link
-                href="/progress/reflection-notes"
-                className="text-[11px] font-bold text-primary flex items-center gap-1 hover:text-primary/80 transition-colors"
-              >
-                Lihat Semua
-                <ArrowRight className="w-3 h-3" />
-              </Link>
-            )}
-          </div>
-
-          {reflectionNotes && reflectionNotes.length > 0 ? (
-            <div className="space-y-3">
-              {reflectionNotes.slice(0, 3).map((note: ReflectionNote) => {
-                const formattedDate = note.completed_at
-                  ? new Date(note.completed_at).toLocaleDateString("id-ID", {
-                      day: "numeric",
-                      month: "short",
-                    })
-                  : null;
-
-                return (
-                  <div
-                    key={note.card_id}
-                    className="bg-neutral-50 border border-neutral-100 rounded-2xl p-4"
-                  >
-                    <p className="text-sm text-neutral-700 italic leading-relaxed line-clamp-2">
-                      &ldquo;{note.q3_improvement}&rdquo;
-                    </p>
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-2.5">
-                      <span className="text-xs font-semibold text-neutral-800 truncate max-w-[120px]">
-                        {note.task_name}
-                      </span>
-                      {note.course_code && (
-                        <>
-                          <span className="text-[10px] text-neutral-300">&#x2022;</span>
-                          <span className="text-[11px] text-neutral-500 font-medium">
-                            {note.course_code}
-                          </span>
-                        </>
-                      )}
-                      {formattedDate && (
-                        <>
-                          <span className="text-[10px] text-neutral-300">&#x2022;</span>
-                          <span className="text-[11px] text-neutral-400">
-                            {formattedDate}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-              {reflectionNotes.length > 3 && (
+          <motion.div
+            className="bg-white border border-neutral-200 rounded-xl px-5 pb-5 pt-6 shadow-sm md:mt-4 w-full"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-sm font-bold text-neutral-800 flex items-center gap-2">
+                Catatan Refleksi
+              </h3>
+              {reflectionNotes && reflectionNotes.length > 0 && (
                 <Link
                   href="/progress/reflection-notes"
-                  className="block text-center text-xs font-bold text-primary py-2 hover:text-primary/80 transition-colors"
+                  className="text-[11px] font-bold text-primary flex items-center gap-1 hover:text-primary/80 transition-colors"
                 >
-                  +{reflectionNotes.length - 3} catatan lainnya
+                  Lihat Semua
+                  <ArrowRight className="w-3 h-3" />
                 </Link>
               )}
             </div>
-          ) : (
-            <p className="text-sm text-neutral-400 text-center py-4">
-              Belum ada catatan refleksi. Tulis catatan saat menyelesaikan refleksi tugas!
-            </p>
-          )}
-        </motion.div>
+
+            {reflectionNotes && reflectionNotes.length > 0 ? (
+              <div className="space-y-3">
+                {reflectionNotes.slice(0, 3).map((note: ReflectionNote) => {
+                  const formattedDate = note.completed_at
+                    ? new Date(note.completed_at).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "short",
+                      })
+                    : null;
+
+                  return (
+                    <div
+                      key={note.card_id}
+                      className="bg-neutral-50 border border-neutral-100 rounded-2xl p-4"
+                    >
+                      <p className="text-sm text-neutral-700 italic leading-relaxed line-clamp-2">
+                        &ldquo;{note.q3_improvement}&rdquo;
+                      </p>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-2.5">
+                        <span className="text-xs font-semibold text-neutral-800 truncate max-w-[120px]">
+                          {note.task_name}
+                        </span>
+                        {note.course_code && (
+                          <>
+                            <span className="text-[10px] text-neutral-300">&#x2022;</span>
+                            <span className="text-[11px] text-neutral-500 font-medium">
+                              {note.course_code}
+                            </span>
+                          </>
+                        )}
+                        {formattedDate && (
+                          <>
+                            <span className="text-[10px] text-neutral-300">&#x2022;</span>
+                            <span className="text-[11px] text-neutral-400">
+                              {formattedDate}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+                {reflectionNotes.length > 3 && (
+                  <Link
+                    href="/progress/reflection-notes"
+                    className="block text-center text-xs font-bold text-primary py-2 hover:text-primary/80 transition-colors"
+                  >
+                    +{reflectionNotes.length - 3} catatan lainnya
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-neutral-400 text-center py-4">
+                Belum ada catatan refleksi. Tulis catatan saat menyelesaikan refleksi tugas!
+              </p>
+            )}
+          </motion.div>
+        </div>
       </div>
     </>
   );
