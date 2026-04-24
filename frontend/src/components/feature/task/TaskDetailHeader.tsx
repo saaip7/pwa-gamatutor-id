@@ -61,7 +61,7 @@ export function TaskDetailHeader({ column, taskId, onMoved, disabled }: TaskDeta
 
   return (
     <>
-      <header className="shrink-0 pt-14 pb-4 px-6 border-b border-neutral-100 flex items-center justify-between bg-white z-50">
+      <header className="shrink-0 pt-14 lg:pt-4 pb-4 px-6 border-b border-neutral-100 flex items-center justify-between bg-white z-50">
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.back()}

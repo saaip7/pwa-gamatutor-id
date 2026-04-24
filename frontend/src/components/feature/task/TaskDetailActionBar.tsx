@@ -143,7 +143,7 @@ export function TaskDetailActionBar({ taskId, status, taskName, isArchived = fal
   if (isArchived) {
     return (
       <>
-        <footer className="shrink-0 pb-[34px] pt-4 px-6 bg-white border-t border-neutral-100 flex flex-col">
+         <footer className="shrink-0 pb-[34px] lg:pb-4 pt-4 px-6 bg-white border-t border-neutral-100 flex flex-col">
           <button
             onClick={() => setShowUnarchiveDrawer(true)}
             className="w-full h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-base bg-emerald-600 text-white shadow-lg shadow-emerald-600/20 active:scale-[0.98] transition-all"
@@ -182,7 +182,8 @@ export function TaskDetailActionBar({ taskId, status, taskName, isArchived = fal
 
   return (
     <>
-      <footer className="shrink-0 pb-[34px] pt-4 px-6 bg-white border-t border-neutral-100 flex flex-col">
+       <footer className="shrink-0 pb-[34px] lg:pb-4 pt-4 px-6 bg-white border-t border-neutral-100 flex flex-col">
+
         {isPlanning && !hasPendingReflection && (
           <p className="text-[11px] text-neutral-500 text-center font-bold mb-4 flex items-center justify-center gap-1.5 bg-amber-50 py-2 rounded-lg border border-amber-100/50">
             <Lightbulb className="w-3.5 h-3.5 text-amber-500" />

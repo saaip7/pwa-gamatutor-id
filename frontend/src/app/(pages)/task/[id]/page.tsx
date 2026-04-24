@@ -100,7 +100,7 @@ export default function TaskDetailPage() {
 
   if (loading) {
     return (
-      <div className="w-full h-screen flex items-center justify-center bg-white max-w-md mx-auto">
+      <div className="w-full h-screen flex items-center justify-center bg-white">
         <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -108,7 +108,7 @@ export default function TaskDetailPage() {
 
   if (!card) {
     return (
-      <div className="w-full h-screen flex flex-col items-center justify-center bg-white max-w-md mx-auto gap-3">
+      <div className="w-full h-screen flex flex-col items-center justify-center bg-white gap-3">
         <p className="text-sm text-neutral-500 font-medium">Tugas tidak ditemukan</p>
         <button
           onClick={() => router.back()}
@@ -127,8 +127,149 @@ export default function TaskDetailPage() {
   const goalText = card.goal_check?.goal_text || "";
   const isArchived = card.archived === true;
 
+  const infoCard = (
+    <section className="bg-neutral-50 border border-neutral-100 rounded-2xl shadow-sm overflow-hidden">
+      <div className="px-4 py-3 flex items-center gap-3">
+        <div className={cn(
+          "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+          card.deadline ? "bg-blue-50" : "bg-neutral-100"
+        )}>
+          <Calendar className={cn("w-4 h-4", card.deadline ? "text-primary" : "text-neutral-400")} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">
+            Deadline
+          </span>
+          <p className={cn(
+            "text-sm font-bold leading-tight",
+            card.deadline ? "text-neutral-900" : "text-neutral-400"
+          )}>
+            {formatDeadline(card.deadline)}
+          </p>
+        </div>
+      </div>
+      <div className="border-t border-neutral-100 grid grid-cols-2 divide-x divide-neutral-100">
+        <div className="px-4 py-2.5 flex items-center gap-2">
+          <Flag className={cn(
+            "w-3.5 h-3.5 shrink-0",
+            card.priority === "High" ? "text-error"
+              : card.priority === "Medium" ? "text-amber-500"
+              : "text-neutral-400"
+          )} />
+          <div className="min-w-0">
+            <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-widest block leading-none">
+              Prioritas
+            </span>
+            <span className={cn(
+              "text-xs font-bold",
+              card.priority === "High" ? "text-error"
+                : card.priority === "Medium" ? "text-amber-600"
+                : "text-neutral-500"
+            )}>
+              {card.priority || "Medium"}
+            </span>
+          </div>
+        </div>
+        <div className="px-4 py-2.5 flex items-center gap-2">
+          <BarChart2 className={cn(
+            "w-3.5 h-3.5 shrink-0",
+            card.difficulty === "Hard" ? "text-rose-500"
+              : card.difficulty === "Medium" ? "text-amber-500"
+              : "text-emerald-500"
+          )} />
+          <div className="min-w-0">
+            <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-widest block leading-none">
+              Kesulitan
+            </span>
+            <span className={cn(
+              "text-xs font-bold",
+              card.difficulty === "Hard" ? "text-rose-600"
+                : card.difficulty === "Medium" ? "text-amber-600"
+                : "text-emerald-600"
+            )}>
+              {card.difficulty === "Hard" ? "Sulit" : card.difficulty === "Medium" ? "Sedang" : "Mudah"}
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+
+  const gradesSection = (card.pre_test_grade != null || card.post_test_grade != null) && (
+    <section className="space-y-3">
+      <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
+        <TrendingUp className="w-4 h-4 text-neutral-400" />
+        Nilai
+      </h3>
+      <div className="bg-neutral-50 border border-neutral-100 rounded-2xl overflow-hidden">
+        <div className="grid grid-cols-2 divide-x divide-neutral-100">
+          <div className="px-5 py-4 text-center">
+            <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest block">
+              Pre-test
+            </span>
+            <span className="text-2xl font-black text-neutral-900 block mt-1">
+              {card.pre_test_grade ?? "—"}
+            </span>
+          </div>
+          <div className="px-5 py-4 text-center">
+            <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest block">
+              Post-test
+            </span>
+            <span className="text-2xl font-black text-neutral-900 block mt-1">
+              {card.post_test_grade ?? "—"}
+            </span>
+          </div>
+        </div>
+        {card.pre_test_grade != null && card.post_test_grade != null && card.pre_test_grade > 0 && (
+          <div className="border-t border-neutral-100 px-5 py-3 flex items-center justify-center gap-2">
+            <TrendingUp className={cn(
+              "w-4 h-4",
+              card.post_test_grade > card.pre_test_grade
+                ? "text-emerald-500"
+                : card.post_test_grade < card.pre_test_grade
+                  ? "text-rose-500"
+                  : "text-neutral-400"
+            )} />
+            <span className={cn(
+              "text-sm font-bold",
+              card.post_test_grade > card.pre_test_grade
+                ? "text-emerald-600"
+                : card.post_test_grade < card.pre_test_grade
+                  ? "text-rose-600"
+                  : "text-neutral-500"
+            )}>
+              {(() => {
+                const diff = ((card.post_test_grade! - card.pre_test_grade!) / card.pre_test_grade! * 100);
+                return diff > 0 ? `+${diff.toFixed(0)}%` : `${diff.toFixed(0)}%`;
+              })()}
+            </span>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+
+  const reflectionSection = card.reflection?.q3_improvement && (
+    <section className="space-y-3">
+      <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
+        <BookOpen className="w-4 h-4 text-neutral-400" />
+        Catatan untuk Dirimu
+      </h3>
+      <div className="bg-amber-50/50 border border-amber-100/60 rounded-2xl p-5">
+        <p className="text-sm text-neutral-700 font-medium leading-relaxed italic">
+          "{card.reflection.q3_improvement}"
+        </p>
+        {card.reflection.completed_at && (
+          <p className="text-[10px] text-neutral-400 font-bold mt-3 uppercase tracking-wider">
+            Ditulis {new Date(card.reflection.completed_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+          </p>
+        )}
+      </div>
+    </section>
+  );
+
   return (
-    <div className="w-full h-screen flex flex-col mx-auto bg-white relative overflow-hidden max-w-md">
+    <div className="w-full h-screen flex flex-col bg-white relative">
       <TaskDetailHeader
         column={card.column}
         taskId={id}
@@ -136,331 +277,162 @@ export default function TaskDetailPage() {
         disabled={isArchived}
       />
 
-      <main className="flex-1 overflow-y-auto no-scrollbar px-6 py-6 space-y-8 pb-32">
-        {/* Archived Banner */}
-        {isArchived && (
-          <div className="flex items-center gap-3 px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-2xl">
-            <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center shrink-0">
-              <Archive className="w-4 h-4 text-neutral-400" />
-            </div>
-            <p className="text-sm font-medium text-neutral-500">
-              Tugas ini telah diarsipkan
-            </p>
-          </div>
-        )}
-
-        {/* Section 1: Title & Status */}
-        <section className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Badge variant="blue" icon={MapPin}>
-              {status}
-            </Badge>
-            {card.course_name && (
-              <>
-                <span className="text-[11px] font-bold text-neutral-400">•</span>
-                <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
-                  {card.course_name}
-                </span>
-              </>
-            )}
-          </div>
-
-          <h2 className="text-2xl font-black text-neutral-900 leading-[1.15] tracking-tight">
-            {card.task_name}
-          </h2>
-
-          <GoalSection goal={goalText || "Belum ada tujuan"} />
-        </section>
-
-        {/* Section 2: Strategy & Records */}
-        <section className="flex flex-wrap gap-2.5">
-          <Badge variant="purple" icon={Zap}>
-            {card.learning_strategy || "Belum ada strategi"}
-          </Badge>
-          <Badge variant="emerald" icon={Trophy}>
-            Terbaik: {formatPersonalBest(card.personal_best) || "—"}
-          </Badge>
-        </section>
-
-        {/* Section 3: Info — Deadline + Priority & Difficulty */}
-        <section className="bg-neutral-50 border border-neutral-100 rounded-2xl shadow-sm overflow-hidden">
-          {/* Row 1: Deadline */}
-          <div className="px-4 py-3 flex items-center gap-3">
-            <div className={cn(
-              "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
-              card.deadline ? "bg-blue-50" : "bg-neutral-100"
-            )}>
-              <Calendar className={cn("w-4 h-4", card.deadline ? "text-primary" : "text-neutral-400")} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">
-                Deadline
-              </span>
-              <p className={cn(
-                "text-sm font-bold leading-tight",
-                card.deadline ? "text-neutral-900" : "text-neutral-400"
-              )}>
-                {formatDeadline(card.deadline)}
-              </p>
-            </div>
-          </div>
-          {/* Row 2: Priority & Difficulty */}
-          <div className="border-t border-neutral-100 grid grid-cols-2 divide-x divide-neutral-100">
-            <div className="px-4 py-2.5 flex items-center gap-2">
-              <Flag className={cn(
-                "w-3.5 h-3.5 shrink-0",
-                card.priority === "High" ? "text-error"
-                  : card.priority === "Medium" ? "text-amber-500"
-                  : "text-neutral-400"
-              )} />
-              <div className="min-w-0">
-                <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-widest block leading-none">
-                  Prioritas
-                </span>
-                <span className={cn(
-                  "text-xs font-bold",
-                  card.priority === "High" ? "text-error"
-                    : card.priority === "Medium" ? "text-amber-600"
-                    : "text-neutral-500"
-                )}>
-                  {card.priority || "Medium"}
-                </span>
-              </div>
-            </div>
-            <div className="px-4 py-2.5 flex items-center gap-2">
-              <BarChart2 className={cn(
-                "w-3.5 h-3.5 shrink-0",
-                card.difficulty === "Hard" ? "text-rose-500"
-                  : card.difficulty === "Medium" ? "text-amber-500"
-                  : "text-emerald-500"
-              )} />
-              <div className="min-w-0">
-                <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-widest block leading-none">
-                  Kesulitan
-                </span>
-                <span className={cn(
-                  "text-xs font-bold",
-                  card.difficulty === "Hard" ? "text-rose-600"
-                    : card.difficulty === "Medium" ? "text-amber-600"
-                    : "text-emerald-600"
-                )}>
-                  {card.difficulty === "Hard" ? "Sulit" : card.difficulty === "Medium" ? "Sedang" : "Mudah"}
-                </span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Section 4: Description */}
-        <section className="space-y-3">
-          <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
-            <AlignLeft className="w-4 h-4 text-neutral-400" />
-            Deskripsi
-          </h3>
-          {card.description ? (
-            <div className="bg-neutral-50 rounded-2xl p-5 border border-neutral-100 leading-relaxed text-sm text-neutral-600 font-medium">
-              {card.description}
-            </div>
-          ) : (
-            <div className="bg-neutral-50 rounded-2xl p-5 border border-dashed border-neutral-200 text-center">
-              <p className="text-xs text-neutral-400 font-medium">Belum ada deskripsi</p>
-            </div>
-          )}
-        </section>
-
-        {/* Section 5: Checklists / Subtasks */}
-        <section className={cn("space-y-4", isArchived && "opacity-60")}>
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
-              <CheckSquare className="w-4 h-4 text-neutral-400" />
-              Subtask
-            </h3>
-            {checklists.length > 0 && (
-              <div className="flex items-center gap-3">
-                <div className="w-20 h-2 bg-neutral-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary rounded-full transition-all duration-500"
-                    style={{ width: `${progressPercent}%` }}
-                  ></div>
+      <main className="flex-1 overflow-y-auto no-scrollbar">
+        <div className="px-6 py-6 pb-36 lg:pb-6 lg:max-w-5xl lg:mx-auto lg:grid lg:grid-cols-[340px_1fr] lg:divide-x lg:divide-neutral-100">
+          {/* === LEFT: Info Panel === */}
+          <div className="space-y-5 lg:px-8 lg:py-0">
+            {isArchived && (
+              <div className="flex items-center gap-3 px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-2xl">
+                <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center shrink-0">
+                  <Archive className="w-4 h-4 text-neutral-400" />
                 </div>
-                <span className="text-[11px] font-bold text-neutral-500">
-                  {completedCount}/{checklists.length}
-                </span>
+                <p className="text-sm font-medium text-neutral-500">Tugas ini telah diarsipkan</p>
               </div>
             )}
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant="blue" icon={MapPin}>{status}</Badge>
+                {card.course_name && (
+                  <>
+                    <span className="text-[11px] font-bold text-neutral-400">•</span>
+                    <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">{card.course_name}</span>
+                  </>
+                )}
+              </div>
+              <h2 className="text-2xl font-black text-neutral-900 leading-[1.15] tracking-tight">
+                {card.task_name}
+              </h2>
+            </div>
+
+            <GoalSection goal={goalText || "Belum ada tujuan"} />
+
+            <div className="flex flex-wrap gap-2.5">
+              <Badge variant="purple" icon={Zap}>{card.learning_strategy || "Belum ada strategi"}</Badge>
+              <Badge variant="emerald" icon={Trophy}>Terbaik: {formatPersonalBest(card.personal_best) || "—"}</Badge>
+            </div>
+
+            {infoCard}
+
+            {gradesSection}
+
+            {reflectionSection}
           </div>
 
-          {checklists.length > 0 ? (
-            <div className="space-y-2.5">
-              {checklists.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => toggleChecklist(item.id)}
-                  className={cn(
-                    "w-full flex items-center gap-3 p-4 rounded-2xl border transition-all text-left active:scale-[0.98]",
-                    item.isCompleted
-                      ? "bg-neutral-50 border-neutral-100 opacity-60 shadow-none"
-                      : "bg-white border-neutral-200 shadow-sm"
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors",
-                      item.isCompleted
-                        ? "bg-primary border-primary text-white"
-                        : "border-neutral-300"
-                    )}
-                  >
-                    {item.isCompleted && <CheckSquare className="w-3.5 h-3.5" />}
-                  </div>
-                  <span
-                    className={cn(
-                      "text-sm font-medium transition-all",
-                      item.isCompleted
-                        ? "text-neutral-400 line-through"
-                        : "text-neutral-800"
-                    )}
-                  >
-                    {item.title}
-                  </span>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="bg-neutral-50 rounded-2xl p-5 border border-dashed border-neutral-200 text-center">
-              <p className="text-xs text-neutral-400 font-medium">Belum ada subtask</p>
-            </div>
-          )}
-        </section>
-
-        {/* Section 6: References / Links */}
-        <section className="space-y-3">
-          <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
-            <LinkIcon className="w-4 h-4 text-neutral-400" />
-            Referensi
-          </h3>
-          {card.links && card.links.length > 0 ? (
-            <div className="grid gap-3">
-              {card.links.map((link, idx) => (
-                <a
-                  key={link.id || idx}
-                  href={link.url.startsWith("http") ? link.url : `https://${link.url}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3.5 p-4 bg-white border border-neutral-200 rounded-2xl active:scale-[0.98] transition-all shadow-sm group"
-                >
-                  <div
-                    className={cn(
-                      "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border",
-                      link.url.includes("youtube") || link.url.includes("youtu.be")
-                        ? "bg-red-50 border-red-100 text-error"
-                        : link.url.includes("visualgo") || link.url.includes("github")
-                          ? "bg-blue-50 border-blue-100 text-primary"
-                          : "bg-emerald-50 border-emerald-100 text-emerald-600"
-                    )}
-                  >
-                    {link.url.includes("youtube") || link.url.includes("youtu.be") ? (
-                      <Youtube className="w-5 h-5" />
-                    ) : link.url.includes("visualgo") ? (
-                      <Globe className="w-5 h-5" />
-                    ) : (
-                      <FileText className="w-5 h-5" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-neutral-900 truncate group-hover:text-primary transition-colors">
-                      {link.title}
-                    </p>
-                    <p className="text-[11px] text-neutral-400 truncate mt-0.5 font-medium">
-                      {link.url}
-                    </p>
-                  </div>
-                  <ExternalLink className="w-4 h-4 text-neutral-300 group-hover:text-primary transition-colors" />
-                </a>
-              ))}
-            </div>
-          ) : (
-            <div className="bg-neutral-50 rounded-2xl p-5 border border-dashed border-neutral-200 text-center">
-              <p className="text-xs text-neutral-400 font-medium">Belum ada reference</p>
-            </div>
-          )}
-        </section>
-
-        {/* Section: Nilai (Pre-test / Post-test) */}
-        {(card.pre_test_grade != null || card.post_test_grade != null) && (
-          <section className="space-y-3">
-            <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
-              <TrendingUp className="w-4 h-4 text-neutral-400" />
-              Nilai
-            </h3>
-            <div className="bg-neutral-50 border border-neutral-100 rounded-2xl overflow-hidden">
-              <div className="grid grid-cols-2 divide-x divide-neutral-100">
-                <div className="px-5 py-4 text-center">
-                  <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest block">
-                    Pre-test
-                  </span>
-                  <span className="text-2xl font-black text-neutral-900 block mt-1">
-                    {card.pre_test_grade ?? "—"}
-                  </span>
+          {/* === RIGHT: Content Area === */}
+          <div className="space-y-6 mt-6 lg:mt-0 lg:px-8 lg:py-0">
+            <section className="space-y-3">
+              <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
+                <AlignLeft className="w-4 h-4 text-neutral-400" />
+                Deskripsi
+              </h3>
+              {card.description ? (
+                <div className="bg-neutral-50 rounded-2xl p-5 border border-neutral-100 leading-relaxed text-sm text-neutral-600 font-medium">
+                  {card.description}
                 </div>
-                <div className="px-5 py-4 text-center">
-                  <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest block">
-                    Post-test
-                  </span>
-                  <span className="text-2xl font-black text-neutral-900 block mt-1">
-                    {card.post_test_grade ?? "—"}
-                  </span>
+              ) : (
+                <div className="bg-neutral-50 rounded-2xl p-5 border border-dashed border-neutral-200 text-center">
+                  <p className="text-xs text-neutral-400 font-medium">Belum ada deskripsi</p>
                 </div>
+              )}
+            </section>
+
+            <section className={cn("space-y-4", isArchived && "opacity-60")}>
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
+                  <CheckSquare className="w-4 h-4 text-neutral-400" />
+                  Subtask
+                </h3>
+                {checklists.length > 0 && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-20 h-2 bg-neutral-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
+                    </div>
+                    <span className="text-[11px] font-bold text-neutral-500">{completedCount}/{checklists.length}</span>
+                  </div>
+                )}
               </div>
-              {card.pre_test_grade != null && card.post_test_grade != null && card.pre_test_grade > 0 && (
-                <div className="border-t border-neutral-100 px-5 py-3 flex items-center justify-center gap-2">
-                  <TrendingUp className={cn(
-                    "w-4 h-4",
-                    card.post_test_grade > card.pre_test_grade
-                      ? "text-emerald-500"
-                      : card.post_test_grade < card.pre_test_grade
-                        ? "text-rose-500"
-                        : "text-neutral-400"
-                  )} />
-                  <span className={cn(
-                    "text-sm font-bold",
-                    card.post_test_grade > card.pre_test_grade
-                      ? "text-emerald-600"
-                      : card.post_test_grade < card.pre_test_grade
-                        ? "text-rose-600"
-                        : "text-neutral-500"
-                  )}>
-                    {(() => {
-                      const diff = ((card.post_test_grade! - card.pre_test_grade!) / card.pre_test_grade! * 100);
-                      return diff > 0 ? `+${diff.toFixed(0)}%` : `${diff.toFixed(0)}%`;
-                    })()}
-                  </span>
+              {checklists.length > 0 ? (
+                <div className="space-y-2.5">
+                  {checklists.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => toggleChecklist(item.id)}
+                      className={cn(
+                        "w-full flex items-center gap-3 p-4 rounded-2xl border transition-all text-left active:scale-[0.98]",
+                        item.isCompleted ? "bg-neutral-50 border-neutral-100 opacity-60 shadow-none" : "bg-white border-neutral-200 shadow-sm"
+                      )}
+                    >
+                      <div className={cn(
+                        "w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors",
+                        item.isCompleted ? "bg-primary border-primary text-white" : "border-neutral-300"
+                      )}>
+                        {item.isCompleted && <CheckSquare className="w-3.5 h-3.5" />}
+                      </div>
+                      <span className={cn(
+                        "text-sm font-medium transition-all",
+                        item.isCompleted ? "text-neutral-400 line-through" : "text-neutral-800"
+                      )}>
+                        {item.title}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-neutral-50 rounded-2xl p-5 border border-dashed border-neutral-200 text-center">
+                  <p className="text-xs text-neutral-400 font-medium">Belum ada subtask</p>
                 </div>
               )}
-            </div>
-          </section>
-        )}
+            </section>
 
-        {/* Section: Catatan Refleksi (q3_improvement) */}
-        {card.reflection?.q3_improvement && (
-          <section className="space-y-3">
-            <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
-              <BookOpen className="w-4 h-4 text-neutral-400" />
-              Catatan untuk Dirimu
-            </h3>
-            <div className="bg-amber-50/50 border border-amber-100/60 rounded-2xl p-5">
-              <p className="text-sm text-neutral-700 font-medium leading-relaxed italic">
-                "{card.reflection.q3_improvement}"
-              </p>
-              {card.reflection.completed_at && (
-                <p className="text-[10px] text-neutral-400 font-bold mt-3 uppercase tracking-wider">
-                  Ditulis {new Date(card.reflection.completed_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
-                </p>
+            <section className="space-y-3">
+              <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
+                <LinkIcon className="w-4 h-4 text-neutral-400" />
+                Referensi
+              </h3>
+              {card.links && card.links.length > 0 ? (
+                <div className="grid gap-3">
+                  {card.links.map((link, idx) => (
+                    <a
+                      key={link.id || idx}
+                      href={link.url.startsWith("http") ? link.url : `https://${link.url}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3.5 p-4 bg-white border border-neutral-200 rounded-2xl active:scale-[0.98] transition-all shadow-sm group"
+                    >
+                      <div className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border",
+                        link.url.includes("youtube") || link.url.includes("youtu.be")
+                          ? "bg-red-50 border-red-100 text-error"
+                          : link.url.includes("visualgo") || link.url.includes("github")
+                            ? "bg-blue-50 border-blue-100 text-primary"
+                            : "bg-emerald-50 border-emerald-100 text-emerald-600"
+                      )}>
+                        {link.url.includes("youtube") || link.url.includes("youtu.be") ? (
+                          <Youtube className="w-5 h-5" />
+                        ) : link.url.includes("visualgo") ? (
+                          <Globe className="w-5 h-5" />
+                        ) : (
+                          <FileText className="w-5 h-5" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-neutral-900 truncate group-hover:text-primary transition-colors">{link.title}</p>
+                        <p className="text-[11px] text-neutral-400 truncate mt-0.5 font-medium">{link.url}</p>
+                      </div>
+                      <ExternalLink className="w-4 h-4 text-neutral-300 group-hover:text-primary transition-colors" />
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-neutral-50 rounded-2xl p-5 border border-dashed border-neutral-200 text-center">
+                  <p className="text-xs text-neutral-400 font-medium">Belum ada reference</p>
+                </div>
               )}
-            </div>
-          </section>
-        )}
+            </section>
+          </div>
+        </div>
       </main>
 
       <TaskDetailActionBar taskId={id} status={status} taskName={card.task_name} isArchived={isArchived} />
