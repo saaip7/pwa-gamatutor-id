@@ -2,8 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Home, Columns2, Target, BarChart3, User, Target as LogoIcon, LogOut } from "lucide-react";
+import { Home, Columns2, Target, BarChart3, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BottomNavigation } from "@/components/shared/BottomNavigation";
 import { AuthGuard } from "@/components/shared/AuthGuard";
@@ -25,9 +26,14 @@ function DesktopSidebar() {
     <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:shrink-0 lg:border-r lg:border-neutral-200 lg:bg-white lg:fixed lg:inset-y-0 lg:left-0 lg:z-30">
       <div className="px-6 pt-8 pb-6 border-b border-neutral-100">
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
-            <LogoIcon className="w-5 h-5 text-white" />
-          </div>
+          <Image
+            src="/icon-512x512-secondary.svg"
+            alt="Gamatutor logo"
+            width={36}
+            height={36}
+            className="w-9 h-9 rounded-xl"
+            priority
+          />
           <span className="text-base font-bold text-neutral-800 tracking-tight">Gamatutor</span>
         </Link>
       </div>
