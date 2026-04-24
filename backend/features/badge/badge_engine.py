@@ -73,13 +73,16 @@ class BadgeEngine:
         if existing:
             return None
 
-        # User must have a general goal AND at least 3 task goals
+        # User must have a general goal
         general = mongo.db.goals.find_one({"user_id": user_id, "type": "general"})
         if not general:
             return None
 
-        task_goal_count = mongo.db.goals.count_documents({
-            "user_id": user_id, "type": "task"
+        # Count cards that have a goal_check.goal_text set
+        task_goal_count = mongo.db.cards.count_documents({
+            "user_id": user_id,
+            "goal_check.goal_text": {"$exists": True, "$ne": None, "$ne": ""},
+            "deleted": {"$ne": True},
         })
         if task_goal_count >= 3:
             Badge.unlock(user_id, "architect")

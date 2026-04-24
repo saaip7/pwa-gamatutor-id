@@ -255,6 +255,12 @@ def create_card():
     Log.create(user_id, "task_created", f"Card created: {card.get('task_name', '')}")
     update_streak(user_id)
 
+    if data.get("goal_check") and data["goal_check"].get("goal_text"):
+        try:
+            BadgeEngine.evaluate(user_id, "goal_linked")
+        except Exception:
+            pass
+
     return jsonify({
         "message": "Card created",
         "card": _serialize_card(card),
@@ -325,6 +331,10 @@ def update_card(card_id):
         unlocked = BadgeEngine.evaluate(user_id, "grade_updated")
         badge_results.extend(unlocked)
         Log.create(user_id, "grade_updated", f"Grade updated for card {card_id}")
+
+    if "goal_check" in updates and updates["goal_check"] and updates["goal_check"].get("goal_text"):
+        unlocked = BadgeEngine.evaluate(user_id, "goal_linked")
+        badge_results.extend(unlocked)
 
     return jsonify({
         "message": msg,
