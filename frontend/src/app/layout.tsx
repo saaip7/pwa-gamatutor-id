@@ -27,6 +27,11 @@ export const metadata: Metadata = {
   title: "Gamatutor ID",
   description: "Enhanced Kanban PWA for Self-Regulated Learning",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icon-512x512-secondary.svg",
+    shortcut: "/icon-512x512-secondary.svg",
+    apple: "/icon-192x192.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
