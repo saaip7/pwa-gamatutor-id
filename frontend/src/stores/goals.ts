@@ -1,6 +1,9 @@
 import { create } from "zustand";
 import { api } from "@/lib/api";
+import { createCachedFetch } from "@/lib/cache";
 import type { GeneralGoal, TaskGoal, CourseProgress } from "@/types";
+
+const GOALS_CACHE_MS = 2 * 60 * 1000;
 
 interface GoalsState {
   generalGoal: GeneralGoal | null;
@@ -15,16 +18,9 @@ interface GoalsState {
   deleteTaskGoal: (cardId: string) => Promise<void>;
 }
 
-export const useGoalsStore = create<GoalsState>((set) => ({
-  generalGoal: null,
-  taskGoals: [],
-  courses: [],
-  loading: false,
-  error: null,
-
-  fetchGoals: async () => {
-    set({ loading: true });
-    try {
+export const useGoalsStore = create<GoalsState>((set) => {
+  const cachedFetch = createCachedFetch(
+    async () => {
       const [goalsRes, coursesRes] = await Promise.all([
         api.get<{
           general: { text_pre: string; text_highlight: string } | null;
@@ -35,7 +31,6 @@ export const useGoalsStore = create<GoalsState>((set) => ({
         }>("/api/goals/course-progress"),
       ]);
 
-      // Map BE snake_case → FE camelCase
       const generalGoal = goalsRes.general
         ? {
             textPre: goalsRes.general.text_pre || "",
@@ -52,42 +47,59 @@ export const useGoalsStore = create<GoalsState>((set) => ({
         })
       );
 
-      set({
-        generalGoal,
-        taskGoals: goalsRes.taskGoals || [],
-        courses,
-        loading: false,
+      return { generalGoal, taskGoals: goalsRes.taskGoals || [], courses };
+    },
+    GOALS_CACHE_MS
+  );
+
+  return {
+    generalGoal: null,
+    taskGoals: [],
+    courses: [],
+    loading: false,
+    error: null,
+
+    fetchGoals: async () => {
+      set({ loading: true });
+      try {
+        const data = await cachedFetch();
+        set({
+          generalGoal: data.generalGoal,
+          taskGoals: data.taskGoals,
+          courses: data.courses,
+          loading: false,
+        });
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : "Gagal memuat goals";
+        set({ error: msg, loading: false });
+      }
+    },
+
+    updateGeneralGoal: async (data) => {
+      await api.put("/api/goals/general", {
+        textPre: data.textPre,
+        textHighlight: data.textHighlight,
       });
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Gagal memuat goals";
-      set({ error: msg, loading: false });
-    }
-  },
+      set({ generalGoal: data });
+    },
 
-  updateGeneralGoal: async (data) => {
-    await api.put("/api/goals/general", {
-      textPre: data.textPre,
-      textHighlight: data.textHighlight,
-    });
-    set({ generalGoal: data });
-  },
+    updateTaskGoal: async (cardId, goalText) => {
+      const taskGoal = await api.put<TaskGoal>(`/api/goals/task/${cardId}`, {
+        text: goalText,
+      });
+      set((state) => ({
+        taskGoals: [
+          ...state.taskGoals.filter((tg) => tg.card_id !== cardId),
+          taskGoal,
+        ],
+      }));
+    },
 
-  updateTaskGoal: async (cardId, goalText) => {
-    const taskGoal = await api.put<TaskGoal>(`/api/goals/task/${cardId}`, {
-      text: goalText,
-    });
-    set((state) => ({
-      taskGoals: [
-        ...state.taskGoals.filter((tg) => tg.card_id !== cardId),
-        taskGoal,
-      ],
-    }));
-  },
-
-  deleteTaskGoal: async (cardId) => {
-    await api.delete(`/api/goals/task/${cardId}`);
-    set((state) => ({
-      taskGoals: state.taskGoals.filter((tg) => tg.card_id !== cardId),
-    }));
-  },
-}));
+    deleteTaskGoal: async (cardId) => {
+      await api.delete(`/api/goals/task/${cardId}`);
+      set((state) => ({
+        taskGoals: state.taskGoals.filter((tg) => tg.card_id !== cardId),
+      }));
+    },
+  };
+});

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/stores/auth";
 import { usePreferencesStore } from "@/stores/preferences";
@@ -15,39 +15,57 @@ function isOnboardingPath(pathname: string) {
   return ONBOARDING_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
 
-function isGuidePath(pathname: string) {
-  return pathname === ONBOARDING_GUIDE_PREFIX || pathname.startsWith(ONBOARDING_GUIDE_PREFIX + "/");
-}
-
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const token = useAuthStore((s) => s.token);
   const user = useAuthStore((s) => s.user);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const fetchProfile = useAuthStore((s) => s.fetchProfile);
   const fetchPreferences = usePreferencesStore((s) => s.fetchPreferences);
   const preferences = usePreferencesStore((s) => s.preferences);
   const fetchBadges = useBadgesStore((s) => s.fetchBadges);
-  const [checking, setChecking] = useState(true);
+  const [checking, setChecking] = useState(!token || !isAuthenticated);
+  const bootstrappedRef = useRef(false);
 
   useEffect(() => {
-    if (token) {
-      fetchProfile()
-        .then(() => fetchPreferences())
-        .then(() => fetchBadges())
-        .then(() => {
-          registerFcm().catch((e) => console.error("[FCM] registerFcm failed:", e));
-          listenForegroundMessages().catch((e) => console.error("[FCM] listenForegroundMessages failed:", e));
-        })
-        .catch(() => {
-          router.replace("/login");
-        })
-        .finally(() => setChecking(false));
-    } else {
+    if (bootstrappedRef.current) return;
+    bootstrappedRef.current = true;
+
+    if (!token) {
       router.replace("/login");
       setChecking(false);
+      return;
     }
-  }, [token, fetchProfile, fetchPreferences, fetchBadges, router]);
+
+    if (isAuthenticated && user && preferences) {
+      setChecking(false);
+      return;
+    }
+
+    setChecking(true);
+    const profileP = fetchProfile();
+    const prefP = fetchPreferences();
+    const badgesP = fetchBadges();
+
+    Promise.allSettled([profileP, prefP, badgesP])
+      .then(([profileResult]) => {
+        if (profileResult.status === "rejected") {
+          const err = profileResult.reason;
+          const isNetErr =
+            err instanceof TypeError ||
+            (err instanceof Error && err.message === "Failed to fetch");
+          if (isNetErr && user) {
+            return;
+          }
+          router.replace("/login");
+          return;
+        }
+        registerFcm().catch((e) => console.error("[FCM] registerFcm failed:", e));
+        listenForegroundMessages().catch((e) => console.error("[FCM] listenForegroundMessages failed:", e));
+      })
+      .finally(() => setChecking(false));
+  }, [token, isAuthenticated, user, preferences, fetchProfile, fetchPreferences, fetchBadges, router]);
 
   useEffect(() => {
     if (checking || !user) return;

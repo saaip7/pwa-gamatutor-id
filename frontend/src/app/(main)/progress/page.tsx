@@ -30,7 +30,7 @@ export default function ProgressPage() {
     fetchConfidenceTrend,
     fetchReflectionNotes,
   } = useAnalyticsStore();
-  const { unlockedCount, badges, fetchBadges } = useBadgesStore();
+  const { unlockedCount, badges } = useBadgesStore();
 
   useEffect(() => {
     fetchProgress();
@@ -38,8 +38,7 @@ export default function ProgressPage() {
     fetchDashboard();
     fetchConfidenceTrend();
     fetchReflectionNotes();
-    fetchBadges();
-  }, [fetchProgress, fetchStrategies, fetchDashboard, fetchConfidenceTrend, fetchReflectionNotes, fetchBadges]);
+  }, [fetchProgress, fetchStrategies, fetchDashboard, fetchConfidenceTrend, fetchReflectionNotes]);
 
   const handleCourseChange = (courseCode: string | null) => {
     fetchConfidenceTrend(courseCode ?? undefined);

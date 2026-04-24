@@ -97,19 +97,18 @@ export default function DashboardPage() {
   const [isCelebrationOpen, setIsCelebrationOpen] = useState(false);
 
   // Store selectors
-  const { user, fetchProfile } = useAuthStore();
+  const { user } = useAuthStore();
   const { dashboard, streak, fetchDashboard, fetchStreak } = useAnalyticsStore();
   const { tasks: boardTasks, columns, fetchBoard } = useBoardStore();
   const { unreadCount, fetchUnreadCount } = useNotificationsStore();
 
-  // Fetch data on mount
+  // Fetch page-specific data on mount (profile/badges/preferences handled by AuthGuard)
   useEffect(() => {
-    fetchProfile();
     fetchDashboard();
     fetchStreak();
     fetchBoard();
     fetchUnreadCount();
-  }, [fetchProfile, fetchDashboard, fetchStreak, fetchBoard, fetchUnreadCount]);
+  }, [fetchDashboard, fetchStreak, fetchBoard, fetchUnreadCount]);
 
   // Determine if we're still loading core data
   const isInitialLoading = !dashboard && !user;

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Target } from "lucide-react";
-import { api } from "@/lib/api";
+import { useAuthStore } from "@/stores/auth";
 
 const SPLASH_KEY = "splash_done";
 
@@ -13,27 +13,24 @@ export default function SplashPage() {
   const [isExiting, setIsExiting] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      api.get<{ role?: string }>("/users/me")
-        .then((u) => {
-          router.replace(u.role === "admin" ? "/admin/users" : "/dashboard");
-        })
-        .catch(() => {
-          localStorage.removeItem("token");
-          router.replace("/login");
-        });
+    const { token, isAuthenticated, user } = useAuthStore.getState();
+
+    if (token && isAuthenticated && user) {
+      router.replace(user.role === "admin" ? "/admin/users" : "/dashboard");
       return;
     }
 
-    // Check sessionStorage — if "splash_done" exists, this is a warm start
+    if (token) {
+      router.replace("/dashboard");
+      return;
+    }
+
     const alreadyShown = sessionStorage.getItem(SPLASH_KEY);
     if (alreadyShown) {
       router.replace("/login");
       return;
     }
 
-    // Cold start: show splash
     setShowSplash(true);
 
     const exitTimer = setTimeout(() => setIsExiting(true), 2500);
