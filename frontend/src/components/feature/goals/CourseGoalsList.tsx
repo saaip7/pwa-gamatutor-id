@@ -20,7 +20,7 @@ export function CourseGoalsList({ goals }: CourseGoalsListProps) {
         <h3 className="text-lg md:text-xl font-bold text-neutral-800">Progress Mata Kuliah</h3>
       </div>
       
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {goals.map((goal) => (
           <CourseGoalCard key={goal.id} goal={goal} />
         ))}

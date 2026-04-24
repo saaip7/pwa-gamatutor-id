@@ -3,6 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Clock, Calendar } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 function parseInsight(raw: string | undefined) {
   if (!raw || raw === "-") return null;
@@ -14,16 +15,17 @@ function parseInsight(raw: string | undefined) {
 interface InsightCardProps {
   productiveTime?: string;
   productiveDays?: string;
+  className?: string;
 }
 
-export function InsightCard({ productiveTime, productiveDays }: InsightCardProps) {
+export function InsightCard({ productiveTime, productiveDays, className }: InsightCardProps) {
   const time = parseInsight(productiveTime);
   const day = parseInsight(productiveDays);
   const hasData = time || day;
 
   return (
     <motion.div
-      className="bg-white border border-neutral-200 rounded-xl p-5 shadow-sm mb-4"
+      className={cn("bg-white border border-neutral-200 rounded-xl p-5 shadow-sm mb-4 lg:h-full", className)}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}

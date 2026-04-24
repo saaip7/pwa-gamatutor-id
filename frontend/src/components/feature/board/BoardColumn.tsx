@@ -20,6 +20,7 @@ export function BoardColumn({ title, id, count, dotColorClass, badgeColorClass, 
       ref={setNodeRef}
       className={cn(
         "w-[85vw] max-w-[340px] shrink-0 snap-center h-full flex flex-col pt-5 px-3 sm:px-4 transition-colors duration-200 rounded-xl",
+        "lg:w-auto lg:max-w-none lg:shrink lg:snap-none lg:min-w-0 lg:rounded-2xl lg:border lg:border-neutral-200 lg:bg-white",
         isOver && "bg-primary/5"
       )}
     >
@@ -36,7 +37,7 @@ export function BoardColumn({ title, id, count, dotColorClass, badgeColorClass, 
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-32 space-y-3 px-1">
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-32 lg:pb-6 space-y-3 px-1">
         {children}
       </div>
     </section>

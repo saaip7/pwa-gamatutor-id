@@ -11,7 +11,7 @@ interface FilterBarProps {
 
 export function FilterBar({ filters, activeFilter, onFilterChange }: FilterBarProps) {
   return (
-    <div className="shrink-0 py-3 pl-5 bg-white border-b border-neutral-100 flex gap-2 overflow-x-auto no-scrollbar z-10">
+    <div className="shrink-0 py-3 pl-5 bg-white md:bg-neutral-50 border-b border-neutral-100 flex gap-2 overflow-x-auto no-scrollbar z-10">
       {filters.map((filter, index) => {
         const isActive = activeFilter === filter;
         const isLast = index === filters.length - 1;

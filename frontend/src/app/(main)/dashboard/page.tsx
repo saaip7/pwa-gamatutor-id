@@ -5,6 +5,7 @@ import { DashboardHeader } from "@/components/feature/dashboard/DashboardHeader"
 import { CharacterShowcase } from "@/components/feature/dashboard/CharacterShowcase";
 import { StudyPatterns } from "@/components/feature/dashboard/StudyPatterns";
 import { TodayTasksList } from "@/components/feature/dashboard/TodayTasksList";
+import { AchievementBanner } from "@/components/feature/mastery/AchievementBanner";
 import { Task } from "@/components/ui/TaskCard";
 import { StreakHub } from "@/components/feature/streak/StreakHub";
 import type { StreakData as ComponentStreakData } from "@/components/feature/streak/StreakHub";
@@ -152,30 +153,45 @@ export default function DashboardPage() {
     return (
       <>
         <DashboardHeader userName="..." hasUnreadNotifications={false} />
-        <div className="px-6 mb-8">
-          <div className="bg-white rounded-[24px] border border-neutral-100 p-8 animate-pulse">
-            <div className="flex justify-between mb-6">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="flex flex-col items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-neutral-200" />
-                  <div className="w-10 h-4 rounded bg-neutral-200" />
+      <div className="lg:px-0 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1 lg:row-span-2">
+              <div className="bg-white rounded-[24px] border border-neutral-100 p-8 animate-pulse h-full">
+                <div className="flex justify-between mb-6">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex flex-col items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-neutral-200" />
+                      <div className="w-10 h-4 rounded bg-neutral-200" />
+                    </div>
+                  ))}
                 </div>
-              ))}
+                <div className="flex justify-center py-6">
+                  <div className="w-40 h-48 rounded-2xl bg-neutral-100" />
+                </div>
+              </div>
             </div>
-            <div className="flex justify-center py-6">
-              <div className="w-40 h-48 rounded-2xl bg-neutral-100" />
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-[24px] p-5 animate-pulse">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-neutral-200" />
+                  <div className="flex-1 space-y-2">
+                    <div className="w-40 h-4 rounded bg-neutral-200" />
+                    <div className="w-full h-1.5 rounded-full bg-neutral-100" />
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        <div className="px-6 mb-8">
-          <div className="bg-white rounded-[24px] p-5 animate-pulse space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-neutral-200" />
-              <div className="w-32 h-4 rounded bg-neutral-200" />
-            </div>
-            <div className="flex gap-3">
-              <div className="flex-1 h-16 rounded-xl bg-neutral-100" />
-              <div className="flex-1 h-16 rounded-xl bg-neutral-100" />
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-[24px] p-5 animate-pulse space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-neutral-200" />
+                  <div className="w-32 h-4 rounded bg-neutral-200" />
+                </div>
+                <div className="flex gap-3">
+                  <div className="flex-1 h-16 rounded-xl bg-neutral-100" />
+                  <div className="flex-1 h-16 rounded-xl bg-neutral-100" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -192,16 +208,36 @@ export default function DashboardPage() {
         tasksCompleted={stats.tasksCompleted}
       />
 
-      <CharacterShowcase
-        stats={stats}
-        onStreakTap={() => setIsStreakHubOpen(true)}
-      />
+      <div className="px-6 lg:px-0 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-      <StudyPatterns patterns={patterns} />
+          <div className="lg:col-span-1 lg:row-span-2 lg:h-full">
+            <CharacterShowcase
+              stats={stats}
+              onStreakTap={() => setIsStreakHubOpen(true)}
+              className="lg:h-full"
+            />
+          </div>
 
-      <TodayTasksList tasks={todayTasks} />
+          <div className="lg:col-span-2">
+            <AchievementBanner
+              unlockedCount={stats.badgesUnlocked}
+              totalCount={stats.totalBadges}
+              variant="dashboard"
+            />
+          </div>
 
-      {/* Streak Hub Modal */}
+          <div className="lg:col-span-2">
+            <StudyPatterns patterns={patterns} />
+          </div>
+
+          <div className="lg:col-span-3">
+            <TodayTasksList tasks={todayTasks} />
+          </div>
+
+        </div>
+      </div>
+
       <StreakHub
         isOpen={isStreakHubOpen}
         onClose={() => setIsStreakHubOpen(false)}
@@ -209,7 +245,6 @@ export default function DashboardPage() {
         onUseFreeze={handleUseFreeze}
       />
 
-      {/* Streak Freeze Celebration Overlay */}
       <StreakFreezeCelebration
         isOpen={isCelebrationOpen}
         onClose={() => setIsCelebrationOpen(false)}
