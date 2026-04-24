@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { Check, Eye, Settings2, Sparkles, ArrowRightLeft, Loader2 } from "lucide-react";
+import { Check, Eye, Settings2, Sparkles, ArrowRightLeft, Loader2, Play, MessageSquareText } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
 import { useBoardStore } from "@/stores/board";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { ColumnKey } from "@/types";
+import Link from "next/link";
 
 export type TaskStatus = "Planning" | "Monitoring" | "Controlling" | "Reflection";
 
@@ -33,6 +34,7 @@ interface TaskStatusStepperProps {
 export function TaskStatusStepper({ currentStatus, taskId, onMoved }: TaskStatusStepperProps) {
   const moveCard = useBoardStore((s) => s.moveCard);
   const [showDrawer, setShowDrawer] = useState(false);
+  const [showReflectionDrawer, setShowReflectionDrawer] = useState(false);
   const [moving, setMoving] = useState<string | null>(null);
 
   const steps = [
@@ -44,9 +46,17 @@ export function TaskStatusStepper({ currentStatus, taskId, onMoved }: TaskStatus
 
   const currentIndex = steps.findIndex(s => s.id === currentStatus);
   const isReflection = currentStatus === "Reflection";
+  const isMonitoring = currentStatus === "Monitoring";
 
   const handleMove = async (targetKey: ColumnKey) => {
     if (!taskId || moving) return;
+
+    if (targetKey === "reflection") {
+      setShowReflectionDrawer(true);
+      setShowDrawer(false);
+      return;
+    }
+
     setMoving(targetKey);
     try {
       await moveCard(taskId, targetKey);
@@ -160,6 +170,50 @@ export function TaskStatusStepper({ currentStatus, taskId, onMoved }: TaskStatus
               </button>
             );
           })}
+        </div>
+      </Drawer>
+
+      <Drawer isOpen={showReflectionDrawer} onClose={() => setShowReflectionDrawer(false)} title="Selesaikan Tugas">
+        <div className="space-y-4 pt-2">
+          <p className="text-sm text-neutral-600 font-medium leading-relaxed">
+            Kamu belum mengisi refleksi. Pilih cara untuk menyelesaikan tugas ini:
+          </p>
+
+          <Link
+            href={`/task/${taskId}/reflection?duration=0`}
+            onClick={() => setShowReflectionDrawer(false)}
+            className="w-full flex items-center gap-3 px-4 py-4 rounded-xl bg-primary/5 border border-primary/20 active:scale-[0.98] transition-all"
+          >
+            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center shrink-0">
+              <MessageSquareText className="w-4.5 h-4.5 text-white" />
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-bold text-neutral-800">Langsung Refleksi</p>
+              <p className="text-xs text-neutral-400 mt-0.5">Isi refleksi tanpa sesi fokus</p>
+            </div>
+          </Link>
+
+          {isMonitoring && (
+            <Link
+              href={`/task/${taskId}/focus`}
+              className="w-full flex items-center gap-3 px-4 py-4 rounded-xl bg-white border border-neutral-100 active:scale-[0.98] transition-all"
+            >
+              <div className="w-9 h-9 rounded-lg bg-neutral-50 border border-neutral-200 flex items-center justify-center shrink-0">
+                <Play className="w-4.5 h-4.5 text-neutral-600 fill-neutral-600" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-bold text-neutral-800">Mulai Sesi Fokus Dulu</p>
+                <p className="text-xs text-neutral-400 mt-0.5">Belajar dengan timer, lalu refleksi</p>
+              </div>
+            </Link>
+          )}
+
+          <button
+            onClick={() => setShowReflectionDrawer(false)}
+            className="w-full py-3 text-sm font-bold text-neutral-400 active:scale-95 transition-all"
+          >
+            Batal
+          </button>
         </div>
       </Drawer>
     </>

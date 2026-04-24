@@ -72,22 +72,24 @@ export function CelebrationDialog({ isOpen, onConfirm, duration, confidence, mai
               </motion.p>
             </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="mx-5 my-3 flex items-center justify-center gap-5 bg-neutral-50 rounded-xl py-3 border border-neutral-100"
-            >
-              <div className="flex items-center gap-2">
-                <Timer className="text-emerald-600 w-4 h-4" />
-                <span className="text-sm font-semibold text-neutral-700">{duration}</span>
-              </div>
-              <div className="w-px h-4 bg-neutral-200" />
-              <div className="flex items-center gap-2">
-                <Star className="text-emerald-600 w-4 h-4 fill-emerald-600" />
-                <span className="text-sm font-semibold text-neutral-700">{confidence}</span>
-              </div>
-            </motion.div>
+            {duration !== "00:00:00" && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="mx-5 my-3 flex items-center justify-center gap-5 bg-neutral-50 rounded-xl py-3 border border-neutral-100"
+              >
+                <div className="flex items-center gap-2">
+                  <Timer className="text-emerald-600 w-4 h-4" />
+                  <span className="text-sm font-semibold text-neutral-700">{duration}</span>
+                </div>
+                <div className="w-px h-4 bg-neutral-200" />
+                <div className="flex items-center gap-2">
+                  <Star className="text-emerald-600 w-4 h-4 fill-emerald-600" />
+                  <span className="text-sm font-semibold text-neutral-700">{confidence}</span>
+                </div>
+              </motion.div>
+            )}
 
             <motion.div
               initial={{ opacity: 0 }}
