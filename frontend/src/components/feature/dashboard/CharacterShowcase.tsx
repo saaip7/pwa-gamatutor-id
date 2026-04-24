@@ -2,12 +2,12 @@
 
 import React from "react";
 import { Flame, Timer, CheckCircle2, ShieldCheck, Palette } from "lucide-react";
-import { AchievementBanner } from "@/components/feature/mastery/AchievementBanner";
 import { CharacterComposer } from "@/components/feature/character/CharacterComposer";
 import type { SlotLevel } from "@/components/feature/character/item-registry";
 import { usePreferencesStore } from "@/stores/preferences";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import styles from "./CharacterShowcase.module.css";
 
 interface UserStats {
@@ -21,18 +21,16 @@ interface UserStats {
 interface CharacterShowcaseProps {
   stats: UserStats;
   onStreakTap?: () => void;
+  className?: string;
 }
 
-export function CharacterShowcase({ stats, onStreakTap }: CharacterShowcaseProps) {
+export function CharacterShowcase({ stats, onStreakTap, className }: CharacterShowcaseProps) {
   const character = usePreferencesStore((s) => s.preferences?.character);
   const router = useRouter();
 
   return (
-    <div
-      className="px-6 mb-8 anim-fade-in-up"
-      style={{ animationDelay: "0.2s" }}
-    >
-      <div className="bg-white rounded-[24px] border border-neutral-100 shadow-[0_8px_30px_-4px_rgba(0,0,0,0.04)] p-5 flex flex-col relative overflow-hidden">
+    <div className={cn("anim-fade-in-up lg:h-full", className)} style={{ animationDelay: "0.2s" }}>
+      <div className="bg-white rounded-[24px] border border-neutral-100 shadow-[0_8px_30px_-4px_rgba(0,0,0,0.04)] p-5 flex flex-col relative overflow-hidden lg:h-full">
 
         <div className="flex justify-between items-center w-full px-5 pb-5 mb-6 border-b border-neutral-100/80">
           <div className="flex flex-col items-center">
@@ -68,9 +66,9 @@ export function CharacterShowcase({ stats, onStreakTap }: CharacterShowcaseProps
           </div>
         </div>
 
-        <div className="relative flex flex-col items-center w-full">
+        <div className="relative flex flex-col items-center w-full lg:flex-1">
 
-          <div className="relative w-full h-[280px] rounded-[24px] border-2 border-blue-200/40 bg-gradient-to-b from-blue-50/60 via-purple-50/40 to-white flex justify-center items-end shadow-sm overflow-hidden">
+          <div className="relative w-full h-[280px] lg:h-full rounded-[24px] border-2 border-blue-200/40 bg-gradient-to-b from-blue-50/60 via-purple-50/40 to-white flex justify-center items-end shadow-sm overflow-hidden">
 
             <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm border border-blue-100 pl-2.5 pr-3.5 py-1.5 rounded-full z-20 flex items-center gap-1.5 shadow-sm">
               <ShieldCheck className="w-[15px] h-[15px] text-blue-600" />
@@ -108,14 +106,6 @@ export function CharacterShowcase({ stats, onStreakTap }: CharacterShowcaseProps
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="mt-6">
-        <AchievementBanner
-          unlockedCount={stats.badgesUnlocked}
-          totalCount={stats.totalBadges}
-          variant="dashboard"
-        />
       </div>
     </div>
   );

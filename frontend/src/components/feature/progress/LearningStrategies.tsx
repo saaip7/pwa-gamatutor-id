@@ -4,6 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export interface StrategyItem {
   id: string;
@@ -15,12 +16,13 @@ export interface StrategyItem {
 
 interface LearningStrategiesProps {
   strategies: StrategyItem[];
+  className?: string;
 }
 
-export function LearningStrategies({ strategies }: LearningStrategiesProps) {
+export function LearningStrategies({ strategies, className }: LearningStrategiesProps) {
   return (
     <motion.div 
-      className="bg-white border border-neutral-200 rounded-xl p-5 shadow-sm mt-4 mb-4 w-full"
+      className={cn("bg-white border border-neutral-200 rounded-xl p-5 shadow-sm mt-4 mb-4 w-full lg:h-full", className)}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}

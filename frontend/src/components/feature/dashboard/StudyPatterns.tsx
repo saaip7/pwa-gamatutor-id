@@ -3,6 +3,7 @@
 import React from "react";
 import { Brain, Clock, Calendar, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 interface StudyPatternData {
   productiveTime: string;
@@ -11,6 +12,7 @@ interface StudyPatternData {
 
 interface StudyPatternsProps {
   patterns: StudyPatternData;
+  className?: string;
 }
 
 function parseInsight(raw: string) {
@@ -19,7 +21,7 @@ function parseInsight(raw: string) {
   return { label: raw, pct: null };
 }
 
-export function StudyPatterns({ patterns }: StudyPatternsProps) {
+export function StudyPatterns({ patterns, className }: StudyPatternsProps) {
   const hasTime = patterns.productiveTime && patterns.productiveTime !== "-";
   const hasDays = patterns.productiveDays && patterns.productiveDays !== "-";
   const hasData = hasTime || hasDays;
@@ -29,7 +31,7 @@ export function StudyPatterns({ patterns }: StudyPatternsProps) {
 
   return (
     <div
-      className="px-6 mb-8 anim-fade-in-up"
+      className={cn("anim-fade-in-up", className)}
       style={{ animationDelay: "0.3s" }}
     >
       <div className="bg-white rounded-[24px] p-5 shadow-[0_8px_30px_-4px_rgba(0,0,0,0.04)] border border-neutral-100">

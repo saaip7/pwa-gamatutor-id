@@ -4,15 +4,17 @@ import React from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { TaskCard, Task } from "@/components/ui/TaskCard";
+import { cn } from "@/lib/utils";
 
 interface TodayTasksListProps {
   tasks: Task[];
+  className?: string;
 }
 
-export function TodayTasksList({ tasks }: TodayTasksListProps) {
+export function TodayTasksList({ tasks, className }: TodayTasksListProps) {
   return (
     <div
-      className="px-6 mb-8 anim-fade-in-up"
+      className={cn("anim-fade-in-up", className)}
       style={{ animationDelay: "0.4s" }}
     >
       <div className="flex justify-between items-center mb-5 px-1">

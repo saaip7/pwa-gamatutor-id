@@ -318,8 +318,8 @@ function KanbanBoardContent() {
     });
   }, []);
 
-  useEffect(() => {
-    if (!isDragging) return;
+    useEffect(() => {
+      if (!isDragging || window.innerWidth >= 1024) return;
 
     const tick = () => {
       if (snapCooldownRef.current) return;
@@ -530,7 +530,7 @@ function KanbanBoardContent() {
         {/* Kanban Board Area */}
         <div
           ref={scrollContainerRef}
-          className="flex-1 overflow-x-auto overflow-y-hidden snap-x snap-mandatory flex no-scrollbar relative w-full h-[calc(100vh-200px)]"
+          className="flex-1 overflow-x-auto overflow-y-hidden snap-x snap-mandatory flex no-scrollbar relative w-full h-[calc(100vh-200px)] lg:min-w-[1400px] lg:snap-none lg:overflow-x-auto lg:overflow-y-auto lg:grid lg:grid-cols-4 lg:gap-4 lg:p-4 lg:px-4"
         >
           {COLUMN_KEYS.map((colKey) => {
             const config = COLUMN_CONFIG[colKey];

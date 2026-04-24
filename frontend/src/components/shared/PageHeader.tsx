@@ -8,7 +8,7 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, subtitle, rightAction }: PageHeaderProps) {
   return (
-    <header className="shrink-0 pt-14 pb-4 px-6 bg-white sticky top-0 z-20 border-b border-neutral-100 flex items-center justify-between">
+    <header className="shrink-0 pt-14 pb-4 px-6 bg-white md:bg-neutral-50 sticky top-0 z-20 border-b border-neutral-100 flex items-center justify-between">
       <div>
         <h1 className="text-lg md:text-xl font-bold text-neutral-900 tracking-tight">
           {title}
