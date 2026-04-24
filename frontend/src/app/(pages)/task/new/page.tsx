@@ -114,7 +114,7 @@ export default function NewTaskPage() {
   };
 
   return (
-    <div className="w-full h-screen flex flex-col mx-auto bg-neutral-50 relative overflow-hidden max-w-md">
+    <div className="w-full h-screen flex flex-col mx-auto bg-neutral-50 relative overflow-hidden max-w-md lg:max-w-2xl">
       <NewTaskHeader isValid={isValid} onSave={handleSave} />
 
       <main className="flex-1 overflow-y-auto no-scrollbar px-5 pt-6 pb-28 relative">
