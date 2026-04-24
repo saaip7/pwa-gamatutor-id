@@ -121,12 +121,6 @@ async function request<T>(
       }
 
       clearTokens();
-      import("sonner").then(({ toast }) => {
-        toast.error("Sesi berakhir", { description: "Silakan login kembali" });
-      });
-      if (!window.location.pathname.includes("/login")) {
-        window.location.href = "/login";
-      }
     }
 
     throw new ApiError(res.status, data);
