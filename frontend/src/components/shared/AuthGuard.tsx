@@ -25,14 +25,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const fetchPreferences = usePreferencesStore((s) => s.fetchPreferences);
   const preferences = usePreferencesStore((s) => s.preferences);
   const fetchBadges = useBadgesStore((s) => s.fetchBadges);
-  const [checking, setChecking] = useState(!token || !isAuthenticated);
+  const [checking, setChecking] = useState(true);
   const bootstrappedRef = useRef(false);
 
   useEffect(() => {
     if (bootstrappedRef.current) return;
     bootstrappedRef.current = true;
 
-    if (!token) {
+    const lsToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (!lsToken) {
       router.replace("/login");
       setChecking(false);
       return;

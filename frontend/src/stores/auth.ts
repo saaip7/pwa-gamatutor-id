@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { api, setTokens, clearTokens, isNetworkError } from "@/lib/api";
+import { api, setTokens, clearTokens, isNetworkError, ApiError } from "@/lib/api";
 import type { User } from "@/types";
 import { toast } from "sonner";
 
@@ -91,8 +91,9 @@ export const useAuthStore = create<AuthState>()(
           return true;
         } catch (e: unknown) {
           if (isNetworkError(e)) return false;
-          clearTokens();
-          set({ user: null, token: null, isAuthenticated: false });
+          if (e instanceof ApiError && e.status === 401) {
+            return false;
+          }
           return false;
         }
       },
