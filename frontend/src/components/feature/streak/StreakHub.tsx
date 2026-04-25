@@ -13,7 +13,7 @@ export interface StreakData {
   current: number;
   longest: number;
   days: StreakDay[];
-  freezesAvailable: number;
+  freezes_available: number;
 }
 
 interface StreakHubProps {
@@ -108,7 +108,7 @@ export function StreakHub({ isOpen, onClose, data, onUseFreeze }: StreakHubProps
                 {/* Streak Freeze */}
                 <div>
                   <StreakFreezeCard
-                    available={data.freezesAvailable}
+                    available={data.freezes_available}
                     onUse={handleUseFreeze}
                     loading={freezeLoading}
                   />

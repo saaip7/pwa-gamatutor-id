@@ -44,54 +44,54 @@ export default function ProgressPage() {
     fetchConfidenceTrend(courseCode ?? undefined);
   };
 
-  const totalBadges = badges.length || 1; // avoid divide-by-zero
+  const total_badges = badges.length || 1; // avoid divide-by-zero
 
   // Map progress.summary -> SummaryData
   const summaryData: SummaryData | null = progress?.summary
     ? {
-        totalCards: progress.summary.totalCards,
-        completedCards: progress.summary.completedCards,
-        completionRate: progress.summary.completionRate,
-        personalBest: progress.summary.personalBest,
+        total_cards: progress.summary.total_cards,
+        completed_cards: progress.summary.completed_cards,
+        completion_rate: progress.summary.completion_rate,
+        personal_best: progress.summary.personal_best,
       }
     : null;
 
   // Map progress.taskDistribution -> TaskDistributionData
-  const taskDistData: TaskDistributionData | null = progress?.taskDistribution
+  const taskDistData: TaskDistributionData | null = progress?.task_distribution
     ? {
-        total: progress.taskDistribution.total,
-        todoPercent: progress.taskDistribution.todoPercent,
-        progPercent: progress.taskDistribution.progPercent,
-        revPercent: progress.taskDistribution.revPercent,
-        donePercent: progress.taskDistribution.donePercent,
+        total: progress.task_distribution.total,
+        todo_percent: progress.task_distribution.todo_percent,
+        prog_percent: progress.task_distribution.prog_percent,
+        rev_percent: progress.task_distribution.rev_percent,
+        done_percent: progress.task_distribution.done_percent,
       }
     : null;
 
   // Map strategies -> StrategyItem[]
   const strategyItems: StrategyItem[] = (strategies?.strategies ?? []).map((s, i) => {
     const emoji =
-      s.subjective.avgRating >= 4.5
+      s.subjective.avg_rating >= 4.5
         ? "🤩"
-        : s.subjective.avgRating >= 4.0
+        : s.subjective.avg_rating >= 4.0
           ? "😊"
-          : s.subjective.avgRating >= 3.0
+          : s.subjective.avg_rating >= 3.0
             ? "🤔"
             : "😐";
     return {
       id: `strat-${i}`,
       name: s.name,
       emoji,
-      score: s.subjective.avgRating,
-      taskCount: s.taskCount,
+      score: s.subjective.avg_rating,
+      taskCount: s.task_count,
     };
   });
 
-  const hasInsight = dashboard?.patterns && (dashboard.patterns.productiveTime !== "-" || dashboard.patterns.productiveDays !== "-");
+  const hasInsight = dashboard?.patterns && (dashboard.patterns.productive_time !== "-" || dashboard.patterns.productive_days !== "-");
 
   // Confidence trend data points for chart
-  const trendDataPoints: ConfidenceDataPoint[] = confidenceTrend?.dataPoints ?? [];
-  const trendCourseCode = confidenceTrend?.courseCode ?? null;
-  const trendCourses = confidenceTrend?.availableCourses ?? [];
+  const trendDataPoints: ConfidenceDataPoint[] = confidenceTrend?.data_points ?? [];
+  const trendCourseCode = confidenceTrend?.course_code ?? null;
+  const trendCourses = confidenceTrend?.available_courses ?? [];
 
   if (loading && !progress) {
     return (
@@ -114,8 +114,8 @@ export default function ProgressPage() {
           <div className="lg:col-span-1 lg:h-full">
             {hasInsight ? (
               <InsightCard
-                productiveTime={dashboard?.patterns?.productiveTime}
-                productiveDays={dashboard?.patterns?.productiveDays}
+                productive_time={dashboard?.patterns?.productive_time}
+                productive_days={dashboard?.patterns?.productive_days}
                 className="mb-4 lg:mb-0 lg:h-full"
               />
             ) : (
@@ -126,7 +126,7 @@ export default function ProgressPage() {
           <div className="lg:col-span-2 mt-4 lg:mt-0 space-y-4">
             <AchievementBanner
               unlockedCount={unlockedCount}
-              totalCount={totalBadges}
+              totalCount={total_badges}
               variant="progress"
             />
 
@@ -142,10 +142,10 @@ export default function ProgressPage() {
         </div>
 
         <MasteryTrendChart
-          dataPoints={trendDataPoints}
+          data_points={trendDataPoints}
           trend={confidenceTrend?.trend ?? null}
-          courseCode={trendCourseCode}
-          availableCourses={trendCourses}
+          course_code={trendCourseCode}
+          available_courses={trendCourses}
           onCourseChange={handleCourseChange}
         />
 

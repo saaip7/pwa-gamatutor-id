@@ -50,7 +50,7 @@ export function MainGoalCard({ goalTextPre, goalTextHighlight, totalCompleted = 
     }
     setSaving(true);
     try {
-      await updateGeneralGoal({ textPre: editPre.trim(), textHighlight: editHighlight.trim() });
+      await updateGeneralGoal({ text_pre: editPre.trim(), text_highlight: editHighlight.trim() });
       toast.success("Tujuan utama diperbarui!");
       setIsEditing(false);
     } catch {

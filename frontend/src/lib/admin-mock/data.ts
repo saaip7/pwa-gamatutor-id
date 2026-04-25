@@ -8,8 +8,8 @@ export interface MockUser {
   createdAt: string;
   lastActive: string;
   streak: number;
-  totalCards: number;
-  doneCards: number;
+  total_cards: number;
+  done_cards: number;
   onboardingDone: boolean;
 }
 
@@ -21,7 +21,7 @@ export interface MockCard {
   courseName: string;
   difficulty: number | null;
   reflection: string | null;
-  personalBest: number | null;
+  personal_best: number | null;
   goalCheck: "helped" | "neutral" | "not-helped" | null;
   deadline: string | null;
   createdAt: string;
@@ -87,8 +87,8 @@ export const mockUsers: MockUser[] = [
     createdAt: "2026-03-22T08:00:00Z",
     lastActive: "2026-04-08T14:30:00Z",
     streak: 5,
-    totalCards: 12,
-    doneCards: 7,
+    total_cards: 12,
+    done_cards: 7,
     onboardingDone: true,
   },
   {
@@ -99,8 +99,8 @@ export const mockUsers: MockUser[] = [
     createdAt: "2026-03-23T10:00:00Z",
     lastActive: "2026-04-08T09:15:00Z",
     streak: 12,
-    totalCards: 18,
-    doneCards: 15,
+    total_cards: 18,
+    done_cards: 15,
     onboardingDone: true,
   },
   {
@@ -111,8 +111,8 @@ export const mockUsers: MockUser[] = [
     createdAt: "2026-03-24T07:30:00Z",
     lastActive: "2026-04-06T20:00:00Z",
     streak: 0,
-    totalCards: 5,
-    doneCards: 1,
+    total_cards: 5,
+    done_cards: 1,
     onboardingDone: true,
   },
   {
@@ -123,8 +123,8 @@ export const mockUsers: MockUser[] = [
     createdAt: "2026-03-25T14:00:00Z",
     lastActive: "2026-04-07T18:45:00Z",
     streak: 3,
-    totalCards: 8,
-    doneCards: 4,
+    total_cards: 8,
+    done_cards: 4,
     onboardingDone: true,
   },
   {
@@ -135,8 +135,8 @@ export const mockUsers: MockUser[] = [
     createdAt: "2026-03-26T09:00:00Z",
     lastActive: "2026-04-05T11:30:00Z",
     streak: 0,
-    totalCards: 3,
-    doneCards: 0,
+    total_cards: 3,
+    done_cards: 0,
     onboardingDone: false,
   },
   {
@@ -147,8 +147,8 @@ export const mockUsers: MockUser[] = [
     createdAt: "2026-03-28T16:00:00Z",
     lastActive: "2026-04-08T16:00:00Z",
     streak: 8,
-    totalCards: 14,
-    doneCards: 11,
+    total_cards: 14,
+    done_cards: 11,
     onboardingDone: true,
   },
   {
@@ -159,8 +159,8 @@ export const mockUsers: MockUser[] = [
     createdAt: "2026-04-01T08:00:00Z",
     lastActive: "2026-04-08T12:00:00Z",
     streak: 2,
-    totalCards: 6,
-    doneCards: 2,
+    total_cards: 6,
+    done_cards: 2,
     onboardingDone: true,
   },
   {
@@ -171,8 +171,8 @@ export const mockUsers: MockUser[] = [
     createdAt: "2026-04-02T11:00:00Z",
     lastActive: "2026-04-04T09:00:00Z",
     streak: 0,
-    totalCards: 2,
-    doneCards: 0,
+    total_cards: 2,
+    done_cards: 0,
     onboardingDone: true,
   },
   {
@@ -183,8 +183,8 @@ export const mockUsers: MockUser[] = [
     createdAt: "2026-03-20T08:00:00Z",
     lastActive: "2026-04-08T17:00:00Z",
     streak: 0,
-    totalCards: 0,
-    doneCards: 0,
+    total_cards: 0,
+    done_cards: 0,
     onboardingDone: true,
   },
 ];
@@ -199,7 +199,7 @@ export const mockUserCards: MockCard[] = [
     courseName: "Skripsi",
     difficulty: 3,
     reflection: "Sudah paham alur penulisan, perlu deepen di bagian metodologi",
-    personalBest: 85,
+    personal_best: 85,
     goalCheck: "helped",
     deadline: "2026-04-10T23:59:00Z",
     createdAt: "2026-03-25T10:00:00Z",
@@ -212,7 +212,7 @@ export const mockUserCards: MockCard[] = [
     courseName: "Interaksi Manusia dan Komputer",
     difficulty: 4,
     reflection: null,
-    personalBest: null,
+    personal_best: null,
     goalCheck: null,
     deadline: "2026-04-12T23:59:00Z",
     createdAt: "2026-03-28T14:00:00Z",
@@ -225,7 +225,7 @@ export const mockUserCards: MockCard[] = [
     courseName: "Basis Data",
     difficulty: 2,
     reflection: "Masih bingung subquery correlated",
-    personalBest: 70,
+    personal_best: 70,
     goalCheck: "neutral",
     deadline: null,
     createdAt: "2026-04-01T09:00:00Z",
@@ -238,7 +238,7 @@ export const mockUserCards: MockCard[] = [
     courseName: "Rekayasa Perangkat Lunak",
     difficulty: null,
     reflection: null,
-    personalBest: null,
+    personal_best: null,
     goalCheck: null,
     deadline: "2026-04-15T23:59:00Z",
     createdAt: "2026-04-03T11:00:00Z",
@@ -251,7 +251,7 @@ export const mockUserCards: MockCard[] = [
     courseName: "Skripsi",
     difficulty: 4,
     reflection: "Sudah kumpulkan 15 paper, perlu sintesis",
-    personalBest: 90,
+    personal_best: 90,
     goalCheck: "helped",
     deadline: "2026-04-08T23:59:00Z",
     createdAt: "2026-03-26T08:00:00Z",
@@ -264,7 +264,7 @@ export const mockUserCards: MockCard[] = [
     courseName: "Algoritma dan Pemrograman",
     difficulty: 5,
     reflection: null,
-    personalBest: 65,
+    personal_best: 65,
     goalCheck: null,
     deadline: "2026-04-09T08:00:00Z",
     createdAt: "2026-04-05T07:00:00Z",

@@ -211,7 +211,7 @@ def move_card(card_id):
 
     return jsonify({
         "message": "Card moved",
-        "newlyUnlocked": badge_results,
+        "newly_unlocked": badge_results,
         "streak": streak,
     }), 200
 
@@ -338,7 +338,7 @@ def update_card(card_id):
 
     return jsonify({
         "message": msg,
-        "newlyUnlocked": badge_results,
+        "newly_unlocked": badge_results,
     }), code
 
 

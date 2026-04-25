@@ -24,7 +24,7 @@ export const useGoalsStore = create<GoalsState>((set) => {
       const [goalsRes, coursesRes] = await Promise.all([
         api.get<{
           general: { text_pre: string; text_highlight: string } | null;
-          taskGoals: TaskGoal[];
+          task_goals: TaskGoal[];
         }>("/api/goals"),
         api.get<{
           courses: { course_name: string; completed: number; total: number }[];
@@ -33,8 +33,8 @@ export const useGoalsStore = create<GoalsState>((set) => {
 
       const generalGoal = goalsRes.general
         ? {
-            textPre: goalsRes.general.text_pre || "",
-            textHighlight: goalsRes.general.text_highlight || "",
+            text_pre: goalsRes.general.text_pre || "",
+            text_highlight: goalsRes.general.text_highlight || "",
           }
         : null;
 
@@ -42,12 +42,12 @@ export const useGoalsStore = create<GoalsState>((set) => {
         (c, i) => ({
           id: `course-${i}`,
           name: c.course_name,
-          completedTasks: c.completed,
-          totalTasks: c.total,
+          completed_tasks: c.completed,
+          total_tasks: c.total,
         })
       );
 
-      return { generalGoal, taskGoals: goalsRes.taskGoals || [], courses };
+      return { generalGoal, taskGoals: goalsRes.task_goals || [], courses };
     },
     GOALS_CACHE_MS
   );
@@ -77,8 +77,8 @@ export const useGoalsStore = create<GoalsState>((set) => {
 
     updateGeneralGoal: async (data) => {
       await api.put("/api/goals/general", {
-        textPre: data.textPre,
-        textHighlight: data.textHighlight,
+        text_pre: data.text_pre,
+        text_highlight: data.text_highlight,
       });
       set({ generalGoal: data });
     },

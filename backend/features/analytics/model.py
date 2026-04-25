@@ -47,10 +47,10 @@ class Analytics:
         return {
             "stats": {
                 "streak": streak_current,
-                "focusHours": focus_hours,
-                "tasksCompleted": tasks_completed,
-                "badgesUnlocked": badges_unlocked,
-                "totalBadges": total_badges,
+                "focus_hours": focus_hours,
+                "tasks_completed": tasks_completed,
+                "badges_unlocked": badges_unlocked,
+                "total_badges": total_badges,
             },
             "patterns": patterns,
         }
@@ -102,17 +102,17 @@ class Analytics:
 
         return {
             "summary": {
-                "totalCards": total_cards,
-                "completedCards": completed_cards,
-                "completionRate": completion_rate,
-                "personalBest": personal_best,
+                "total_cards": total_cards,
+                "completed_cards": completed_cards,
+                "completion_rate": completion_rate,
+                "personal_best": personal_best,
             },
-            "taskDistribution": {
+            "task_distribution": {
                 "total": total_cards,
-                "todoPercent": todo_pct,
-                "progPercent": prog_pct,
-                "revPercent": rev_pct,
-                "donePercent": done_pct,
+                "todo_percent": todo_pct,
+                "prog_percent": prog_pct,
+                "rev_percent": rev_pct,
+                "done_percent": done_pct,
             },
         }
 
@@ -203,32 +203,32 @@ class Analytics:
 
             strategies.append({
                 "name": name,
-                "taskCount": total_cards,
-                "doneCount": done_count,
+                "task_count": total_cards,
+                "done_count": done_count,
                 "subjective": {
-                    "avgRating": avg_rating,
-                    "totalRated": total_rated,
-                    "positivePercent": positive_pct,
+                    "avg_rating": avg_rating,
+                    "total_rated": total_rated,
+                    "positive_percent": positive_pct,
                 },
                 "confidence": {
-                    "avgConfidence": avg_confidence,
-                    "confidencePercent": confidence_pct,
-                    "totalReflections": len(q2_confidences),
+                    "avg_confidence": avg_confidence,
+                    "confidence_percent": confidence_pct,
+                    "total_reflections": len(q2_confidences),
                 },
                 "completion": {
-                    "doneCount": done_count,
-                    "completionRate": completion_rate,
+                    "done_count": done_count,
+                    "completion_rate": completion_rate,
                 },
                 "objective": {
-                    "avgImprovement": avg_improvement,
-                    "totalTracked": total_tracked,
-                    "isDataInsufficient": total_tracked < 2,
+                    "avg_improvement": avg_improvement,
+                    "total_tracked": total_tracked,
+                    "is_data_insufficient": total_tracked < 2,
                 },
-                "combinedScore": round(combined_score, 1),
-                "hasSufficientData": has_sufficient_data,
+                "combined_score": round(combined_score, 1),
+                "has_sufficient_data": has_sufficient_data,
             })
 
-        strategies.sort(key=lambda s: s["combinedScore"], reverse=True)
+        strategies.sort(key=lambda s: s["combined_score"], reverse=True)
 
         return {"strategies": strategies}
 
@@ -251,7 +251,7 @@ class Analytics:
         ).sort("created_at", 1))
 
         if not logs:
-            return {"courseCode": None, "availableCourses": [], "dataPoints": [], "trend": "stable"}
+            return {"course_code": None, "available_courses": [], "data_points": [], "trend": "stable"}
 
         # Build card lookup
         user_cards = list(mongo.db.cards.find({"user_id": user_id, "deleted": {"$ne": True}}))
@@ -307,11 +307,11 @@ class Analytics:
             course_data[cname].append({
                 "date": created.strftime("%Y-%m-%d"),
                 "confidence": confidence,
-                "learningGain": gain,
+                "learning_gain": gain,
             })
 
         if not course_data:
-            return {"courseCode": None, "availableCourses": [], "dataPoints": [], "trend": "stable"}
+            return {"course_code": None, "available_courses": [], "data_points": [], "trend": "stable"}
 
         # Build available courses list with course codes
         available_courses = []
@@ -319,9 +319,9 @@ class Analytics:
             available_courses.append({
                 "code": course_code_map.get(cname) or cname,
                 "name": cname,
-                "dataPoints": len(points),
+                "data_points": len(points),
             })
-        available_courses.sort(key=lambda x: x["dataPoints"], reverse=True)
+        available_courses.sort(key=lambda x: x["data_points"], reverse=True)
 
         # Resolve course_code → course_name for selection
         code_to_name = {c["code"]: c["name"] for c in available_courses}
@@ -345,9 +345,9 @@ class Analytics:
         selected_code = course_code_map.get(selected_cname) or selected_cname
 
         return {
-            "courseCode": selected_code,
-            "availableCourses": available_courses,
-            "dataPoints": data_points,
+            "course_code": selected_code,
+            "available_courses": available_courses,
+            "data_points": data_points,
             "trend": trend,
         }
 
@@ -359,7 +359,7 @@ class Analytics:
 
         prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
         if not prefs:
-            return {"current": 0, "longest": 0, "days": [], "freezesAvailable": 0}
+            return {"current": 0, "longest": 0, "days": [], "freezes_available": 0}
 
         streak = prefs.get("streak", {})
         current = streak.get("current", 0)
@@ -440,7 +440,7 @@ class Analytics:
             "current": current,
             "longest": longest,
             "days": days,
-            "freezesAvailable": freezes_available,
+            "freezes_available": freezes_available,
         }
 
     @staticmethod
@@ -562,7 +562,7 @@ class Analytics:
         ))
 
         if not sessions:
-            return {"productiveTime": "-", "productiveDays": "-"}
+            return {"productive_time": "-", "productive_days": "-"}
 
         # Count sessions per time period
         time_periods = {"pagi": 0, "siang": 0, "sore": 0, "malam": 0, "dini_hari": 0}
@@ -599,7 +599,7 @@ class Analytics:
 
         # Minimum threshold: 7 sessions for meaningful insight
         if total < 7:
-            return {"productiveTime": "-", "productiveDays": "-"}
+            return {"productive_time": "-", "productive_days": "-"}
 
         top_period_key = max(time_periods, key=time_periods.get)
         top_period_count = time_periods[top_period_key]
@@ -613,6 +613,6 @@ class Analytics:
         productive_days = f"{top_day[0]} ({top_day_pct}%)"
 
         return {
-            "productiveTime": productive_time,
-            "productiveDays": productive_days,
+            "productive_time": productive_time,
+            "productive_days": productive_days,
         }

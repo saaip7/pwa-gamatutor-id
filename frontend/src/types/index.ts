@@ -65,8 +65,8 @@ export interface Board {
 // --- Goals ---
 
 export interface GeneralGoal {
-  textPre: string;
-  textHighlight: string;
+  text_pre: string;
+  text_highlight: string;
 }
 
 export interface TaskGoal {
@@ -78,23 +78,23 @@ export interface TaskGoal {
 export interface CourseProgress {
   id: string;
   name: string;
-  completedTasks: number;
-  totalTasks: number;
+  completed_tasks: number;
+  total_tasks: number;
 }
 
 // --- Analytics ---
 
 export interface DashboardStats {
   streak: number;
-  focusHours: number;
-  tasksCompleted: number;
-  badgesUnlocked: number;
-  totalBadges: number;
+  focus_hours: number;
+  tasks_completed: number;
+  badges_unlocked: number;
+  total_badges: number;
 }
 
 export interface StudyPatterns {
-  productiveTime: string;
-  productiveDays: string;
+  productive_time: string;
+  productive_days: string;
 }
 
 export interface DashboardData {
@@ -103,63 +103,63 @@ export interface DashboardData {
 }
 
 export interface ProgressSummary {
-  totalCards: number;
-  completedCards: number;
-  completionRate: number;
-  personalBest: string;
+  total_cards: number;
+  completed_cards: number;
+  completion_rate: number;
+  personal_best: string;
 }
 
 export interface TaskDistribution {
   total: number;
-  todoPercent: number;
-  progPercent: number;
-  revPercent: number;
-  donePercent: number;
+  todo_percent: number;
+  prog_percent: number;
+  rev_percent: number;
+  done_percent: number;
 }
 
 export interface ProgressData {
   summary: ProgressSummary;
-  taskDistribution: TaskDistribution;
+  task_distribution: TaskDistribution;
 }
 
 export interface StrategyEffectiveness {
   name: string;
-  taskCount: number;
-  doneCount: number;
+  task_count: number;
+  done_count: number;
   subjective: {
-    avgRating: number;
-    totalRated: number;
-    positivePercent: number;
+    avg_rating: number;
+    total_rated: number;
+    positive_percent: number;
   };
   confidence: {
-    avgConfidence: number;
-    confidencePercent: number;
-    totalReflections: number;
+    avg_confidence: number;
+    confidence_percent: number;
+    total_reflections: number;
   };
   completion: {
-    doneCount: number;
-    completionRate: number;
+    done_count: number;
+    completion_rate: number;
   };
   objective: {
-    avgImprovement: number;
-    totalTracked: number;
-    isDataInsufficient: boolean;
+    avg_improvement: number;
+    total_tracked: number;
+    is_data_insufficient: boolean;
   };
-  combinedScore: number;
-  hasSufficientData: boolean;
+  combined_score: number;
+  has_sufficient_data: boolean;
 }
 
 export interface StrategyEffectivenessCard {
   name: string;
-  taskCount: number;
+  task_count: number;
   subjective: {
-    avgRating: number;
-    totalRated: number;
-    positivePercent: number;
+    avg_rating: number;
+    total_rated: number;
+    positive_percent: number;
   };
   completion: {
-    doneCount: number;
-    completionRate: number;
+    done_count: number;
+    completion_rate: number;
   };
 }
 
@@ -170,13 +170,13 @@ export interface StrategyEffectivenessResponse {
 export interface ConfidenceDataPoint {
   date: string;
   confidence: number;
-  learningGain: number;
+  learning_gain: number;
 }
 
 export interface ConfidenceTrendResponse {
-  courseCode: string;
-  availableCourses: { code: string; name: string; dataPoints: number }[];
-  dataPoints: ConfidenceDataPoint[];
+  course_code: string;
+  available_courses: { code: string; name: string; data_points: number }[];
+  data_points: ConfidenceDataPoint[];
   trend: "improving" | "stable" | "declining";
 }
 
@@ -188,7 +188,7 @@ export interface StreakDay {
 export interface StreakData {
   current: number;
   longest: number;
-  freezesAvailable: number;
+  freezes_available: number;
   days: StreakDay[];
 }
 

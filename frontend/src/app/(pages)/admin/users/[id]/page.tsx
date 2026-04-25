@@ -557,43 +557,43 @@ interface AnalyticsData {
   dashboard: {
     stats: {
       streak: number;
-      focusHours: number;
-      tasksCompleted: number;
-      badgesUnlocked: number;
-      totalBadges: number;
+      focus_hours: number;
+      tasks_completed: number;
+      badges_unlocked: number;
+      total_badges: number;
     };
     patterns: {
-      productiveTime: string;
-      productiveDays: string;
+      productive_time: string;
+      productive_days: string;
     };
   } | null;
   progress: {
     summary: {
-      totalCards: number;
-      completedCards: number;
-      completionRate: number;
-      personalBest: string;
+      total_cards: number;
+      completed_cards: number;
+      completion_rate: number;
+      personal_best: string;
     };
-    taskDistribution: {
+    task_distribution: {
       total: number;
-      todoPercent: number;
-      progPercent: number;
-      revPercent: number;
-      donePercent: number;
+      todo_percent: number;
+      prog_percent: number;
+      rev_percent: number;
+      done_percent: number;
     };
   } | null;
   strategy_effectiveness: {
     strategies: {
       name: string;
-      taskCount: number;
-      subjective: { avgRating: number; totalRated: number; positivePercent: number };
-      objective: { avgImprovement: number; totalTracked: number; isDataInsufficient: boolean };
+      task_count: number;
+      subjective: { avg_rating: number; total_rated: number; positive_percent: number };
+      objective: { avg_improvement: number; total_tracked: number; is_data_insufficient: boolean };
     }[];
   } | null;
   confidence_trend: {
-    courseName: string | null;
-    availableCourses: { name: string; dataPoints: number }[];
-    dataPoints: { date: string; confidence: number | null; learningGain: number | null }[];
+    course_name: string | null;
+    available_courses: { name: string; data_points: number }[];
+    data_points: { date: string; confidence: number | null; learning_gain: number | null }[];
     trend: string;
   } | null;
 }
@@ -643,7 +643,7 @@ function AnalyticsTab({ userId }: { userId: string }) {
 
   const db = data.dashboard?.stats ?? null;
   const prog = data.progress?.summary ?? null;
-  const progDist = data.progress?.taskDistribution ?? null;
+  const progDist = data.progress?.task_distribution ?? null;
   const strat = data.strategy_effectiveness;
   const conf = data.confidence_trend;
 
@@ -675,7 +675,7 @@ function AnalyticsTab({ userId }: { userId: string }) {
               <Clock className="w-5 h-5" style={{ color: "#3B82F6" }} />
             </div>
             <div className="min-w-0">
-              <p className="text-2xl font-bold text-neutral-800">{db?.focusHours ?? 0}</p>
+              <p className="text-2xl font-bold text-neutral-800">{db?.focus_hours ?? 0}</p>
               <p className="text-sm text-neutral-400">Focus Hours</p>
             </div>
           </div>
@@ -689,7 +689,7 @@ function AnalyticsTab({ userId }: { userId: string }) {
               <CheckCircle2 className="w-5 h-5" style={{ color: "#10b981" }} />
             </div>
             <div className="min-w-0">
-              <p className="text-2xl font-bold text-neutral-800">{db?.tasksCompleted ?? 0}</p>
+              <p className="text-2xl font-bold text-neutral-800">{db?.tasks_completed ?? 0}</p>
               <p className="text-sm text-neutral-400">Tasks Done</p>
             </div>
           </div>
@@ -703,7 +703,7 @@ function AnalyticsTab({ userId }: { userId: string }) {
               <Award className="w-5 h-5" style={{ color: "#d97706" }} />
             </div>
             <div className="min-w-0">
-              <p className="text-2xl font-bold text-neutral-800">{db?.badgesUnlocked ?? 0}<span className="text-sm font-normal text-neutral-400">/{db?.totalBadges ?? 0}</span></p>
+              <p className="text-2xl font-bold text-neutral-800">{db?.badges_unlocked ?? 0}<span className="text-sm font-normal text-neutral-400">/{db?.total_badges ?? 0}</span></p>
               <p className="text-sm text-neutral-400">Badges</p>
             </div>
           </div>
@@ -720,13 +720,13 @@ function AnalyticsTab({ userId }: { userId: string }) {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-neutral-500">Completion Rate</span>
                 <span className="text-sm font-semibold" style={{ color: "#10b981" }}>
-                  {Math.round(prog.completionRate ?? 0)}%
+                  {Math.round(prog.completion_rate ?? 0)}%
                 </span>
               </div>
-              {prog.personalBest && (
+              {prog.personal_best && (
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-neutral-500">Personal Best</span>
-                  <span className="text-sm font-semibold" style={{ color: "#3B82F6" }}>{prog.personalBest}</span>
+                  <span className="text-sm font-semibold" style={{ color: "#3B82F6" }}>{prog.personal_best}</span>
                 </div>
               )}
 
@@ -736,10 +736,10 @@ function AnalyticsTab({ userId }: { userId: string }) {
                 style={{ height: "28px", display: "flex", background: "#f3f4f6" }}
               >
                 {[
-                  { pct: progDist.todoPercent ?? 0, color: "#94a3b8" },
-                  { pct: progDist.progPercent ?? 0, color: "#3B82F6" },
-                  { pct: progDist.revPercent ?? 0, color: "#f59e0b" },
-                  { pct: progDist.donePercent ?? 0, color: "#10b981" },
+                  { pct: progDist.todo_percent ?? 0, color: "#94a3b8" },
+                  { pct: progDist.prog_percent ?? 0, color: "#3B82F6" },
+                  { pct: progDist.rev_percent ?? 0, color: "#f59e0b" },
+                  { pct: progDist.done_percent ?? 0, color: "#10b981" },
                 ].map((seg, i) => (
                   <div
                     key={i}
@@ -763,10 +763,10 @@ function AnalyticsTab({ userId }: { userId: string }) {
               {/* Legend */}
               <div className="flex flex-wrap items-center" style={{ gap: "16px" }}>
                 {[
-                  { label: "To Do", pct: progDist.todoPercent ?? 0, color: "#94a3b8" },
-                  { label: "In Progress", pct: progDist.progPercent ?? 0, color: "#3B82F6" },
-                  { label: "Review", pct: progDist.revPercent ?? 0, color: "#f59e0b" },
-                  { label: "Done", pct: progDist.donePercent ?? 0, color: "#10b981" },
+                  { label: "To Do", pct: progDist.todo_percent ?? 0, color: "#94a3b8" },
+                  { label: "In Progress", pct: progDist.prog_percent ?? 0, color: "#3B82F6" },
+                  { label: "Review", pct: progDist.rev_percent ?? 0, color: "#f59e0b" },
+                  { label: "Done", pct: progDist.done_percent ?? 0, color: "#10b981" },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center" style={{ gap: "6px" }}>
                     <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: item.color }} />
@@ -789,7 +789,7 @@ function AnalyticsTab({ userId }: { userId: string }) {
       ) : (
         <div style={col(12)}>
           {strat.strategies.map((s) => {
-            const hasData = s.taskCount > 0;
+            const hasData = s.task_count > 0;
             return (
               <Card key={s.name}>
                 <div className="p-4" style={col(14)}>
@@ -797,7 +797,7 @@ function AnalyticsTab({ userId }: { userId: string }) {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-semibold text-neutral-800">{s.name}</p>
-                      <p className="text-sm text-neutral-400">{s.taskCount} tugas</p>
+                      <p className="text-sm text-neutral-400">{s.task_count} tugas</p>
                     </div>
                   </div>
 
@@ -809,28 +809,28 @@ function AnalyticsTab({ userId }: { userId: string }) {
                   ) : (
                     <div style={col(10)}>
                       {/* Subjective: Rating */}
-                      {s.subjective && s.subjective.totalRated > 0 && (
+                      {s.subjective && s.subjective.total_rated > 0 && (
                         <div className="rounded-xl p-3" style={{ background: "#fafafa", border: "1px solid #f3f4f6" }}>
                           <div className="flex justify-between items-center mb-2">
                             <p className="text-xs text-neutral-500 font-medium">
-                              Rating <span className="text-neutral-400">({s.subjective.totalRated} tugas)</span>
+                              Rating <span className="text-neutral-400">({s.subjective.total_rated} tugas)</span>
                             </p>
                             <span className="text-sm font-bold text-neutral-800">
-                              {s.subjective.avgRating?.toFixed(1) ?? "—"}<span className="text-xs text-neutral-400 font-medium">/5</span>
+                              {s.subjective.avg_rating?.toFixed(1) ?? "—"}<span className="text-xs text-neutral-400 font-medium">/5</span>
                             </span>
                           </div>
                           <div className="w-full rounded-full overflow-hidden" style={{ height: "6px", background: "#e5e7eb" }}>
                             <div
                               className="h-full rounded-full"
                               style={{
-                                width: `${s.subjective.positivePercent ?? 0}%`,
+                                width: `${s.subjective.positive_percent ?? 0}%`,
                                 background: "#8b5cf6",
                                 transition: "width 0.5s",
                               }}
                             />
                           </div>
                           <p className="text-xs text-neutral-400 text-right mt-1 font-medium">
-                            {Math.round(s.subjective.positivePercent ?? 0)}% rating positif
+                            {Math.round(s.subjective.positive_percent ?? 0)}% rating positif
                           </p>
                         </div>
                       )}
@@ -840,14 +840,14 @@ function AnalyticsTab({ userId }: { userId: string }) {
                         <div
                           className="rounded-xl p-3"
                           style={{
-                            background: s.objective.isDataInsufficient ? "rgba(245,158,11,0.06)" : "rgba(59,130,246,0.06)",
-                            border: `1px solid ${s.objective.isDataInsufficient ? "rgba(245,158,11,0.15)" : "rgba(59,130,246,0.15)"}`,
+                            background: s.objective.is_data_insufficient ? "rgba(245,158,11,0.06)" : "rgba(59,130,246,0.06)",
+                            border: `1px solid ${s.objective.is_data_insufficient ? "rgba(245,158,11,0.15)" : "rgba(59,130,246,0.15)"}`,
                           }}
                         >
                           <p className="text-xs text-neutral-500 font-medium mb-2">
-                            Peningkatan Nilai <span className="text-neutral-400">({s.objective.totalTracked} tugas)</span>
+                            Peningkatan Nilai <span className="text-neutral-400">({s.objective.total_tracked} tugas)</span>
                           </p>
-                          {s.objective.isDataInsufficient ? (
+                          {s.objective.is_data_insufficient ? (
                             <div className="flex items-center gap-2">
                               <div
                                 className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
@@ -870,10 +870,10 @@ function AnalyticsTab({ userId }: { userId: string }) {
                               </div>
                               <div>
                                 <p className="text-lg font-bold text-neutral-900">
-                                  +{Math.round(s.objective.avgImprovement ?? 0)}%
+                                  +{Math.round(s.objective.avg_improvement ?? 0)}%
                                 </p>
                                 <p className="text-xs font-medium" style={{ color: "#059669" }}>
-                                  Peningkatan {(s.objective.avgImprovement ?? 0) > 20 ? "signifikan" : "stabil"}
+                                  Peningkatan {(s.objective.avg_improvement ?? 0) > 20 ? "signifikan" : "stabil"}
                                 </p>
                               </div>
                             </div>
@@ -892,9 +892,9 @@ function AnalyticsTab({ userId }: { userId: string }) {
       {/* --- 4. Confidence Trend (SVG Line Chart) --- */}
       <SectionLabel>Confidence Trend</SectionLabel>
       <Card>
-        {!conf || !conf.dataPoints || conf.dataPoints.length < 2 ? (
+        {!conf || !conf.data_points || conf.data_points.length < 2 ? (
           <div className="px-4 py-8 text-center text-sm text-neutral-400">
-            {conf?.dataPoints?.length === 1
+            {conf?.data_points?.length === 1
               ? "Data hanya 1 titik, perlu min. 2 untuk trend"
               : "Belum ada data confidence"}
           </div>
@@ -903,8 +903,8 @@ function AnalyticsTab({ userId }: { userId: string }) {
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center" style={{ gap: "8px" }}>
-                {conf.courseName && (
-                  <span className="text-sm font-medium text-neutral-800">{conf.courseName}</span>
+                {conf.course_name && (
+                  <span className="text-sm font-medium text-neutral-800">{conf.course_name}</span>
                 )}
                 {(() => {
                   const t = conf.trend;
@@ -920,10 +920,10 @@ function AnalyticsTab({ userId }: { userId: string }) {
                   );
                 })()}
               </div>
-              {conf.dataPoints.length > 0 && (
+              {conf.data_points.length > 0 && (
                 <span className="text-sm text-neutral-500">
                   Latest: <span className="font-semibold text-neutral-800">
-                    {conf.dataPoints[conf.dataPoints.length - 1].confidence?.toFixed(1)}
+                    {conf.data_points[conf.data_points.length - 1].confidence?.toFixed(1)}
                   </span>
                 </span>
               )}
@@ -956,8 +956,8 @@ function AnalyticsTab({ userId }: { userId: string }) {
                 ))}
                 {/* Area fill under confidence line */}
                 {(() => {
-                  const pts = conf.dataPoints.map((dp, i) => {
-                    const x = conf.dataPoints.length === 1 ? 50 : (i / (conf.dataPoints.length - 1)) * 100;
+                  const pts = conf.data_points.map((dp, i) => {
+                    const x = conf.data_points.length === 1 ? 50 : (i / (conf.data_points.length - 1)) * 100;
                     const val = Math.max(1, Math.min(5, dp.confidence ?? 1));
                     const y = 100 - ((val - 1) / 4) * 100;
                     return { x, y };
@@ -968,8 +968,8 @@ function AnalyticsTab({ userId }: { userId: string }) {
                 })()}
                 {/* Confidence line (solid blue) */}
                 {(() => {
-                  const pts = conf.dataPoints.map((dp, i) => {
-                    const x = conf.dataPoints.length === 1 ? 50 : (i / (conf.dataPoints.length - 1)) * 100;
+                  const pts = conf.data_points.map((dp, i) => {
+                    const x = conf.data_points.length === 1 ? 50 : (i / (conf.data_points.length - 1)) * 100;
                     const val = Math.max(1, Math.min(5, dp.confidence ?? 1));
                     const y = 100 - ((val - 1) / 4) * 100;
                     return { x, y };
@@ -979,12 +979,12 @@ function AnalyticsTab({ userId }: { userId: string }) {
                 })()}
                 {/* Learning Gain line (dashed green) */}
                 {(() => {
-                  const validPts = conf.dataPoints.filter((dp) => dp.learningGain != null);
+                  const validPts = conf.data_points.filter((dp) => dp.learning_gain != null);
                   if (validPts.length < 2) return null;
                   const pts = validPts.map((dp, i) => {
                     const x = validPts.length === 1 ? 50 : (i / (validPts.length - 1)) * 100;
                     // learningGain is already a percentage, normalize to 1-5 scale for chart
-                    const val = Math.max(1, Math.min(5, (dp.learningGain ?? 0) / 25 + 1));
+                    const val = Math.max(1, Math.min(5, (dp.learning_gain ?? 0) / 25 + 1));
                     const y = 100 - ((val - 1) / 4) * 100;
                     return { x, y };
                   });
@@ -992,8 +992,8 @@ function AnalyticsTab({ userId }: { userId: string }) {
                   return <path d={d} fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="2,2" vectorEffect="non-scaling-stroke" />;
                 })()}
                 {/* Data point dots */}
-                {conf.dataPoints.map((dp, i) => {
-                  const x = conf.dataPoints.length === 1 ? 50 : (i / (conf.dataPoints.length - 1)) * 100;
+                {conf.data_points.map((dp, i) => {
+                  const x = conf.data_points.length === 1 ? 50 : (i / (conf.data_points.length - 1)) * 100;
                   const val = Math.max(1, Math.min(5, dp.confidence ?? 1));
                   const y = 100 - ((val - 1) / 4) * 100;
                   return (
@@ -1005,7 +1005,7 @@ function AnalyticsTab({ userId }: { userId: string }) {
 
             {/* X-axis labels */}
             <div className="flex justify-between" style={{ marginTop: "4px" }}>
-              {conf.dataPoints.map((dp, i) => (
+              {conf.data_points.map((dp, i) => (
                 <span key={i} className="text-neutral-400" style={{ fontSize: "9px" }}>
                   {fmtDate(dp.date)}
                 </span>

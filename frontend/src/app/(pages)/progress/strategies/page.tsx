@@ -37,8 +37,8 @@ export default function StrategyEffectivenessPage() {
     if (!strategies?.strategies) return [];
     return strategies.strategies.map((s, i) => {
       const icon = strategyIcon(s.name);
-      const isTop = i === 0 && s.hasSufficientData;
-      const hasData = s.taskCount > 0;
+      const isTop = i === 0 && s.has_sufficient_data;
+      const hasData = s.task_count > 0;
 
       return {
         id: `strat-${i}`,
@@ -52,19 +52,19 @@ export default function StrategyEffectivenessPage() {
         ...(hasData
           ? {
               subjective: {
-                rating: s.subjective.avgRating,
-                totalTasks: s.subjective.totalRated,
-                positivePercent: s.subjective.positivePercent,
-                emoji: ratingEmoji(s.subjective.avgRating),
+                rating: s.subjective.avg_rating,
+                total_tasks: s.subjective.total_rated,
+                positive_percent: s.subjective.positive_percent,
+                emoji: ratingEmoji(s.subjective.avg_rating),
               },
               completion: {
-                doneCount: s.completion.doneCount,
-                completionRate: s.completion.completionRate,
+                done_count: s.completion.done_count,
+                completion_rate: s.completion.completion_rate,
               },
               objective: {
-                improvement: s.objective.avgImprovement,
-                totalTasks: s.objective.totalTracked,
-                isDataInsufficient: s.objective.isDataInsufficient,
+                improvement: s.objective.avg_improvement,
+                total_tasks: s.objective.total_tracked,
+                is_data_insufficient: s.objective.is_data_insufficient,
               },
             }
           : {}),
@@ -74,10 +74,10 @@ export default function StrategyEffectivenessPage() {
 
   const topStrategy = strategies?.strategies?.[0];
   const topName = topStrategy?.name ?? "";
-  const topConfidence = topStrategy?.confidence?.confidencePercent ?? 0;
-  const topCompletion = topStrategy?.completion?.completionRate ?? 0;
-  const topDone = topStrategy?.completion?.doneCount ?? 0;
-  const showBanner = topStrategy?.hasSufficientData && topStrategy.taskCount > 0;
+  const topConfidence = topStrategy?.confidence?.confidence_percent ?? 0;
+  const topCompletion = topStrategy?.completion?.completion_rate ?? 0;
+  const topDone = topStrategy?.completion?.done_count ?? 0;
+  const showBanner = topStrategy?.has_sufficient_data && topStrategy.task_count > 0;
 
   return (
     <div className="w-full h-screen bg-neutral-50 flex flex-col mx-auto overflow-hidden relative max-w-md">

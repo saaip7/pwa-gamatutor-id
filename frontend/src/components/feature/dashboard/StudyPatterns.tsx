@@ -6,8 +6,8 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 interface StudyPatternData {
-  productiveTime: string;
-  productiveDays: string;
+  productive_time: string;
+  productive_days: string;
 }
 
 interface StudyPatternsProps {
@@ -22,12 +22,12 @@ function parseInsight(raw: string) {
 }
 
 export function StudyPatterns({ patterns, className }: StudyPatternsProps) {
-  const hasTime = patterns.productiveTime && patterns.productiveTime !== "-";
-  const hasDays = patterns.productiveDays && patterns.productiveDays !== "-";
+  const hasTime = patterns.productive_time && patterns.productive_time !== "-";
+  const hasDays = patterns.productive_days && patterns.productive_days !== "-";
   const hasData = hasTime || hasDays;
 
-  const time = parseInsight(patterns.productiveTime ?? "-");
-  const days = parseInsight(patterns.productiveDays ?? "-");
+  const time = parseInsight(patterns.productive_time ?? "-");
+  const days = parseInsight(patterns.productive_days ?? "-");
 
   return (
     <div

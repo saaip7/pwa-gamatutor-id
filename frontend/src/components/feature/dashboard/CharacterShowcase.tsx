@@ -12,10 +12,10 @@ import styles from "./CharacterShowcase.module.css";
 
 interface UserStats {
   streak: number;
-  focusHours: number;
-  tasksCompleted: number;
-  badgesUnlocked: number;
-  totalBadges: number;
+  focus_hours: number;
+  tasks_completed: number;
+  badges_unlocked: number;
+  total_badges: number;
 }
 
 interface CharacterShowcaseProps {
@@ -50,7 +50,7 @@ export function CharacterShowcase({ stats, onStreakTap, className }: CharacterSh
           <div className="flex flex-col items-center">
             <div className="flex items-center gap-1 mb-1">
               <Timer className="text-primary w-[18px] h-[18px]" />
-              <span className="text-sm font-bold text-neutral-900">{stats.focusHours}j</span>
+              <span className="text-sm font-bold text-neutral-900">{stats.focus_hours}j</span>
             </div>
             <span className="text-xs font-medium text-neutral-500">Fokus</span>
           </div>
@@ -60,7 +60,7 @@ export function CharacterShowcase({ stats, onStreakTap, className }: CharacterSh
           <div className="flex flex-col items-center">
             <div className="flex items-center gap-1 mb-1">
               <CheckCircle2 className="text-success w-[18px] h-[18px]" />
-              <span className="text-sm font-bold text-neutral-900">{stats.tasksCompleted}</span>
+              <span className="text-sm font-bold text-neutral-900">{stats.tasks_completed}</span>
             </div>
             <span className="text-xs font-medium text-neutral-500">Tugas</span>
           </div>
@@ -73,7 +73,7 @@ export function CharacterShowcase({ stats, onStreakTap, className }: CharacterSh
             <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm border border-blue-100 pl-2.5 pr-3.5 py-1.5 rounded-full z-20 flex items-center gap-1.5 shadow-sm">
               <ShieldCheck className="w-[15px] h-[15px] text-blue-600" />
               <span className="text-xs font-bold text-blue-700 tracking-tight">
-                {stats.badgesUnlocked > 0 ? `${stats.badgesUnlocked} Pencapaian` : "Mulai Belajar"}
+                {stats.badges_unlocked > 0 ? `${stats.badges_unlocked} Pencapaian` : "Mulai Belajar"}
               </span>
             </div>
 
