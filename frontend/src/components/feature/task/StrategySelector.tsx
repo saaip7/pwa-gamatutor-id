@@ -26,7 +26,7 @@ export function StrategySelector({ value, onChange }: StrategySelectorProps) {
   const analyticsStrategies = useAnalyticsStore((s) => s.strategies);
   const fetchStrategies = useAnalyticsStore((s) => s.fetchStrategies);
 
-  const topStrategyName = analyticsStrategies?.strategies?.[0]?.hasSufficientData
+  const topStrategyName = analyticsStrategies?.strategies?.[0]?.has_sufficient_data
     ? analyticsStrategies.strategies[0].name
     : null;
 

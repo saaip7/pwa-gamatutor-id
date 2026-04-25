@@ -53,7 +53,7 @@ def check_and_unlock():
             })
             Log.create(user_id, "badge_unlocked", f"Badge unlocked: {badge_type}", {"badge_type": badge_type})
 
-        return jsonify({"newlyUnlocked": result}), 200
+        return jsonify({"newly_unlocked": result}), 200
     except Exception as e:
         return jsonify({"message": "An error occurred", "error": str(e)}), 500
 

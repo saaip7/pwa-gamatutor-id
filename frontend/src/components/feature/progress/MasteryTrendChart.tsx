@@ -9,14 +9,14 @@ import { cn } from "@/lib/utils";
 interface CourseOption {
   code: string;
   name: string;
-  dataPoints: number;
+  data_points: number;
 }
 
 interface MasteryTrendChartProps {
-  dataPoints: ConfidenceDataPoint[];
+  data_points: ConfidenceDataPoint[];
   trend: "improving" | "stable" | "declining" | null;
-  courseCode: string | null;
-  availableCourses: CourseOption[];
+  course_code: string | null;
+  available_courses: CourseOption[];
   onCourseChange: (courseCode: string | null) => void;
 }
 
@@ -47,14 +47,14 @@ function normalizeGainToScale(gainPercent: number): number {
 
 function mapDataToSvg(
   dataPoints: ConfidenceDataPoint[],
-  key: "confidence" | "learningGain"
+  key: "confidence" | "learning_gain"
 ): { x: number; y: number }[] {
   const valid = dataPoints.filter((dp) => dp[key] != null);
   if (valid.length === 0) return [];
   return valid.map((dp, i) => {
     const x = valid.length === 1 ? 50 : (i / (valid.length - 1)) * 100;
     const rawValue = dp[key]!;
-    const value = key === "learningGain" ? normalizeGainToScale(rawValue) : Math.max(1, Math.min(5, rawValue));
+    const value = key === "learning_gain" ? normalizeGainToScale(rawValue) : Math.max(1, Math.min(5, rawValue));
     const y = 100 - ((value - 1) / 4) * 100;
     return { x, y };
   });
@@ -70,17 +70,17 @@ function formatDateLabel(dateStr: string): string {
 }
 
 export function MasteryTrendChart({
-  dataPoints,
+  data_points,
   trend,
-  courseCode,
-  availableCourses,
+  course_code,
+  available_courses,
   onCourseChange,
 }: MasteryTrendChartProps) {
-  const hasData = dataPoints.length >= 2;
-  const hasCourses = availableCourses.length > 0;
+  const hasData = data_points.length >= 2;
+  const hasCourses = available_courses.length > 0;
 
-  const confidencePoints = hasData ? mapDataToSvg(dataPoints, "confidence") : [];
-  const gainPoints = hasData ? mapDataToSvg(dataPoints, "learningGain") : [];
+  const confidencePoints = hasData ? mapDataToSvg(data_points, "confidence") : [];
+  const gainPoints = hasData ? mapDataToSvg(data_points, "learning_gain") : [];
 
   const trendLabel =
     trend === "improving"
@@ -92,7 +92,7 @@ export function MasteryTrendChart({
           : null;
 
   // X-axis dates from valid data points only
-  const dateLabels = dataPoints.map((dp) => dp.date);
+  const dateLabels = data_points.map((dp) => dp.date);
 
   return (
     <motion.div
@@ -117,8 +117,8 @@ export function MasteryTrendChart({
       {/* Course Selector */}
       {hasCourses && (
         <div className="flex gap-2 overflow-x-auto no-scrollbar mb-4 -mx-1 px-1">
-          {availableCourses.map((course) => {
-            const isActive = course.code === courseCode;
+          {available_courses.map((course) => {
+            const isActive = course.code === course_code;
             return (
               <button
                 key={course.code}

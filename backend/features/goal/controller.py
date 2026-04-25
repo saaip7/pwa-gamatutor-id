@@ -26,8 +26,8 @@ def get_goals():
 
         return jsonify({
             "general": general_data,
-            "taskGoals": task_goals,
-            "courseProgress": course_progress,
+            "task_goals": task_goals,
+            "course_progress": course_progress,
         }), 200
     except Exception as e:
         return jsonify({"message": "An error occurred", "error": str(e)}), 500
@@ -38,8 +38,8 @@ def set_general_goal():
     """Create or update the general (main) goal."""
     user_id = get_jwt_identity()
     data = request.json
-    text_pre = data.get("textPre", "")
-    text_highlight = data.get("textHighlight", "")
+    text_pre = data.get("text_pre", "") or data.get("textPre", "")
+    text_highlight = data.get("text_highlight", "") or data.get("textHighlight", "")
 
     if not text_highlight:
         return jsonify({"message": "textHighlight is required"}), 400
@@ -88,7 +88,7 @@ def set_task_goal(card_id):
         # Check Architect badge (task linked to goal hierarchy)
         badge_results = BadgeEngine.evaluate(user_id, "goal_linked")
 
-        return jsonify({"goal": goal, "newlyUnlocked": badge_results}), 200
+        return jsonify({"goal": goal, "newly_unlocked": badge_results}), 200
     except Exception as e:
         return jsonify({"message": "An error occurred", "error": str(e)}), 500
 

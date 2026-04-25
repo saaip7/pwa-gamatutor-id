@@ -38,7 +38,7 @@ def end():
 
     return jsonify({
         "message": "Session ended",
-        "newlyUnlocked": badge_results,
+        "newly_unlocked": badge_results,
         "duration_ms": success["duration_ms"],
     }), 200
 

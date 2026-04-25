@@ -13,14 +13,14 @@ function parseInsight(raw: string | undefined) {
 }
 
 interface InsightCardProps {
-  productiveTime?: string;
-  productiveDays?: string;
+  productive_time?: string;
+  productive_days?: string;
   className?: string;
 }
 
-export function InsightCard({ productiveTime, productiveDays, className }: InsightCardProps) {
-  const time = parseInsight(productiveTime);
-  const day = parseInsight(productiveDays);
+export function InsightCard({ productive_time, productive_days, className }: InsightCardProps) {
+  const time = parseInsight(productive_time);
+  const day = parseInsight(productive_days);
   const hasData = time || day;
 
   return (

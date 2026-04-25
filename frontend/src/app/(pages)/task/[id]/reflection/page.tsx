@@ -82,7 +82,7 @@ export default function GuidedReflectionPage() {
 
   // Main goal from goals store
   const mainGoal = generalGoal
-    ? `${generalGoal.textPre} ${generalGoal.textHighlight}`.trim()
+    ? `${generalGoal.text_pre} ${generalGoal.text_highlight}`.trim()
     : card?.task_name ?? "Belajar";
 
   // Duration display

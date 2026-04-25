@@ -21,18 +21,18 @@ import type { ConfidenceDataPoint, ReflectionNote } from "@/types";
 const DUMMY_ACTIVE_PERIOD = "week" as const;
 
 const DUMMY_SUMMARY: SummaryData = {
-  totalCards: 12,
-  completedCards: 5,
-  completionRate: 42,
-  personalBest: "45:00",
+  total_cards: 12,
+  completed_cards: 5,
+  completion_rate: 42,
+  personal_best: "45:00",
 };
 
 const DUMMY_TASK_DIST: TaskDistributionData = {
   total: 12,
-  todoPercent: 25,
-  progPercent: 33,
-  revPercent: 0,
-  donePercent: 42,
+  todo_percent: 25,
+  prog_percent: 33,
+  rev_percent: 0,
+  done_percent: 42,
 };
 
 const DUMMY_STRATEGIES: StrategyItem[] = [
@@ -42,12 +42,12 @@ const DUMMY_STRATEGIES: StrategyItem[] = [
 ];
 
 const DUMMY_TREND: ConfidenceDataPoint[] = [
-  { date: "2026-04-10", confidence: 3.0, learningGain: 0 },
-  { date: "2026-04-11", confidence: 3.2, learningGain: 0.2 },
-  { date: "2026-04-12", confidence: 3.5, learningGain: 0.3 },
-  { date: "2026-04-13", confidence: 3.3, learningGain: -0.2 },
-  { date: "2026-04-14", confidence: 3.8, learningGain: 0.5 },
-  { date: "2026-04-15", confidence: 4.0, learningGain: 0.2 },
+  { date: "2026-04-10", confidence: 3.0, learning_gain: 0 },
+  { date: "2026-04-11", confidence: 3.2, learning_gain: 0.2 },
+  { date: "2026-04-12", confidence: 3.5, learning_gain: 0.3 },
+  { date: "2026-04-13", confidence: 3.3, learning_gain: -0.2 },
+  { date: "2026-04-14", confidence: 3.8, learning_gain: 0.5 },
+  { date: "2026-04-15", confidence: 4.0, learning_gain: 0.2 },
 ];
 
 const DUMMY_REFLECTION_NOTES: ReflectionNote[] = [
@@ -133,7 +133,7 @@ export default function GuideStep4Page() {
       <div className="flex-1 overflow-y-auto no-scrollbar px-6 pt-4 pb-28">
         {/* Insight */}
         <div id="guide-progress-insight">
-          <InsightCard productiveTime="Malam (18:00-24:00) (45%)" productiveDays="Senin (30%)" />
+          <InsightCard productive_time="Malam (18:00-24:00) (45%)" productive_days="Senin (30%)" />
         </div>
 
         <PeriodSelector
@@ -156,10 +156,10 @@ export default function GuideStep4Page() {
         {/* Trend Chart */}
         <div id="guide-progress-chart">
           <MasteryTrendChart
-            dataPoints={DUMMY_TREND}
+            data_points={DUMMY_TREND}
             trend="improving"
-            courseCode={null}
-            availableCourses={[]}
+            course_code={null}
+            available_courses={[]}
             onCourseChange={() => {}}
           />
         </div>

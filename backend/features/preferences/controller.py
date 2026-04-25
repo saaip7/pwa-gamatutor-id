@@ -64,7 +64,7 @@ def update_onboarding():
             badge_results = BadgeEngine.evaluate(user_id, "onboarding_completed")
 
         prefs = Preferences.get(user_id)
-        prefs["newlyUnlocked"] = badge_results
+        prefs["newly_unlocked"] = badge_results
         return jsonify(prefs), 200
     except Exception as e:
         return jsonify({"message": "An error occurred", "error": str(e)}), 500
@@ -113,7 +113,7 @@ def use_freeze():
         return jsonify({
             "message": message,
             "streak": streak,
-            "newlyUnlocked": badge_results,
+            "newly_unlocked": badge_results,
         }), 200
     except Exception as e:
         return jsonify({"message": "An error occurred", "error": str(e)}), 500

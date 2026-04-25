@@ -65,15 +65,15 @@ function boardCardToTask(card: BoardCard): Task {
 // Default data used while stores are loading
 const DEFAULT_STATS = {
   streak: 0,
-  focusHours: 0,
-  tasksCompleted: 0,
-  badgesUnlocked: 0,
-  totalBadges: 0,
+  focus_hours: 0,
+  tasks_completed: 0,
+  badges_unlocked: 0,
+  total_badges: 0,
 };
 
 const DEFAULT_PATTERNS = {
-  productiveTime: "-",
-  productiveDays: "-",
+  productive_time: "-",
+  productive_days: "-",
 };
 
 const DEFAULT_STREAK_DATA: ComponentStreakData = {
@@ -88,7 +88,7 @@ const DEFAULT_STREAK_DATA: ComponentStreakData = {
     { label: "Sab", state: "future" as const },
     { label: "Min", state: "future" as const },
   ],
-  freezesAvailable: 0,
+  freezes_available: 0,
 };
 
 const STREAK_SHOWN_KEY = "streak_hub_shown";
@@ -205,7 +205,7 @@ export default function DashboardPage() {
         userName={userName}
         hasUnreadNotifications={hasUnreadNotifications}
         streak={stats.streak}
-        tasksCompleted={stats.tasksCompleted}
+        tasks_completed={stats.tasks_completed}
       />
 
       <div className="px-6 lg:px-0 mb-8">
@@ -221,8 +221,8 @@ export default function DashboardPage() {
 
           <div className="lg:col-span-2">
             <AchievementBanner
-              unlockedCount={stats.badgesUnlocked}
-              totalCount={stats.totalBadges}
+              unlockedCount={stats.badges_unlocked}
+              totalCount={stats.total_badges}
               variant="dashboard"
             />
           </div>

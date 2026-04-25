@@ -16,7 +16,7 @@ interface DashboardHeaderProps {
   userName: string;
   hasUnreadNotifications?: boolean;
   streak?: number;
-  tasksCompleted?: number;
+  tasks_completed?: number;
 }
 
 const QUOTES_BY_STATE: Record<string, string[]> = {
@@ -53,7 +53,7 @@ function getQuote(streak?: number): string {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-export function DashboardHeader({ userName, hasUnreadNotifications = false, streak = 0, tasksCompleted = 0 }: DashboardHeaderProps) {
+export function DashboardHeader({ userName, hasUnreadNotifications = false, streak = 0, tasks_completed = 0 }: DashboardHeaderProps) {
   const quote = getQuote(streak);
   const greeting = getGreeting();
 

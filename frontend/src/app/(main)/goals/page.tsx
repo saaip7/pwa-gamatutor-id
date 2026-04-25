@@ -24,13 +24,13 @@ export default function GoalsPage() {
     id: c.id,
     title: c.name,
     icon: "BookOpen",
-    completedTasks: c.completedTasks,
-    totalTasks: c.totalTasks,
+    completedTasks: c.completed_tasks,
+    totalTasks: c.total_tasks,
     theme: THEME_CYCLE[i % THEME_CYCLE.length],
   }));
 
-  const totalCompleted = courses.reduce((sum, c) => sum + c.completedTasks, 0);
-  const totalTasks = courses.reduce((sum, c) => sum + c.totalTasks, 0);
+  const totalCompleted = courses.reduce((sum, c) => sum + c.completed_tasks, 0);
+  const totalTasks = courses.reduce((sum, c) => sum + c.total_tasks, 0);
 
   return (
     <>
@@ -38,8 +38,8 @@ export default function GoalsPage() {
 
       <div className="px-6 pb-24">
         <MainGoalCard
-          goalTextPre={generalGoal?.textPre ?? ""}
-          goalTextHighlight={generalGoal?.textHighlight ?? ""}
+          goalTextPre={generalGoal?.text_pre ?? ""}
+          goalTextHighlight={generalGoal?.text_highlight ?? ""}
           totalCompleted={totalCompleted}
           totalTasks={totalTasks}
         />

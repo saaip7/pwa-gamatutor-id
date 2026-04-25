@@ -80,7 +80,7 @@ def login():
         # Log session_start (for DAU tracking - Sub-RQ 1)
         Log.create(user_id, "session_start", f"{email} started session")
 
-        return jsonify({"token": access_token, "refreshToken": refresh_token, "role": user.get("role", "user")}), 200
+        return jsonify({"token": access_token, "refresh_token": refresh_token, "role": user.get("role", "user")}), 200
     except Exception as e:
         return jsonify({"message": "An error occurred", "error": str(e)}), 500
 

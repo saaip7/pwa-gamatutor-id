@@ -5,10 +5,10 @@ import { motion } from "framer-motion";
 
 export interface TaskDistributionData {
   total: number;
-  todoPercent: number;
-  progPercent: number;
-  revPercent: number;
-  donePercent: number;
+  todo_percent: number;
+  prog_percent: number;
+  rev_percent: number;
+  done_percent: number;
 }
 
 interface TaskDistributionChartProps {
@@ -16,9 +16,9 @@ interface TaskDistributionChartProps {
 }
 
 export function TaskDistributionChart({ data }: TaskDistributionChartProps) {
-  const stop1 = data.todoPercent;
-  const stop2 = stop1 + data.progPercent;
-  const stop3 = stop2 + data.revPercent;
+  const stop1 = data.todo_percent;
+  const stop2 = stop1 + data.prog_percent;
+  const stop3 = stop2 + data.rev_percent;
   
   const conicGradient = `conic-gradient(var(--color-primary) 0% ${stop1}%, var(--color-warning) ${stop1}% ${stop2}%, #A855F7 ${stop2}% ${stop3}%, var(--color-success) ${stop3}% 100%)`;
 
@@ -48,28 +48,28 @@ export function TaskDistributionChart({ data }: TaskDistributionChartProps) {
             <div className="w-2 h-2 rounded-full bg-primary shrink-0"></div>
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-neutral-800">PLANNING</span>
-              <span className="text-xs font-medium text-neutral-500">{data.todoPercent}%</span>
+              <span className="text-xs font-medium text-neutral-500">{data.todo_percent}%</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-warning shrink-0"></div>
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-neutral-800">MONITORING</span>
-              <span className="text-xs font-medium text-neutral-500">{data.progPercent}%</span>
+              <span className="text-xs font-medium text-neutral-500">{data.prog_percent}%</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-purple-500 shrink-0"></div>
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-neutral-800">CONTROLLING</span>
-              <span className="text-xs font-medium text-neutral-500">{data.revPercent}%</span>
+              <span className="text-xs font-medium text-neutral-500">{data.rev_percent}%</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-success shrink-0"></div>
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-neutral-800">REFLECTION</span>
-              <span className="text-xs font-medium text-neutral-500">{data.donePercent}%</span>
+              <span className="text-xs font-medium text-neutral-500">{data.done_percent}%</span>
             </div>
           </div>
         </div>

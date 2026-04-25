@@ -37,7 +37,7 @@ interface BoardState {
     position?: number
   ) => Promise<{
     message: string;
-    newlyUnlocked: unknown[];
+    newly_unlocked: unknown[];
     streak: unknown;
   } | void>;
   reorderColumn: (column: ColumnKey, cardIds: string[]) => Promise<void>;
@@ -160,12 +160,12 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     try {
       const res = await api.patch<{
         message: string;
-        newlyUnlocked: unknown[];
+        newly_unlocked: unknown[];
         streak: unknown;
       }>(`/board/card/${cardId}/move`, { column: listId, position });
 
       // If badges were unlocked, refresh badges store to trigger celebration
-      if (res.newlyUnlocked && res.newlyUnlocked.length > 0) {
+      if (res.newly_unlocked && res.newly_unlocked.length > 0) {
         import("@/stores/badges").then(({ useBadgesStore }) => {
           useBadgesStore.getState().fetchBadges();
         });
@@ -218,7 +218,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     try {
       const res = await api.put<{
         message: string;
-        newlyUnlocked: string[];
+        newly_unlocked: string[];
       }>(`/board/card/${cardId}`, data);
 
       // Update local task cache with the latest card data
@@ -229,7 +229,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       });
 
       // If badges were unlocked, refresh badges store to trigger celebration
-      if (res.newlyUnlocked && res.newlyUnlocked.length > 0) {
+      if (res.newly_unlocked && res.newly_unlocked.length > 0) {
         import("@/stores/badges").then(({ useBadgesStore }) => {
           useBadgesStore.getState().fetchBadges();
         });
