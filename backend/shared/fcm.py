@@ -8,6 +8,24 @@ logger = logging.getLogger(__name__)
 _firebase_app = None
 
 
+def clean_and_dedup_tokens(tokens):
+    cleaned = []
+    seen = set()
+
+    for token in tokens or []:
+        if not isinstance(token, str):
+            continue
+
+        token = token.strip()
+        if not token or token in seen:
+            continue
+
+        cleaned.append(token)
+        seen.add(token)
+
+    return cleaned
+
+
 def init_firebase():
     """Initialize Firebase Admin SDK from service account JSON."""
     global _firebase_app
@@ -67,15 +85,18 @@ def send_push(token, title, body, data=None):
 
 
 def send_push_batch(tokens, title, body, data=None):
-    if not tokens:
+    raw_tokens = list(tokens or [])
+    if not raw_tokens:
         return {"success": 0, "failure": 0}
 
-    cleaned = [t.strip() for t in tokens if t and isinstance(t, str) and t.strip()]
+    cleaned = clean_and_dedup_tokens(raw_tokens)
     if not cleaned:
         logger.warning("send_push_batch: no valid tokens after cleaning")
         return {"success": 0, "failure": 0}
 
-    logger.info(f"send_push_batch: {len(cleaned)}/{len(tokens)} valid tokens, sending...")
+    logger.info(
+        f"send_push_batch: {len(raw_tokens)} raw tokens, {len(cleaned)} unique valid tokens, sending..."
+    )
 
     message = messaging.MulticastMessage(
         notification=messaging.Notification(title=title, body=body),
