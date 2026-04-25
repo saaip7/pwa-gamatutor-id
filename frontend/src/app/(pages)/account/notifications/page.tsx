@@ -2,12 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Zap, Users, MoonStar, Clock } from "lucide-react";
+import { Zap, Users, MoonStar, Clock, Bell, BellOff, BellRing, Loader2, ShieldCheck } from "lucide-react";
 import { SettingsHeader } from "@/components/feature/settings/SettingsHeader";
 import { SettingsGroup } from "@/components/feature/account/SettingsGroup";
 import { SettingItem } from "@/components/feature/account/SettingItem";
 import { usePreferencesStore } from "@/stores/preferences";
+import { registerFcm } from "@/lib/fcm";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function NotificationSettingsPage() {
   const fetchPrefs = usePreferencesStore((s) => s.fetchPreferences);
@@ -26,6 +28,35 @@ export default function NotificationSettingsPage() {
     start: "22:00",
     end: "07:00",
   });
+
+  const [browserPermission, setBrowserPermission] = useState<NotificationPermission | "unsupported">("default");
+  const [requesting, setRequesting] = useState(false);
+
+  useEffect(() => {
+    if (!("Notification" in window)) {
+      setBrowserPermission("unsupported");
+    } else {
+      setBrowserPermission(Notification.permission);
+    }
+  }, []);
+
+  const handleRequestPermission = async () => {
+    setRequesting(true);
+    try {
+      const token = await registerFcm();
+      if (token) {
+        setBrowserPermission("granted");
+        toast.success("Notifikasi diaktifkan");
+      } else {
+        if ("Notification" in window) setBrowserPermission(Notification.permission);
+        toast.error("Izin notifikasi ditolak");
+      }
+    } catch {
+      toast.error("Gagal mengaktifkan notifikasi");
+    } finally {
+      setRequesting(false);
+    }
+  };
 
   // Fetch preferences on mount if not loaded
   useEffect(() => {
@@ -74,9 +105,68 @@ export default function NotificationSettingsPage() {
       <main className="flex-1 overflow-y-auto no-scrollbar px-5 pt-6 pb-28 space-y-6">
         <div className="px-2 mb-2">
           <p className="text-sm text-neutral-500 leading-relaxed">
-            Atur preferensi notifikasi sesuai kenyamananmu. Pengaturan ini sepenuhnya <span className="font-bold text-neutral-700">opsional</span> untuk memberimu kendali penuh atas atensimu.
+            Atur preferensi notifikasi sesuai kenyamanan. Pengaturan ini sepenuhnya <span className="font-bold text-neutral-700">opsional</span> untuk memberimu kendali penuh atas atensimu.
           </p>
         </div>
+
+        {/* Browser Permission Status */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+          className={cn(
+            "rounded-2xl border overflow-hidden",
+            browserPermission === "granted"
+              ? "bg-emerald-50/50 border-emerald-200/60"
+              : browserPermission === "denied"
+                ? "bg-amber-50/50 border-amber-200/60"
+                : "bg-white border-neutral-200"
+          )}
+        >
+          <div className="flex items-center gap-3.5 px-4 py-4">
+            <div className={cn(
+              "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+              browserPermission === "granted"
+                ? "bg-emerald-100"
+                : browserPermission === "denied"
+                  ? "bg-amber-100"
+                  : "bg-neutral-100"
+            )}>
+              {browserPermission === "granted" ? (
+                <ShieldCheck className="w-5 h-5 text-emerald-600" />
+              ) : browserPermission === "denied" ? (
+                <BellOff className="w-5 h-5 text-amber-600" />
+              ) : (
+                <BellRing className="w-5 h-5 text-neutral-500" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-neutral-900">
+                {browserPermission === "granted"
+                  ? "Notifikasi diizinkan"
+                  : browserPermission === "denied"
+                    ? "Notifikasi diblokir"
+                    : "Notifikasi belum diaktifkan"}
+              </p>
+              <p className="text-xs text-neutral-500 leading-snug mt-0.5">
+                {browserPermission === "granted"
+                  ? "Browser sudah mengizinkan push notifikasi."
+                  : browserPermission === "denied"
+                    ? "Buka pengaturan browser untuk mengizinkan notifikasi."
+                    : "Aktifkan untuk mendapat pengingat belajar."}
+              </p>
+            </div>
+            {browserPermission === "default" && (
+              <button
+                onClick={handleRequestPermission}
+                disabled={requesting}
+                className="shrink-0 px-4 py-2.5 bg-primary text-white rounded-xl text-xs font-bold active:scale-95 transition-all disabled:opacity-50 shadow-sm"
+              >
+                {requesting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Aktifkan"}
+              </button>
+            )}
+          </div>
+        </motion.div>
 
         {/* Group 1: PENGINGAT BELAJAR */}
         <SettingsGroup title="PENGINGAT BELAJAR" delay={0.1}>
