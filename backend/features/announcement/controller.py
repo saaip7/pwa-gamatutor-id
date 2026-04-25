@@ -1,8 +1,13 @@
+import logging
+
 from flask import jsonify, request
 from bson import ObjectId
 from shared.db import mongo
-from shared.fcm import send_push_batch
+from shared.fcm import clean_and_dedup_tokens, send_push_batch
 from features.announcement.model import Announcement
+
+
+logger = logging.getLogger(__name__)
 
 
 def send_broadcast_push():
@@ -14,14 +19,17 @@ def send_broadcast_push():
     if not title or not body:
         return jsonify({"message": "Title dan body wajib diisi"}), 400
 
-    tokens = [
+    raw_tokens = [
         p.get("fcm_token")
         for p in mongo.db.user_preferences.find(
-            {"fcm_token": {"$ne": None, "$ne": ""}},
+            {"fcm_token": {"$exists": True, "$ne": None}},
             {"fcm_token": 1},
         )
     ]
-    tokens = [t for t in tokens if t]
+    tokens = clean_and_dedup_tokens(raw_tokens)
+    logger.info(
+        f"send_broadcast_push: {len(raw_tokens)} raw tokens, {len(tokens)} unique valid tokens"
+    )
 
     push_result = {"success": 0, "failure": 0}
     if tokens:
