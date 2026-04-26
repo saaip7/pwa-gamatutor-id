@@ -32,7 +32,7 @@ export function StrategySelector({ value, onChange }: StrategySelectorProps) {
 
   useEffect(() => {
     api
-      .get<LearningStrategy[]>("/learningstrats")
+      .get<LearningStrategy[]>("/api/learningstrats")
       .then((data) => setStrategies(data))
       .catch(() => setStrategies([]))
       .finally(() => setLoading(false));

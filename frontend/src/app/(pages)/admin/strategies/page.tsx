@@ -36,7 +36,7 @@ export default function AdminStrategiesPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.get<Strategy[]>("/learningstrats");
+      const data = await api.get<Strategy[]>("/api/learningstrats");
       setStrategies(data);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Gagal memuat strategies";
@@ -57,7 +57,7 @@ export default function AdminStrategiesPage() {
         .map((t) => t.trim())
         .filter((t) => t.length > 0);
 
-      await api.post("/learningstrats", {
+      await api.post("/api/learningstrats", {
         learning_strat_name: name,
         description: newDesc.trim() || undefined,
         tips: parsedTips.length > 0 ? parsedTips : undefined,
@@ -78,7 +78,7 @@ export default function AdminStrategiesPage() {
   async function handleDelete(id: string) {
     setDeleting(id);
     try {
-      await api.delete(`/learningstrats/${id}`);
+      await api.delete(`/api/learningstrats/${id}`);
       setStrategies((prev) => prev.filter((s) => s._id !== id));
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Gagal menghapus strategi";

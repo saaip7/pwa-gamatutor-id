@@ -91,7 +91,7 @@ export default function FocusModePage() {
   useEffect(() => {
     if (!card?.learning_strategy) return;
     api
-      .get<{ learning_strat_name: string; tips: string[] }[]>("/learningstrats")
+      .get<{ learning_strat_name: string; tips: string[] }[]>("/api/learningstrats")
       .then((strategies) => {
         const match = strategies.find(
           (s) => s.learning_strat_name === card.learning_strategy

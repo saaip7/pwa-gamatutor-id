@@ -78,7 +78,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   fetchBoard: async () => {
     set({ loading: true });
     try {
-      const board = await api.get<Board>("/board");
+      const board = await api.get<Board>("/api/board");
 
       // Flatten cards and build column map
       const tasks: Record<string, BoardCard> = {};
@@ -106,7 +106,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   fetchArchived: async () => {
     try {
-      const res = await api.get<{ cards: BoardCard[] }>("/board/archived");
+      const res = await api.get<{ cards: BoardCard[] }>("/api/board/archived");
       set({ archivedCards: res.cards });
     } catch {
       set({ archivedCards: [] });
@@ -122,7 +122,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         id: string;
         name: string;
         lists: Board["lists"];
-      }>("/board");
+      }>("/api/board");
 
       // Build the Board object from the response
       const board: Board = {
@@ -162,7 +162,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         message: string;
         newly_unlocked: unknown[];
         streak: unknown;
-      }>(`/board/card/${cardId}/move`, { column: listId, position });
+      }>(`/api/board/card/${cardId}/move`, { column: listId, position });
 
       // If badges were unlocked, refresh badges store to trigger celebration
       if (res.newly_unlocked && res.newly_unlocked.length > 0) {
@@ -200,7 +200,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   reorderColumn: async (column, cardIds) => {
     const listId = REVERSE_LIST_MAP[column];
     try {
-      await api.put("/board/column/reorder", {
+      await api.put("/api/board/column/reorder", {
         column: listId,
         card_ids: cardIds,
       });
@@ -219,7 +219,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       const res = await api.put<{
         message: string;
         newly_unlocked: string[];
-      }>(`/board/card/${cardId}`, data);
+      }>(`/api/board/card/${cardId}`, data);
 
       // Update local task cache with the latest card data
       set((state) => {
@@ -242,7 +242,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   createCard: async (data) => {
     const res = await api.post<{ message: string; card: BoardCard }>(
-      "/board/card",
+      "/api/board/card",
       data
     );
     const card = res.card;
@@ -258,7 +258,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   },
 
   deleteCard: async (cardId) => {
-    await api.delete(`/board/card/${cardId}`);
+    await api.delete(`/api/board/card/${cardId}`);
     set((state) => {
       const newTasks = { ...state.tasks };
       delete newTasks[cardId];
@@ -274,7 +274,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   fetchCardDetail: async (cardId) => {
     const res = await api.get<{ card: BoardCard; list_title: string; board_id: string }>(
-      `/board/card/${cardId}`
+      `/api/board/card/${cardId}`
     );
     // Update the card in local tasks cache
     set((state) => ({

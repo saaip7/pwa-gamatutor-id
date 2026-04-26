@@ -35,7 +35,7 @@ export const useAuthStore = create<AuthState>()(
             { email, password }
           );
           setTokens(res.token, res.refreshToken);
-          const user = await api.get<User>("/users/me");
+          const user = await api.get<User>("/api/users/me");
           set({ token: res.token, user, isAuthenticated: true, loading: false });
         } catch (e: unknown) {
           set({ loading: false });
@@ -60,7 +60,7 @@ export const useAuthStore = create<AuthState>()(
             { email: data.email, password: data.password }
           );
           setTokens(loginRes.token, loginRes.refreshToken);
-          const user = await api.get<User>("/users/me");
+          const user = await api.get<User>("/api/users/me");
           set({ token: loginRes.token, user, isAuthenticated: true, loading: false });
         } catch (e: unknown) {
           set({ loading: false });
@@ -86,7 +86,7 @@ export const useAuthStore = create<AuthState>()(
 
       fetchProfile: async () => {
         try {
-          const user = await api.get<User>("/users/me");
+          const user = await api.get<User>("/api/users/me");
           set({ user, isAuthenticated: true });
           return true;
         } catch (e: unknown) {
@@ -100,8 +100,8 @@ export const useAuthStore = create<AuthState>()(
 
       updateProfile: async (data) => {
         try {
-          await api.put("/users/profile", { name: data.name });
-          const user = await api.get<User>("/users/me");
+          await api.put("/api/users/profile", { name: data.name });
+          const user = await api.get<User>("/api/users/me");
           set({ user });
         } catch (e: unknown) {
           toast.error("Gagal menyimpan profil");
@@ -111,7 +111,7 @@ export const useAuthStore = create<AuthState>()(
 
       updatePassword: async (data) => {
         try {
-          await api.put("/users/password", {
+          await api.put("/api/users/password", {
             current_password: data.currentPassword,
             new_password: data.newPassword,
           });
@@ -127,7 +127,7 @@ export const useAuthStore = create<AuthState>()(
 
       deleteAccount: async () => {
         try {
-          await api.delete("/users/me");
+          await api.delete("/api/users/me");
           clearTokens();
           set({ user: null, token: null, isAuthenticated: false });
           toast.success("Akun berhasil dihapus");

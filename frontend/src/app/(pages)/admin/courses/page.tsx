@@ -33,7 +33,7 @@ export default function AdminCoursesPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.get<Course[]>("/courses");
+      const data = await api.get<Course[]>("/api/courses");
       setCourses(data);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Gagal memuat courses";
@@ -50,7 +50,7 @@ export default function AdminCoursesPage() {
     if (!code || !name) return;
     setAdding(true);
     try {
-      await api.post("/courses", {
+      await api.post("/api/courses", {
         course_code: code.toUpperCase(),
         course_name: name,
       });
@@ -69,7 +69,7 @@ export default function AdminCoursesPage() {
   async function handleDelete(code: string) {
     setDeleting(code);
     try {
-      await api.delete(`/courses/${encodeURIComponent(code)}`);
+      await api.delete(`/api/courses/${encodeURIComponent(code)}`);
       setCourses((prev) => prev.filter((c) => c.course_code !== code));
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Gagal menghapus course";
