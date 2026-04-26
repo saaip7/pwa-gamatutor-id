@@ -206,7 +206,7 @@ export default function GuideStep1Page() {
         <div
           id="guide-board-columns"
           ref={scrollContainerRef}
-          className="flex-1 overflow-x-auto overflow-y-hidden snap-x snap-mandatory flex no-scrollbar relative w-full h-[calc(100vh-240px)]"
+          className="flex-1 overflow-x-auto overflow-y-hidden snap-x snap-mandatory flex no-scrollbar relative w-full h-[calc(100vh-240px)] [&>section]:lg:!w-[85vw] [&>section]:lg:!max-w-[340px] [&>section]:lg:!shrink-0 [&>section]:lg:!snap-center [&>section]:lg:!min-w-0 [&>section]:lg:!rounded-xl [&>section]:lg:!border-0 [&>section]:lg:!bg-transparent"
         >
           {COLUMN_KEYS.map((colKey) => {
             const config = COLUMN_CONFIG[colKey];
