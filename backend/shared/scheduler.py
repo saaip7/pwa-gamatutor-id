@@ -364,7 +364,7 @@ def job_social_presence():
 def job_cleanup_orphan_sessions():
     """End study sessions that have been running for over 3 hours without ending."""
     from features.study_session.model import StudySession
-    cleaned = StudySession.cleanup_orphan_sessions(max_age_hours=3, max_age_minutes=10)  # [FLAG STUDY] test: 10min, prod: max_age_hours=3 only
+    cleaned = StudySession.cleanup_orphan_sessions(max_age_hours=3)  # [FLAG STUDY] prod: 3h, test: 10min
     if cleaned:
         logger.info(f"[Scheduler] Orphan session cleanup: {cleaned} sessions ended")
 
@@ -378,7 +378,7 @@ def job_check_idle_sessions():
     logger.info("[Scheduler] Running idle session check")
 
     now = datetime.utcnow()
-    idle_cutoff = now - timedelta(minutes=2)  # [FLAG STUDY] test: 2min, prod: 30min
+    idle_cutoff = now - timedelta(minutes=30)  # [FLAG STUDY] prod: 30min, test: 2min
 
     idle_sessions = list(mongo.db.study_sessions.find({
         "end_time": None,
@@ -429,7 +429,7 @@ def job_auto_end_stale_sessions():
 
     logger.info("[Scheduler] Running auto-end stale sessions")
 
-    ended = StudySession.auto_end_stale(minutes_threshold=5)  # [FLAG STUDY] test: 5min, prod: 90min
+    ended = StudySession.auto_end_stale(minutes_threshold=90)  # [FLAG STUDY] prod: 90min, test: 5min
 
     logger.info(f"[Scheduler] Auto-end stale: {len(ended)} sessions to end")
 
@@ -488,33 +488,33 @@ def job_reset_stale_streaks():
 def init_scheduler(app):
     """Initialize and start the APScheduler with all jobs."""
     with app.app_context():
-        # ── [FLAG NOTIF] Change minutes/hours to test scheduler intervals ──
+        # ── [FLAG NOTIF] Notification scheduler intervals (prod) ──
         scheduler.add_job(
-            job_deadline_reminder, "interval", hours=2,       # [FLAG NOTIF] prod: hours=2, test: minutes=1
+            job_deadline_reminder, "interval", hours=2,       # [FLAG NOTIF] prod: hours=2
             id="deadline_reminder", replace_existing=True,
         )
         scheduler.add_job(
-            job_smart_reminder, "interval", hours=1,          # [FLAG NOTIF] prod: hours=1, test: minutes=1
+            job_smart_reminder, "interval", hours=1,          # [FLAG NOTIF] prod: hours=1
             id="smart_reminder", replace_existing=True,
         )
         scheduler.add_job(
-            job_streak_nudge, "interval", hours=6,            # [FLAG NOTIF] prod: hours=6, test: minutes=2
+            job_streak_nudge, "interval", hours=6,            # [FLAG NOTIF] prod: hours=6
             id="streak_nudge", replace_existing=True,
         )
         scheduler.add_job(
-            job_social_presence, "interval", minutes=30,     # [FLAG NOTIF] prod: minutes=30, test: minutes=1
+            job_social_presence, "interval", minutes=30,     # [FLAG NOTIF] prod: minutes=30
             id="social_presence", replace_existing=True,
         )
         scheduler.add_job(
-            job_cleanup_orphan_sessions, "interval", minutes=9, # [FLAG STUDY] test: 9min, prod: hours=6
+            job_cleanup_orphan_sessions, "interval", hours=6,  # [FLAG STUDY] prod: 6h, test: 9min
             id="orphan_cleanup", replace_existing=True,
         )
         scheduler.add_job(
-            job_check_idle_sessions, "interval", minutes=2,  # [FLAG STUDY] test: 2min, prod: minutes=10
+            job_check_idle_sessions, "interval", minutes=10,  # [FLAG STUDY] prod: 10min, test: 2min
             id="check_idle_sessions", replace_existing=True,
         )
         scheduler.add_job(
-            job_auto_end_stale_sessions, "interval", minutes=2, # [FLAG STUDY] test: 2min, prod: minutes=10
+            job_auto_end_stale_sessions, "interval", minutes=10, # [FLAG STUDY] prod: 10min, test: 2min
             id="auto_end_stale_sessions", replace_existing=True,
         )
         scheduler.add_job(
