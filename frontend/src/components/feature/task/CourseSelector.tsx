@@ -26,7 +26,7 @@ export function CourseSelector({ value, onChange }: CourseSelectorProps) {
 
   useEffect(() => {
     api
-      .get<Course[]>("/courses")
+      .get<Course[]>("/api/courses")
       .then((data) => setCourses(data))
       .catch(() => setCourses([]))
       .finally(() => setLoading(false));

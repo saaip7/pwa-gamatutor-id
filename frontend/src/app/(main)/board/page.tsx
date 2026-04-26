@@ -143,7 +143,7 @@ function KanbanBoardContent() {
   // Fetch courses for name→code mapping
   const [courseMap, setCourseMap] = useState<Record<string, string>>({});
   useEffect(() => {
-    api.get<{ course_name: string; course_code: string }[]>("/courses")
+      api.get<{ course_name: string; course_code: string }[]>("/api/courses")
       .then((courses) => {
         const map: Record<string, string> = {};
         for (const c of courses) {
