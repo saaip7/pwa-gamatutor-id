@@ -30,7 +30,7 @@ const BADGE_ICON_MAP: Record<string, LucideIcon> = {
 function badgeToCelebrationData(badge: Badge): BadgeCelebrationData {
   return {
     name: badge.name,
-    subtitle: badge.description,
+    subtitle: badge.celebration_message || badge.description,
     icon: BADGE_ICON_MAP[badge.type] || Award,
     shape: (badge.shape as BadgeShape) || "circle",
     badgeType: badge.type,
