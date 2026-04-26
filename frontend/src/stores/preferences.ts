@@ -59,14 +59,9 @@ export const usePreferencesStore = create<PreferencesState>((set) => {
 
     updateOnboarding: async (data) => {
       await api.put("/api/preferences/onboarding", data);
-      set((state) => ({
-        preferences: state.preferences
-          ? {
-              ...state.preferences,
-              onboarding: { ...state.preferences.onboarding, ...data },
-            }
-          : null,
-      }));
+      // Force-refresh cache so subsequent fetchPreferences() gets latest data
+      const updated = await cachedFetch(true);
+      set({ preferences: updated });
     },
 
     updateFcmToken: async (token) => {
