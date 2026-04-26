@@ -218,6 +218,7 @@ export interface Badge {
   category: string;
   shape: string;
   description: string;
+  celebration_message: string;
   unlocked: boolean;
   unlocked_at?: string;
   displayed?: boolean;

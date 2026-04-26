@@ -24,8 +24,7 @@ import { motion, Variants } from "framer-motion";
 import { MasterySVGDefs } from "@/components/feature/mastery/MasterySVGDefs";
 import { MasterySection } from "@/components/feature/mastery/MasterySection";
 import { MasteryBadgeCard } from "@/components/feature/mastery/MasteryBadgeCard";
-import { BadgeUnlockedCelebration } from "@/components/feature/mastery/BadgeUnlockedCelebration";
-import type { BadgeCelebrationData } from "@/components/feature/mastery/BadgeUnlockedCelebration";
+import { BadgeDetailModal } from "@/components/feature/mastery/BadgeDetailModal";
 import { useBadgesStore } from "@/stores/badges";
 import type { Badge } from "@/types";
 import type { BadgeShape } from "@/components/feature/mastery/MasteryBadgeIcon";
@@ -57,8 +56,8 @@ const CATEGORY_ORDER = ["foundation", "performance", "mindset", "mastery"];
 export default function MasteryPage() {
   const router = useRouter();
   const { badges, fetchBadges } = useBadgesStore();
-  const [celebrationOpen, setCelebrationOpen] = useState(false);
-  const [celebrationData, setCelebrationData] = useState<BadgeCelebrationData | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
 
   useEffect(() => {
     fetchBadges();
@@ -72,15 +71,8 @@ export default function MasteryPage() {
 
   const handleBadgeClick = (badge: Badge) => {
     if (!badge.unlocked) return;
-    const icon = BADGE_ICON_MAP[badge.type] || Award;
-    setCelebrationData({
-      name: badge.name,
-      subtitle: badge.description,
-      icon,
-      shape: (badge.shape as BadgeShape) || "circle",
-      badgeType: badge.type,
-    });
-    setCelebrationOpen(true);
+    setSelectedBadge(badge);
+    setDetailOpen(true);
   };
 
   const containerVariants: Variants = {
@@ -112,7 +104,7 @@ export default function MasteryPage() {
         >
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <h1 className="text-lg md:text-xl font-bold text-neutral-900 tracking-tight">Mastery Gallery</h1>
+        <h1 className="text-lg md:text-xl font-bold text-neutral-900 tracking-tight">Galeri Pencapaian</h1>
         <div className="w-10 h-10" />
       </header>
 
@@ -144,14 +136,24 @@ export default function MasteryPage() {
         </motion.div>
       </main>
 
-      {/* Badge Unlocked Celebration Overlay */}
-      {celebrationData && (
-        <BadgeUnlockedCelebration
-          isOpen={celebrationOpen}
-          onClose={() => setCelebrationOpen(false)}
-          data={celebrationData}
-        />
-      )}
+      {/* Badge Detail Modal */}
+      <BadgeDetailModal
+        isOpen={detailOpen}
+        onClose={() => setDetailOpen(false)}
+        badge={
+          selectedBadge
+            ? {
+                name: selectedBadge.name,
+                description: selectedBadge.description,
+                celebration_message: selectedBadge.celebration_message,
+                shape: (selectedBadge.shape as BadgeShape) || "circle",
+                icon: BADGE_ICON_MAP[selectedBadge.type] || Award,
+                unlocked_at: selectedBadge.unlocked_at,
+                category: selectedBadge.category,
+              }
+            : null
+        }
+      />
     </div>
   );
 }

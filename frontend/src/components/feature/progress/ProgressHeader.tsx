@@ -21,7 +21,7 @@ export function ProgressHeader() {
               <HelpItem
                 icon={<Trophy className="w-4 h-4" />}
                 title="Pencapaian & Rekor"
-                description="Lihat jumlah badge yang sudah terbuka dan rekor pribadi (streak terpanjang). Tekan untuk melihat detail semua achievement di halaman Mastery."
+                description="Lihat jumlah badge yang sudah terbuka dan rekor pribadi (streak terpanjang). Tekan untuk melihat detail semua achievement di halaman Galeri Pencapaian."
               />
             </div>
             <div className="pt-1">
