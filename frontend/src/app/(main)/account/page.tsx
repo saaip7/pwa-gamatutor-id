@@ -39,6 +39,7 @@ export default function AccountPage() {
     setIsLoggingOut(true);
     try {
       await logout();
+      window.location.href = "/login";
     } finally {
       setIsLoggingOut(false);
     }

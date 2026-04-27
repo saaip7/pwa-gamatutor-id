@@ -9,6 +9,7 @@ import { useTourStore } from "@/stores/tour";
 import { usePreferencesStore } from "@/stores/preferences";
 import { useBadgesStore } from "@/stores/badges";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 const CONFETTI_COLORS = ["#3B82F6", "#10b981", "#f59e0b", "#8CD2FF", "#a78bfa"];
 
@@ -229,17 +230,33 @@ export default function GuideCompletePage() {
         className="px-6 pb-10 pt-4 z-10 relative"
       >
         <button
+          disabled={!ready}
           onClick={() => {
-            if (!ready) return;
             router.push("/dashboard");
           }}
-          className="w-full py-4 bg-primary text-white rounded-2xl font-bold text-[15px] flex items-center justify-center gap-2 hover:bg-primary-hover active:scale-[0.98] transition-all shadow-[0_4px_20px_rgba(59,130,246,0.35)]"
+          className={cn(
+            "w-full py-4 rounded-2xl font-bold text-[15px] flex items-center justify-center gap-2 transition-all shadow-[0_4px_20px_rgba(59,130,246,0.35)]",
+            ready
+              ? "bg-primary text-white hover:bg-primary-hover active:scale-[0.98]"
+              : "bg-primary/60 text-white/70 cursor-wait"
+          )}
         >
-          Mulai Belajar
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M5 12h14" />
-            <path d="m12 5 7 7-7 7" />
-          </svg>
+          {ready ? (
+            <>
+              Mulai Belajar
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
+            </>
+          ) : (
+            <>
+              <svg className="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+              </svg>
+              Menyimpan...
+            </>
+          )}
         </button>
         <p className="text-center text-[11px] text-neutral-300 mt-3 font-medium">
           Kamu bisa mengulangi tur kapan saja dari Pengaturan
