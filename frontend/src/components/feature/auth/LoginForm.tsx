@@ -98,7 +98,7 @@ export function LoginForm() {
           onChange={(e) => setPassword(e.target.value)}
           required
           autoComplete="current-password"
-          forgotPasswordHref="/forgot-password"
+
         />
 
         <div className="pt-4">
