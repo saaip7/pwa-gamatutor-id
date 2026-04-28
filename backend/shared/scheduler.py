@@ -447,7 +447,7 @@ def job_auto_end_stale_sessions():
             send_push(token, title, body, {"type": "auto_end", "session_id": item["session_id"]})
             notified += 1
 
-        Log.create(item["user_id"], "session_auto_ended", f"Session {item['session_id']} auto-ended (test: 5min threshold)")
+        Log.create(item["user_id"], "session_auto_ended", f"Session {item['session_id']} auto-ended (90min threshold)")
 
     if ended:
         logger.info(f"[Scheduler] Auto-end stale: {len(ended)} sessions ended, {notified} notifications sent")
@@ -514,7 +514,7 @@ def init_scheduler(app):
             id="check_idle_sessions", replace_existing=True,
         )
         scheduler.add_job(
-            job_auto_end_stale_sessions, "interval", minutes=10, # [FLAG STUDY] prod: 10min, test: 2min
+            job_auto_end_stale_sessions, "interval", minutes=10, # [FLAG STUDY] prod: 10min, test: 5min
             id="auto_end_stale_sessions", replace_existing=True,
         )
         scheduler.add_job(
