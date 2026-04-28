@@ -2,6 +2,7 @@ from shared.db import mongo
 from bson import ObjectId
 from datetime import datetime
 from features.badge.badge_engine import BadgeEngine
+from shared.timezone_utils import now_wib
 
 
 def update_streak(user_id):
@@ -25,21 +26,23 @@ def update_streak(user_id):
     longest = streak.get("longest", 0)
     last_active = streak.get("last_active_date")
 
-    today = datetime.utcnow().date()
+    today_wib = now_wib().date()
 
-    # Determine last active date
+    # Determine last active date (stored as UTC datetime)
     if last_active:
         last_date = last_active.date() if isinstance(last_active, datetime) else last_active
+        if isinstance(last_date, datetime):
+            last_date = (last_date + __import__("datetime").timedelta(hours=7)).date()
     else:
         last_date = None
 
     # Already active today — no change
-    if last_date and last_date >= today:
+    if last_date and last_date >= today_wib:
         return {"current": current, "longest": longest}
 
     # Calculate gap
     if last_date:
-        gap = (today - last_date).days
+        gap = (today_wib - last_date).days
     else:
         gap = 0  # first time ever
 
@@ -62,7 +65,7 @@ def update_streak(user_id):
                 "streak.last_active_date": now,
                 "updated_at": now,
             },
-            "$addToSet": {"streak.active_dates": today.isoformat()},
+            "$addToSet": {"streak.active_dates": today_wib.isoformat()},
         }
     )
 

@@ -2,7 +2,6 @@ from flask import jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from features.badge.model import Badge, BADGE_DEFINITIONS
 from features.badge.badge_engine import BadgeEngine
-from shared.log_model import Log
 
 
 @jwt_required()
@@ -51,7 +50,6 @@ def check_and_unlock():
                 "name": badge_defn["name"] if badge_defn else badge_type,
                 "description": badge_defn["description"] if badge_defn else "",
             })
-            Log.create(user_id, "badge_unlocked", f"Badge unlocked: {badge_type}", {"badge_type": badge_type})
 
         return jsonify({"newly_unlocked": result}), 200
     except Exception as e:

@@ -38,9 +38,12 @@ def _days_since_active(prefs):
     streak = prefs.get("streak", {})
     last_active = streak.get("last_active_date")
     if not last_active:
-        return None  # Never active
+        return None
     if isinstance(last_active, str):
-        last_active = datetime.fromisoformat(last_active.replace("Z", "+00:00")).replace(tzinfo=None)
+        last_active = datetime.fromisoformat(last_active.replace("Z", "+00:00"))
+        if last_active.tzinfo is not None:
+            from datetime import timezone
+            last_active = last_active.astimezone(timezone.utc).replace(tzinfo=None)
     days = (datetime.utcnow() - last_active).days
     return days
 
@@ -497,7 +500,7 @@ def job_auto_end_stale_sessions():
             send_push(token, title, body, {"type": "auto_end", "session_id": item["session_id"]})
             notified += 1
 
-        Log.create(item["user_id"], "session_auto_ended", f"Session {item['session_id']} auto-ended (test: 5min threshold)")
+        Log.create(item["user_id"], "session_auto_ended", f"Session {item['session_id']} auto-ended (90min threshold)")
 
     if ended:
         logger.info(f"[Scheduler] Auto-end stale: {len(ended)} sessions ended, {notified} notifications sent")
@@ -511,18 +514,20 @@ def job_reset_stale_streaks():
     """Reset streak for users who haven't been active for 2+ days."""
     logger.info("[Scheduler] Running stale streak reset")
 
-    now = datetime.utcnow()
-    yesterday = (now - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    wib_now = now_wib()
+    yesterday_wib = (wib_now - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    # Convert WIB midnight back to UTC for DB comparison (last_active_date stored as UTC)
+    yesterday_utc = yesterday_wib - timedelta(hours=7)
 
     result = mongo.db.user_preferences.update_many(
         {
             "streak.current": {"$gt": 0},
-            "streak.last_active_date": {"$lt": yesterday},
+            "streak.last_active_date": {"$lt": yesterday_utc},
         },
         {
             "$set": {
                 "streak.current": 0,
-                "updated_at": now,
+                "updated_at": datetime.utcnow(),
             }
         }
     )
@@ -564,7 +569,7 @@ def init_scheduler(app):
             id="check_idle_sessions", replace_existing=True,
         )
         scheduler.add_job(
-            job_auto_end_stale_sessions, "interval", minutes=10, # [FLAG STUDY] prod: 10min, test: 2min
+            job_auto_end_stale_sessions, "interval", minutes=10, # [FLAG STUDY] prod: 10min, test: 5min
             id="auto_end_stale_sessions", replace_existing=True,
         )
         scheduler.add_job(
