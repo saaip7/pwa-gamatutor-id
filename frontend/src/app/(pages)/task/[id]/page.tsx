@@ -39,6 +39,7 @@ function formatDeadline(deadline?: string): string {
   if (!deadline) return "Belum ada deadline";
   const d = new Date(deadline);
   if (isNaN(d.getTime())) return deadline;
+  if (d.getTime() < Date.now()) return "Terlambat";
   return d.toLocaleDateString("id-ID", {
     day: "numeric",
     month: "short",

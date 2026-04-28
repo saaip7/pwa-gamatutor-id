@@ -31,6 +31,7 @@ function formatRelativeDeadline(deadline?: string): string {
 
   if (diffDays < 0) return "Terlambat";
   if (diffDays === 0) {
+    if (d.getTime() < now.getTime()) return "Terlambat";
     return d.toLocaleTimeString("id-ID", { hour: "numeric", minute: "2-digit" });
   }
   if (diffDays === 1) return "Besok";
