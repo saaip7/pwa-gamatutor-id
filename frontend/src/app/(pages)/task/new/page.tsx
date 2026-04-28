@@ -72,10 +72,10 @@ export default function NewTaskPage() {
       // Build deadline ISO string combining date + time
       let deadline: string | undefined;
       if (dueDate) {
-        const d = new Date(dueDate.getTime() - dueDate.getTimezoneOffset() * 60000);
+        const d = new Date(dueDate);
         if (dueTime) {
           const [h, m] = dueTime.split(":").map(Number);
-          d.setUTCHours(h || 0, m || 0, 0, 0);
+          d.setHours(h || 0, m || 0, 0, 0);
         }
         deadline = d.toISOString();
       }

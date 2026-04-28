@@ -131,12 +131,40 @@ STREAK_NUDGE_MESSAGES = [
 # Job 1: Deadline Reminder
 # ---------------------------------------------------------------------------
 
+# [FLAG DL REMINDER] Tier config: test values, adjust before prod
+DEADLINE_TIERS = [
+    {
+        "min_h": 12,
+        "max_h": 24,
+        "notif_type": "deadline_reminder",
+        "title": "Deadline Mendekat!",
+        "body_template": '\"{task_name}\" — {hours_left} jam lagi',
+        "dedup_hours": 24,
+    },
+    {
+        "min_h": 3,
+        "max_h": 12,
+        "notif_type": "deadline_urgent",
+        "title": "⚡ Deadline Sebentar Lagi!",
+        "body_template": '\"{task_name}\" — tinggal {hours_left} jam!',
+        "dedup_hours": 12,
+    },
+    {
+        "min_h": 0,
+        "max_h": 3,
+        "notif_type": "deadline_critical",
+        "title": "🔴 Segera Kerjakan!",
+        "body_template": '\"{task_name}\" — tinggal {hours_left} jam, segera kerjakan!',
+        "dedup_hours": 0,
+    },
+]
+
+
 def job_deadline_reminder():
     """Check cards with upcoming deadlines (next 24h) and notify users."""
     logger.info("[Scheduler] Running deadline reminder job")
 
     now = datetime.utcnow()
-    deadline_threshold = now + timedelta(hours=24)
 
     cards_with_deadlines = list(mongo.db.cards.find({
         "deadline": {"$exists": True, "$ne": None},
@@ -152,13 +180,25 @@ def job_deadline_reminder():
 
         try:
             if isinstance(deadline_str, str):
-                deadline = datetime.fromisoformat(deadline_str.replace("Z", "+00:00")).replace(tzinfo=None)
+                deadline = datetime.fromisoformat(deadline_str.replace("Z", "+00:00"))
+                if deadline.tzinfo is not None:
+                    from datetime import timezone
+                    deadline = deadline.astimezone(timezone.utc).replace(tzinfo=None)
             else:
                 deadline = deadline_str
         except Exception:
             continue
 
-        if not (now <= deadline <= deadline_threshold):
+        hours_left = int((deadline - now).total_seconds() / 3600)
+
+        # Determine which tier applies (if any)
+        matched_tier = None
+        for tier in DEADLINE_TIERS:
+            if tier["min_h"] <= hours_left <= tier["max_h"]:
+                matched_tier = tier
+                break
+
+        if not matched_tier:
             continue
 
         prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
@@ -169,28 +209,38 @@ def job_deadline_reminder():
         if _is_quiet_hours(prefs):
             continue
 
-        # [FLAG NOTIF] test: disabled dedup, prod: enabled
         task_name = card.get("task_name", "Tugas")
-        existing = mongo.db.notifications.find_one({
-            "user_id": user_id,
-            "type": "deadline_reminder",
-            "description": {"$regex": task_name},
-            "created_at": {"$gte": now - timedelta(hours=12)},
-        })
-        if existing:
-            continue
 
-        hours_left = int((deadline - now).total_seconds() / 3600)
-        title = "Deadline Mendekat!"
-        body = f'"{task_name}" — {hours_left} jam lagi'
+        # Dedup per tier (different notif_type = independent dedup windows)
+        if matched_tier["dedup_hours"] > 0:
+            existing = mongo.db.notifications.find_one({
+                "user_id": user_id,
+                "type": matched_tier["notif_type"],
+                "description": {"$regex": task_name},
+                "created_at": {"$gte": now - timedelta(hours=matched_tier["dedup_hours"])},
+            })
+            if existing:
+                continue
+
+        title = matched_tier["title"]
+        body = matched_tier["body_template"].format(
+            task_name=task_name, hours_left=hours_left
+        )
 
         Notification.create(
-            user_id=str(user_id), type="deadline_reminder",
-            title=title, description=body,
+            user_id=str(user_id),
+            type=matched_tier["notif_type"],
+            title=title,
+            description=body,
         )
         token = prefs.get("fcm_token")
         if token:
-            send_push(token, title, body, {"type": "deadline_reminder", "card_id": card.get("card_id", str(card["_id"]))})
+            send_push(
+                token,
+                title,
+                body,
+                {"type": matched_tier["notif_type"], "card_id": card.get("card_id", str(card["_id"]))},
+            )
 
         reminded += 1
 
@@ -490,7 +540,7 @@ def init_scheduler(app):
     with app.app_context():
         # ── [FLAG NOTIF] Notification scheduler intervals (prod) ──
         scheduler.add_job(
-            job_deadline_reminder, "interval", hours=2,       # [FLAG NOTIF] prod: hours=2
+            job_deadline_reminder, "interval", minutes=30,    # [FLAG DL REMINDER] test: minutes=30, prod: hours=2
             id="deadline_reminder", replace_existing=True,
         )
         scheduler.add_job(
