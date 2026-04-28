@@ -5,6 +5,7 @@ from features.badge.model import Badge, BADGE_DEFINITIONS
 from features.notification.model import Notification
 from shared.timezone_utils import utc_to_wib
 from shared.fcm import send_push
+from shared.log_model import Log
 
 
 class BadgeEngine:
@@ -51,6 +52,8 @@ class BadgeEngine:
                         token = prefs.get("fcm_token")
                         if token:
                             send_push(token, f"Badge Terbuka: {name}!", desc, {"type": "badge_unlock", "badge_type": badge_type})
+
+                    Log.create(str(user_id), "badge_unlocked", f"Badge unlocked: {badge_type}", {"badge_type": badge_type})
 
         return newly_unlocked
 
