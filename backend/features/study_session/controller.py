@@ -15,7 +15,7 @@ def start():
     if not card_id:
         return jsonify({"error": "Missing card_id"}), 400
     session = StudySession.create(user_id, card_id)
-    Log.create(user_id, "session_started", f"Study session {session['session_id']} started for card {card_id}")
+    Log.create(user_id, "study_session_started", f"Study session {session['_id']} started for card {card_id}")
 
     # Update streak — study session is a meaningful activity
     streak = update_streak(user_id)
@@ -35,7 +35,7 @@ def end():
         return jsonify({"error": "Session not found"}), 404
 
     badge_results = BadgeEngine.evaluate(user_id, "session_completed")
-    Log.create(user_id, "session_completed", f"Study session {session_id} completed")
+    Log.create(user_id, "study_session_completed", f"Study session {session_id} completed")
 
     return jsonify({
         "message": "Session ended",

@@ -49,7 +49,10 @@ const ACTION_META: Record<string, { label: string; icon: React.ElementType; colo
   task_done: { label: "Task Done", icon: CheckCircle2, color: "text-emerald-600 bg-emerald-50" },
   card_moved: { label: "Card Moved", icon: Move, color: "text-blue-600 bg-blue-50" },
   badge_unlocked: { label: "Badge", icon: Award, color: "text-amber-600 bg-amber-50" },
-  session_completed: { label: "Session", icon: Play, color: "text-blue-600 bg-blue-50" },
+  study_session_started: { label: "Study Start", icon: Play, color: "text-blue-600 bg-blue-50" },
+  study_session_completed: { label: "Study Done", icon: CheckCircle2, color: "text-emerald-600 bg-emerald-50" },
+  session_auto_ended: { label: "Auto-ended", icon: CalendarClock, color: "text-neutral-500 bg-neutral-100" },
+  session_completed: { label: "Study Done", icon: CheckCircle2, color: "text-emerald-600 bg-emerald-50" },
   reflection_completed: { label: "Reflection", icon: PenLine, color: "text-purple-600 bg-purple-50" },
   streak_freeze_used: { label: "Streak Freeze", icon: Snowflake, color: "text-blue-600 bg-blue-50" },
   goal_set: { label: "Goal Set", icon: Target, color: "text-primary bg-primary/10" },
@@ -58,7 +61,6 @@ const ACTION_META: Record<string, { label: string; icon: React.ElementType; colo
   strategy_used: { label: "Strategy", icon: Settings2, color: "text-purple-600 bg-purple-50" },
   grade_updated: { label: "Grade", icon: Flag, color: "text-amber-600 bg-amber-50" },
   onboarding_completed: { label: "Onboarding Done", icon: CheckCircle2, color: "text-emerald-600 bg-emerald-50" },
-  session_auto_ended: { label: "Auto-ended", icon: CalendarClock, color: "text-neutral-500 bg-neutral-100" },
 };
 
 const ALL_ACTIONS = Object.keys(ACTION_META);
