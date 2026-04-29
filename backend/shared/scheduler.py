@@ -77,6 +77,27 @@ def _sent_today(user_id, notif_type):
     return result is not None
 
 
+def _notify_user(user_id, title, body, data=None, send_email=None, notif_type="reminder", email_template=None, email_vars=None):
+    """Send FCM push + save to DB + optional templated email."""
+    Notification.create(str(user_id), notif_type, title, body)
+
+    prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
+    token = prefs.get("fcm_token") if prefs else None
+    if token:
+        send_push(token, title, body, data or {"type": notif_type})
+
+    should_email = send_email if send_email is not None else bool(email_template)
+    if should_email:
+        from shared.email import send_templated_email
+        user = mongo.db.users.find_one({"_id": user_id})
+        if user and user.get("email"):
+            send_templated_email(
+                user["email"],
+                email_template or "generic",
+                **(email_vars or {}),
+            )
+
+
 SMART_REMINDER_MESSAGES = {
     "A": [
         ("Jam Produktif Tiba!", "Pertahankan rutinitas belajar yang sudah kamu bangun."),
@@ -143,22 +164,25 @@ DEADLINE_TIERS = [
         "title": "Deadline Mendekat!",
         "body_template": '\"{task_name}\" — {hours_left} jam lagi',
         "dedup_hours": 24,
+        "email_template": "deadline_early",
     },
     {
         "min_h": 3,
         "max_h": 12,
         "notif_type": "deadline_urgent",
-        "title": "⚡ Deadline Sebentar Lagi!",
+        "title": "Deadline Sebentar Lagi!",
         "body_template": '\"{task_name}\" — tinggal {hours_left} jam!',
         "dedup_hours": 12,
+        "email_template": "deadline_urgent",
     },
     {
         "min_h": 0,
         "max_h": 3,
         "notif_type": "deadline_critical",
-        "title": "🔴 Segera Kerjakan!",
+        "title": "Segera Kerjakan!",
         "body_template": '\"{task_name}\" — tinggal {hours_left} jam, segera kerjakan!',
         "dedup_hours": 0,
+        "email_template": "deadline_critical",
     },
 ]
 
@@ -230,20 +254,15 @@ def job_deadline_reminder():
             task_name=task_name, hours_left=hours_left
         )
 
-        Notification.create(
-            user_id=str(user_id),
-            type=matched_tier["notif_type"],
-            title=title,
-            description=body,
+        _notify_user(
+            user_id,
+            title,
+            body,
+            data={"type": matched_tier["notif_type"], "card_id": card.get("card_id", str(card["_id"]))},
+            email_template=matched_tier.get("email_template"),
+            email_vars={"task_name": task_name, "hours_left": hours_left},
+            notif_type=matched_tier["notif_type"],
         )
-        token = prefs.get("fcm_token")
-        if token:
-            send_push(
-                token,
-                title,
-                body,
-                {"type": matched_tier["notif_type"], "card_id": card.get("card_id", str(card["_id"]))},
-            )
 
         reminded += 1
 
@@ -285,18 +304,18 @@ def job_smart_reminder():
         tier = _classify_activity(prefs)
         title, body = random.choice(SMART_REMINDER_MESSAGES[tier])
 
-        Notification.create(
-            user_id=str(user_id), type="smart_reminder",
-            title=title, description=body,
+        _notify_user(
+            user_id,
+            title,
+            body,
+            data={"type": "smart_reminder", "tier": tier},
+            email_template=f"smart_reminder_{tier.lower()}",
+            notif_type="smart_reminder",
         )
-        token = prefs.get("fcm_token")
-        if token and token not in sent_tokens:
-            send_push(token, title, body, {"type": "smart_reminder", "tier": tier})
-            sent_tokens.add(token)
 
         counts[tier] += 1
 
-    logger.info(f"[Scheduler] Smart reminder: A={counts['A']} B={counts['B']} C={counts['C']} (unique tokens: {len(sent_tokens)})")
+    logger.info(f"[Scheduler] Smart reminder: A={counts['A']} B={counts['B']} C={counts['C']} sent")
 
 
 # ---------------------------------------------------------------------------
@@ -335,18 +354,19 @@ def job_streak_nudge():
         title = "Jangan Putus Semangat!"
         body = random.choice(STREAK_NUDGE_MESSAGES).replace("{n}", str(streak_count))
 
-        Notification.create(
-            user_id=str(user_id), type="streak_nudge",
-            title=title, description=body,
+        _notify_user(
+            user_id,
+            title,
+            body,
+            data={"type": "streak_nudge"},
+            email_template="streak_nudge",
+            email_vars={"streak_count": streak_count},
+            notif_type="streak_nudge",
         )
-        token = prefs.get("fcm_token")
-        if token and token not in sent_tokens:
-            send_push(token, title, body, {"type": "streak_nudge"})
-            sent_tokens.add(token)
 
         nudged += 1
 
-    logger.info(f"[Scheduler] Streak nudge: {nudged} sent (unique tokens: {len(sent_tokens)})")
+    logger.info(f"[Scheduler] Streak nudge: {nudged} sent")
 
 
 # ---------------------------------------------------------------------------
@@ -449,15 +469,18 @@ def job_check_idle_sessions():
             logger.warning(f"[Scheduler] Idle check: no prefs for user {user_id}")
             continue
 
-        token = prefs.get("fcm_token")
-        if not token:
-            logger.warning(f"[Scheduler] Idle check: no FCM token for user {user_id}")
-            continue
-
         title = "Masih belajar?"
         body = "Kamu sudah lama tidak terlihat. Ketuk untuk kembali belajar."
 
-        send_push(token, title, body, {"type": "idle_session", "session_id": str(session["_id"])})
+        _notify_user(
+            user_id,
+            title,
+            body,
+            data={"type": "idle_session", "session_id": str(session["_id"])},
+            email_template="idle_session",
+            email_vars={"session_duration": "30 menit"},
+            notif_type="idle_session",
+        )
 
         result = mongo.db.study_sessions.update_one(
             {"_id": session["_id"], "end_time": None},
@@ -493,11 +516,18 @@ def job_auto_end_stale_sessions():
         if not prefs:
             continue
 
-        token = prefs.get("fcm_token")
-        if token:
-            title = "Sesi belajar diakhiri"
-            body = "Kamu sudah lama tidak aktif. Sesi belajarmu telah diakhiri otomatis."
-            send_push(token, title, body, {"type": "auto_end", "session_id": item["session_id"]})
+        title = "Sesi belajar diakhiri"
+        body = "Kamu sudah lama tidak aktif. Sesi belajarmu telah diakhiri otomatis."
+        result = _notify_user(
+            user_oid,
+            title,
+            body,
+            data={"type": "auto_end", "session_id": item["session_id"]},
+            email_template="auto_end",
+            email_vars={"session_duration": "90 menit"},
+            notif_type="auto_end",
+        )
+        if result["push_sent"] or result["email_sent"]:
             notified += 1
 
         Log.create(item["user_id"], "session_auto_ended", f"Session {item['session_id']} auto-ended (90min threshold)")

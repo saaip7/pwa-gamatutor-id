@@ -7,6 +7,41 @@ from shared.fcm import send_push
 from bson import ObjectId
 
 
+def send_notification(user_id, notif_type, title, body, data=None, send_email=False, email_subject=None, email_body=None, email_template=None, email_vars=None):
+    """Dual-channel notification: save to DB, send FCM push, and optionally send email.
+
+    Supports both plain text email (send_email=True) and templated HTML email
+    (email_template="template_name" + email_vars={...}).
+    """
+    from shared.email import send_templated_email
+
+    Notification.create(user_id, notif_type, title, body)
+
+    prefs = mongo.db.user_preferences.find_one({"user_id": ObjectId(user_id)})
+    token = prefs.get("fcm_token") if prefs else None
+    push_ok = False
+    if token:
+        push_ok = send_push(token, title, body, data or {"type": notif_type})
+
+    email_ok = False
+    if email_template:
+        user = mongo.db.users.find_one({"_id": ObjectId(user_id)})
+        if user and user.get("email"):
+            email_ok = send_templated_email(
+                user["email"],
+                email_template,
+                **(email_vars or {}),
+            )
+    elif send_email:
+        email_ok = Notification.send_email(
+            user_id,
+            email_subject or title,
+            body_text=email_body or body,
+        )
+
+    return {"db_saved": True, "push_sent": push_ok, "email_sent": email_ok}
+
+
 @jwt_required()
 def get_notifications():
     """Get all notifications (paginated)."""
@@ -81,28 +116,46 @@ def test_push():
     """Send a test push notification to the current user's device.
 
     Also saves to DB (Notification.create) so we can verify DB integration.
+    Optionally sends email if send_email=true in request body.
     """
     user_id = get_jwt_identity()
     title = request.json.get("title", "Test GamaTutor")
     body = request.json.get("body", "Push notification berhasil!")
+    send_email_flag = request.json.get("send_email", False)
+    use_template = request.json.get("use_template", True)
 
-    # 1. Save to DB first
-    notif = Notification.create(user_id, "reminder", title, body)
+    if send_email_flag and use_template:
+        result = send_notification(
+            user_id, "reminder", title, body,
+            data={"type": "test"},
+            email_template="generic_nudge",
+            email_vars={"title": title, "message": body, "action_text": "Buka Aplikasi", "action_url": "https://v2.gamatutor.id"},
+        )
+    else:
+        result = send_notification(
+            user_id, "reminder", title, body,
+            data={"type": "test"},
+            send_email=send_email_flag,
+            email_subject=title,
+            email_body=body,
+        )
+    return jsonify(result), 200
 
-    # 2. Send push
-    prefs = mongo.db.user_preferences.find_one({"user_id": ObjectId(user_id)})
-    token = prefs.get("fcm_token") if prefs else None
-    push_ok = False
-    if token:
-        push_ok = send_push(token, title, body, {"type": "test"})
 
-    return jsonify({
-        "message": "Done",
-        "db_saved": True,
-        "db_id": str(notif["_id"]),
-        "push_sent": push_ok,
-        "has_token": bool(token),
-    }), 200
+@jwt_required()
+def test_email():
+    """Send a test HTML email to the current user's registered email address."""
+    user_id = get_jwt_identity()
+    template = request.json.get("template", "generic_nudge")
+    subject = request.json.get("subject", "Test Email GamaTutor")
+
+    ok = Notification.send_email(
+        user_id,
+        subject,
+        email_template=template,
+        email_vars={"title": subject, "message": "Ini adalah email percobaan dari GamaTutor.", "action_text": "Kunjungi GamaTutor", "action_url": "https://v2.gamatutor.id"},
+    )
+    return jsonify({"email_sent": ok}), 200 if ok else 500
 
 
 @jwt_required()
