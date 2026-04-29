@@ -59,7 +59,7 @@ _WRAPPER_START = (
     '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">'
     '<tr><td align="center" style="padding:40px 16px;">'
     '<table role="presentation" width="560" cellspacing="0" cellpadding="0" border="0" style="max-width:560px;width:100%;">'
-    '<tr><td style="height:3px;background-color:' + _PRIMARY + ';"></td></tr>'
+    '<tr><td style="height:3px;background-color:{accent};"></td></tr>'
     '<tr><td style="padding:12px 0 8px 0;">'
     '<table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>'
     '<td style="width:36px;height:36px;">'
@@ -74,8 +74,12 @@ _WRAPPER_START = (
 _WRAPPER_END = '</td></tr>' + _FOOTER + '</table></td></tr></table></body></html>'
 
 
-def _render(subject, body_html, body_text):
-    html = _WRAPPER_START.replace("{subject}", subject) + body_html + _WRAPPER_END
+def _render(subject, body_html, body_text, accent=_PRIMARY):
+    html = (
+        _WRAPPER_START
+        .replace("{subject}", subject)
+        .replace("{accent}", accent)
+    ) + body_html + _WRAPPER_END
     return subject, html, body_text
 
 
@@ -93,23 +97,23 @@ def _paragraph(text):
     )
 
 
-def _detail_rows(pairs):
+def _detail_rows(pairs, value_color=_NEUTRAL_800):
     rows = ""
     for label, value in pairs:
         rows += (
             '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">'
             '<tr>'
             '<td style="font-size:13px;color:' + _NEUTRAL_400 + ';width:100px;vertical-align:top;padding:4px 0;">' + label + '</td>'
-            '<td style="font-size:14px;color:' + _NEUTRAL_800 + ';vertical-align:top;padding:4px 0;">' + value + '</td>'
+            '<td style="font-size:14px;color:' + value_color + ';font-weight:600;vertical-align:top;padding:4px 0;">' + value + '</td>'
             '</tr></table>'
         )
     return rows
 
 
-def _cta(url, text):
+def _cta(url, text, accent=_PRIMARY):
     return (
         '<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:24px 0 8px 0;">'
-        '<tr><td style="background-color:' + _PRIMARY + ';padding:12px 24px;border-radius:10px;">'
+        '<tr><td style="background-color:' + accent + ';padding:12px 24px;border-radius:10px;">'
         '<a href="' + url + '" style="display:inline-block;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">' + text + '</a>'
         '</td></tr></table>'
     )
@@ -120,10 +124,14 @@ def _strip_tags(html):
 
 
 # ---------------------------------------------------------------------------
-# Deadline reminders (3 tiers — differentiated by copy, not color)
+# Deadline reminders (3 tiers — urgency signaled by color)
 # ---------------------------------------------------------------------------
 
+_AMBER = "#F59E0B"
+_RED = "#EF4444"
+
 def deadline_early(task_name, hours_left):
+    """12-24h before deadline. Blue accent. Calm tone."""
     hours_text = f"{hours_left} jam" if hours_left > 1 else "kurang dari 1 jam"
     subject = f"Deadline: {task_name}"
     html = "\n".join([
@@ -137,29 +145,33 @@ def deadline_early(task_name, hours_left):
 
 
 def deadline_urgent(task_name, hours_left):
+    """3-12h before deadline. Amber accent."""
     hours_text = f"{hours_left} jam" if hours_left > 1 else "kurang dari 1 jam"
     subject = f"Deadline sebentar lagi: {task_name}"
+    hours_colored = f'<strong style="color:{_AMBER};">{hours_text}</strong>'
     html = "\n".join([
         _heading("Tinggal beberapa jam lagi"),
-        _paragraph(f"<strong>{task_name}</strong> \u2014 sisa <strong>{hours_text}</strong> sebelum deadline."),
+        _paragraph(f"<strong>{task_name}</strong> \u2014 sisa {hours_colored} sebelum deadline."),
         _detail_rows([("Tugas", task_name), ("Sisa waktu", hours_text)]),
-        _cta("https://v2.gamatutor.id/board", "Buka Board \u2192"),
+        _cta("https://v2.gamatutor.id/board", "Buka Board \u2192", accent=_AMBER),
     ])
     text = f"Tinggal beberapa jam lagi\n\n{task_name} - sisa {hours_text} sebelum deadline.\n\nBuka Board: https://v2.gamatutor.id/board"
-    return _render(subject, html, text)
+    return _render(subject, html, text, accent=_AMBER)
 
 
 def deadline_critical(task_name, hours_left):
+    """0-3h before deadline. Red accent."""
     hours_text = f"{hours_left} jam" if hours_left > 1 else "kurang dari 1 jam"
     subject = f"SEGERA: {task_name}"
+    hours_colored = f'<strong style="color:{_RED};">{hours_text}</strong>'
     html = "\n".join([
         _heading("Deadline sudah dekat"),
-        _paragraph(f"<strong>{task_name}</strong> harus diselesaikan dalam <strong>{hours_text}</strong>. Segera kerjakan."),
+        _paragraph(f"<strong>{task_name}</strong> harus diselesaikan dalam {hours_colored}. Segera kerjakan."),
         _detail_rows([("Tugas", task_name), ("Sisa waktu", hours_text)]),
-        _cta("https://v2.gamatutor.id/board", "Buka Board \u2192"),
+        _cta("https://v2.gamatutor.id/board", "Buka Board \u2192", accent=_RED),
     ])
     text = f"Deadline sudah dekat\n\n{task_name} harus diselesaikan dalam {hours_text}. Segera kerjakan.\n\nBuka Board: https://v2.gamatutor.id/board"
-    return _render(subject, html, text)
+    return _render(subject, html, text, accent=_RED)
 
 
 def deadline_reminder(task_name, hours_left):
@@ -252,22 +264,22 @@ def streak_nudge(streak_count):
 # Session emails
 # ---------------------------------------------------------------------------
 
-def idle_session(session_duration):
-    subject = "Sesi belajar berhenti"
+def idle_session():
+    subject = "Masih belajar?"
     html = "\n".join([
         _heading("Masih belajar?"),
-        _paragraph(f"Sesi belajarmu sudah tidak aktif selama {session_duration}. "
-                   "Ketuk untuk kembali, atau sesi akan diakhiri otomatis."),
-        _cta("https://v2.gamatutor.id", "Kembali belajar \u2192"),
+        _paragraph("Kamu belum terlihat aktif beberapa waktu terakhir. "
+                   "Buka aplikasi untuk melanjutkan sesi belajarmu."),
+        _cta("https://v2.gamatutor.id", "Buka GAMATUTOR \u2192"),
     ])
-    text = (f"Masih belajar?\n\n"
-            f"Sesi belajarmu sudah tidak aktif selama {session_duration}. "
-            "Ketuk untuk kembali.\n\n"
-            "Kembali belajar: https://v2.gamatutor.id")
+    text = ("Masih belajar?\n\n"
+            "Kamu belum terlihat aktif beberapa waktu terakhir. "
+            "Buka aplikasi untuk melanjutkan sesi belajarmu.\n\n"
+            "Buka GAMATUTOR: https://v2.gamatutor.id")
     return _render(subject, html, text)
 
 
-def auto_end_session(session_duration):
+def auto_end(session_duration):
     subject = "Sesi diakhiri otomatis"
     html = "\n".join([
         _heading("Sesi belajar diakhiri"),
@@ -277,23 +289,6 @@ def auto_end_session(session_duration):
     text = (f"Sesi belajar diakhiri\n\n"
             f"Sesi belajarmu telah diakhiri otomatis setelah tidak aktif selama {session_duration}.\n\n"
             "Mulai sesi baru: https://v2.gamatutor.id")
-    return _render(subject, html, text)
-
-
-# ---------------------------------------------------------------------------
-# Reflection
-# ---------------------------------------------------------------------------
-
-def reflection_reminder():
-    subject = "Sudah refleksi hari ini?"
-    html = "\n".join([
-        _heading("Refleksi belajar"),
-        _paragraph("Luangkan beberapa menit untuk meninjau apa yang sudah dipelajari hari ini."),
-        _cta("https://v2.gamatutor.id/progress", "Lihat Progress \u2192"),
-    ])
-    text = ("Refleksi belajar\n\n"
-            "Luangkan beberapa menit untuk meninjau apa yang sudah dipelajari hari ini.\n\n"
-            "Lihat Progress: https://v2.gamatutor.id/progress")
     return _render(subject, html, text)
 
 
