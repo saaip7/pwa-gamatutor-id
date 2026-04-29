@@ -86,6 +86,17 @@ class Notification:
             return False
 
     @staticmethod
+    def send_email(user_id, subject, body_html=None, body_text=None):
+        """Send email to user by looking up their email address."""
+        from shared.email import send_email as _send_email
+        from features.auth.model import User
+
+        user = User.find_by_id(user_id)
+        if not user or not user.get("email"):
+            return False
+        return _send_email(user["email"], subject, body_html, body_text)
+
+    @staticmethod
     def mark_all_read(user_id):
         """Mark all notifications as read."""
         if isinstance(user_id, str):
