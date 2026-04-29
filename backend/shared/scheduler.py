@@ -478,7 +478,6 @@ def job_check_idle_sessions():
             body,
             data={"type": "idle_session", "session_id": str(session["_id"])},
             email_template="idle_session",
-            email_vars={"session_duration": "30 menit"},
             notif_type="idle_session",
         )
 
