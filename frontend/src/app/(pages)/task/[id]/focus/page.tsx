@@ -242,7 +242,7 @@ export default function FocusModePage() {
       } else if (document.visibilityState === "visible") {
         if (hiddenAtRef.current && sessionId) {
           const hiddenDurationMs = Date.now() - hiddenAtRef.current;
-          const TRUST_THRESHOLD_MS = 30 * 60 * 1000; // [FLAG STUDY] prod: 30min, test: 1min
+          const TRUST_THRESHOLD_MS = 1 * 60 * 1000; // [FLAG STUDY] prod: 30min, test: 1min
           const untrustedMs = Math.max(0, hiddenDurationMs - TRUST_THRESHOLD_MS);
           if (untrustedMs > 0) {
             totalHiddenMsRef.current += untrustedMs;
@@ -254,10 +254,10 @@ export default function FocusModePage() {
           const hiddenDurationMin = hiddenDurationMs / 60000;
           idleDurationRef.current = hiddenDurationMin;
 
-          if (hiddenDurationMin > 90) { // [FLAG STUDY] prod: 90min, test: 5min
+          if (hiddenDurationMin > 5) { // [FLAG STUDY] prod: 90min, test: 5min
             // Auto-end session
             handleAutoEndRef.current(hiddenDurationMin);
-          } else if (hiddenDurationMin >= 30) { // [FLAG STUDY] prod: 30min, test: 1.5min
+          } else if (hiddenDurationMin >= 1.5) { // [FLAG STUDY] prod: 30min, test: 1.5min
             // Show idle popup
             setShowIdlePopup(true);
           }
@@ -265,7 +265,7 @@ export default function FocusModePage() {
 
           // Resume heartbeat
           sendHeartbeatRef.current();
-          heartbeatIntervalRef.current = setInterval(() => sendHeartbeatRef.current(), 5 * 60 * 1000); // [FLAG STUDY] prod: 5min, test: 1min
+          heartbeatIntervalRef.current = setInterval(() => sendHeartbeatRef.current(), 1 * 60 * 1000); // [FLAG STUDY] prod: 5min, test: 1min
         }
         hiddenAtRef.current = null;
       }
