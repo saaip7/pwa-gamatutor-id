@@ -416,14 +416,15 @@ def job_social_presence():
         title = "Teman Sedang Belajar"
         body = f"{count} mahasiswa sedang belajar sekarang. Yuk ikut belajar!"
 
-        Notification.create(
-            user_id=str(user_id), type="social",
-            title=title, description=body,
+        _notify_user(
+            user_id,
+            title,
+            body,
+            data={"type": "social_presence"},
+            email_template="social_presence",
+            email_vars={"active_count": count},
+            notif_type="social",
         )
-        token = prefs.get("fcm_token")
-        if token and token not in sent_tokens:
-            send_push(token, title, body, {"type": "social_presence"})
-            sent_tokens.add(token)
 
         notified += 1
 

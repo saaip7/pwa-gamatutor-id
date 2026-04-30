@@ -145,17 +145,18 @@ def test_push():
 @jwt_required()
 def test_email():
     """Send a test HTML email to the current user's registered email address."""
-    user_id = get_jwt_identity()
-    template = request.json.get("template", "generic_nudge")
-    subject = request.json.get("subject", "Test Email GamaTutor")
+    from shared.email import send_templated_email
 
-    ok = Notification.send_email(
-        user_id,
-        subject,
-        email_template=template,
-        email_vars={"title": subject, "message": "Ini adalah email percobaan dari GamaTutor.", "action_text": "Kunjungi GamaTutor", "action_url": "https://v2.gamatutor.id"},
-    )
-    return jsonify({"email_sent": ok}), 200 if ok else 500
+    user_id = get_jwt_identity()
+    template = request.json.get("template", "generic")
+    template_vars = request.json.get("template_vars", {})
+
+    user = mongo.db.users.find_one({"_id": ObjectId(user_id)})
+    if not user or not user.get("email"):
+        return jsonify({"error": "Email pengguna belum terdaftar"}), 400
+
+    ok = send_templated_email(user["email"], template, **template_vars)
+    return jsonify({"email_sent": ok, "to": user["email"], "template": template}), 200 if ok else 500
 
 
 @jwt_required()

@@ -24,8 +24,7 @@ def send_email(to_email, subject, body_html=None, body_text=None):
         if body_html:
             msg.attach(MIMEText(body_html, "html", "utf-8"))
 
-        with smtplib.SMTP(Config.SMTP_HOST, Config.SMTP_PORT) as server:
-            server.starttls()
+        with smtplib.SMTP_SSL(Config.SMTP_HOST, Config.SMTP_PORT) as server:
             server.login(Config.SMTP_USER, Config.SMTP_PASSWORD)
             server.sendmail(Config.SMTP_FROM, to_email, msg.as_string())
 
