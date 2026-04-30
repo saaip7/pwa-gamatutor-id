@@ -197,8 +197,9 @@ DEADLINE_TIERS = [
         "max_h": 3,
         "notif_type": "deadline_critical",
         "title": "Segera Kerjakan!",
-        "body_template": '\"{task_name}\" — tinggal {hours_left} jam, segera kerjakan!',
+        "body_template": '\"{task_name}" — tinggal {time_left}, segera kerjakan!',
         "dedup_hours": 0,
+        "skip_below_min": 30,  # skip if less than 30 minutes left
         "email_template": "deadline_critical",
     },
 ]
@@ -234,6 +235,7 @@ def job_deadline_reminder():
             continue
 
         hours_left = int((deadline - now).total_seconds() / 3600)
+        minutes_left = int((deadline - now).total_seconds() / 60)
 
         # Determine which tier applies (if any)
         matched_tier = None
@@ -243,6 +245,11 @@ def job_deadline_reminder():
                 break
 
         if not matched_tier:
+            continue
+
+        # Skip if below minimum minutes threshold (e.g. last 30 min)
+        skip_min = matched_tier.get("skip_below_min", 0)
+        if skip_min > 0 and minutes_left < skip_min:
             continue
 
         prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
@@ -255,7 +262,7 @@ def job_deadline_reminder():
 
         task_name = card.get("task_name", "Tugas")
 
-        # Dedup per tier (different notif_type = independent dedup windows)
+        # Dedup per tier (skip if dedup_hours is 0)
         if matched_tier["dedup_hours"] > 0:
             existing = mongo.db.notifications.find_one({
                 "user_id": user_id,
@@ -267,8 +274,13 @@ def job_deadline_reminder():
                 continue
 
         title = matched_tier["title"]
+        if hours_left >= 1:
+            time_left = f"{hours_left} jam"
+        else:
+            time_left = f"{minutes_left} menit"
+
         body = matched_tier["body_template"].format(
-            task_name=task_name, hours_left=hours_left
+            task_name=task_name, time_left=time_left, hours_left=hours_left
         )
 
         _notify_user(
@@ -277,7 +289,7 @@ def job_deadline_reminder():
             body,
             data={"type": matched_tier["notif_type"], "card_id": card.get("card_id", str(card["_id"]))},
             email_template=matched_tier.get("email_template"),
-            email_vars={"task_name": task_name, "hours_left": hours_left},
+            email_vars={"task_name": task_name, "hours_left": hours_left, "time_left": time_left},
             notif_type=matched_tier["notif_type"],
         )
 
