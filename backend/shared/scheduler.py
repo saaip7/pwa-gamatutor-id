@@ -78,24 +78,41 @@ def _sent_today(user_id, notif_type):
 
 
 def _notify_user(user_id, title, body, data=None, send_email=None, notif_type="reminder", email_template=None, email_vars=None):
-    """Send FCM push + save to DB + optional templated email."""
-    Notification.create(str(user_id), notif_type, title, body)
+    """Send FCM push + save to DB + optional templated email. Returns dict with push_sent/email_sent."""
 
+    push_sent = False
     prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
     token = prefs.get("fcm_token") if prefs else None
     if token:
-        send_push(token, title, body, data or {"type": notif_type})
+        push_sent = send_push(token, title, body, data or {"type": notif_type})
 
+    email_sent = False
     should_email = send_email if send_email is not None else bool(email_template)
     if should_email:
         from shared.email import send_templated_email
-        user = mongo.db.users.find_one({"_id": user_id})
-        if user and user.get("email"):
-            send_templated_email(
-                user["email"],
-                email_template or "generic",
-                **(email_vars or {}),
-            )
+
+        dedup_window = datetime.utcnow() - timedelta(minutes=5)
+        recent_email = mongo.db.notifications.find_one({
+            "user_id": str(user_id),
+            "type": notif_type,
+            "created_at": {"$gte": dedup_window},
+        })
+        if recent_email:
+            logger.info(f"[Notify] Email dedup skipped — user={user_id}, type={notif_type}")
+        else:
+            user = mongo.db.users.find_one({"_id": user_id})
+            if user and user.get("email"):
+                email_sent = send_templated_email(
+                    user["email"],
+                    email_template or "generic",
+                    **(email_vars or {}),
+                )
+            else:
+                logger.warning(f"[Notify] Email skipped — user_id={user_id}, has_user={bool(user)}, has_email={bool(user.get('email')) if user else 'N/A'}")
+
+    Notification.create(str(user_id), notif_type, title, body)
+
+    return {"push_sent": push_sent, "email_sent": email_sent}
 
 
 SMART_REMINDER_MESSAGES = {
@@ -527,6 +544,7 @@ def job_auto_end_stale_sessions():
             email_vars={"session_duration": "90 menit"},
             notif_type="auto_end",
         )
+        logger.info(f"[Scheduler] Auto-end notify result: push={result['push_sent']}, email={result['email_sent']}")
         if result["push_sent"] or result["email_sent"]:
             notified += 1
 
