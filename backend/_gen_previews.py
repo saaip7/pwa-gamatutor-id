@@ -13,20 +13,16 @@ templates = [
     ("smart_reminder_b", dict()),
     ("smart_reminder_c", dict()),
     ("streak_nudge", dict(streak_count=7)),
-    ("streak_nudge_14", dict(streak_count=14)),
-    ("streak_nudge_30", dict(streak_count=30)),
-    ("idle_session", dict(session_duration="30 menit")),
-    ("auto_end_session", dict(session_duration="45 menit")),
-    ("reflection_reminder", dict()),
-    ("badge_bronze", dict(badge_name="Pemula", badge_tier="bronze")),
-    ("badge_gold", dict(badge_name="Konsisten", badge_tier="gold")),
-    ("badge_special", dict(badge_name="Pionir", badge_tier="special")),
+    ("idle_session", dict()),
+    ("auto_end", dict(session_duration="90 menit")),
+    ("social_presence", dict(active_count=5)),
+    ("badge_unlocked", dict(badge_name="Pemula", badge_tier="bronze")),
     ("generic", dict(subject="Notifikasi Umum", body="Ini contoh notifikasi dari GAMATUTOR.")),
 ]
 
 links = []
 for label, kwargs in templates:
-    fn_name = label.split("_", 1)[0] if label.startswith("badge_") else label
+    fn_name = label
     if not hasattr(email_templates, fn_name):
         print(f"SKIP {label}: no template")
         continue

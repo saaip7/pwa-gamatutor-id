@@ -1,52 +1,44 @@
 """HTML email templates for GAMATUTOR notifications.
 
-Table-based layout, inlined styles, base64-embedded SVG logo.
+Table-based layout, inlined styles, external PNG logo.
 Single brand accent (#3B82F6) across all templates — urgency conveyed through copy, not color.
 Each public function returns (subject, html_body, plain_text) tuple.
 """
 
-import base64
 import re as _re
 
-_LOGO_SVG = (
-    '<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">'
-    '<rect width="512" height="512" rx="120" fill="#3B82F6"/>'
-    '<path d="M290.536 163.071C308.147 166.078 324.534 173.106 338.72 183.144C327.616 184.972 318.165 194.96 318.165 206.33C318.165 218.918 326.989 222.908 339.578 222.908C349.692 220.246 355.701 211.429 360.139 202.467C378.663 223.624 390 251.203 390 280.928C388.111 316.059 372.77 348.504 348.648 370.694L331.979 357.598C327.835 361.282 319.41 368.787 318.856 369.34C318.304 369.893 301.127 375.097 292.608 377.629C276.264 380.392 243.442 386.053 242.877 386.608C242.407 387.078 238.904 391.248 236.451 394.183C207.649 384.207 183.354 363.036 168.704 336.292L194.525 313.392L233.206 278.166L249.093 263.66L278.794 288.526L279.345 289C285.027 293.801 289.998 295.433 298.134 295.433C316.826 295.433 331.979 279.971 331.979 260.897C331.979 241.823 316.826 226.361 298.134 226.361C295.521 226.361 292.978 226.663 290.536 227.235V207.021H301.588V207.004C301.817 207.014 302.048 207.021 302.279 207.021C311.053 207.021 318.165 199.908 318.165 191.134C318.165 182.361 311.053 175.248 302.279 175.248C302.048 175.248 301.817 175.253 301.588 175.263V175.248H290.536V163.071Z" fill="#D9E7FF"/>'
-    '<mask id="mask0_41_5" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="168" y="163" width="222" height="232">'
-    '<path opacity="0.5" d="M290.536 163.071C308.147 166.078 324.533 173.106 338.719 183.144C327.615 184.972 318.165 194.961 318.165 206.33C318.165 218.919 326.989 222.907 339.577 222.907C349.692 220.246 355.701 211.428 360.14 202.466C378.664 223.623 390 251.203 390 280.928C388.111 316.059 372.771 348.505 348.648 370.695L331.979 357.598C327.835 361.282 319.408 368.788 318.856 369.34C318.303 369.893 301.127 375.096 292.608 377.629C276.261 380.392 243.429 386.056 242.876 386.608C242.406 387.078 238.906 391.248 236.453 394.183C207.651 384.208 183.355 363.037 168.705 336.292L194.526 313.392L233.206 278.165L249.093 263.66L278.794 288.526C284.71 293.693 289.736 295.433 298.134 295.433C316.826 295.433 331.979 279.971 331.979 260.897C331.979 254.762 330.41 249.003 327.661 244.009L330.705 240.557L324.558 239.32C318.356 231.421 308.825 226.361 298.134 226.361C295.522 226.361 292.979 226.663 290.536 227.235V207.021H301.588V207.003C301.817 207.013 302.047 207.021 302.278 207.021C311.052 207.021 318.165 199.908 318.165 191.134C318.165 182.36 311.052 175.247 302.278 175.247C302.047 175.247 301.817 175.254 301.588 175.264V175.247H290.536V163.071Z" fill="#D9D9D9"/>'
-    '</mask>'
-    '<g mask="url(#mask0_41_5)">'
-    '<path d="M291.226 332.041V291.289L280.175 282.309L249.092 260.206L226.989 279.547L291.226 332.041Z" fill="white"/>'
-    '</g>'
-    '<path d="M206.268 151.763L291.918 82V283L249.093 245.701L206.268 283V151.763Z" fill="white"/>'
-    '<mask id="mask1_41_5" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="206" y="82" width="86" height="202">'
-    '<path d="M206.268 151.763L291.918 82V283L249.093 245.701L206.268 283V151.763Z" fill="#D9D9D9"/>'
-    '</mask>'
-    '<g mask="url(#mask1_41_5)">'
-    '<path d="M302.279 159.361L206.268 231.887L202.124 234.65L201.433 290.598H297.444L302.279 159.361Z" fill="#D9E7FF"/>'
-    '</g>'
-    '<path d="M193.835 313.392L233.206 278.165L334.504 359.6C311.984 382.253 280.796 396.279 246.33 396.279C177.665 396.279 122 340.614 122 271.949C122 222.042 151.405 179.003 193.835 159.213V313.392Z" fill="white"/>'
-    '</svg>'
-)
+_LOGO_URI = "https://v2.gamatutor.id/icon-512x512-secondary.png"
 
-_LOGO_URI = "data:image/svg+xml;base64," + base64.b64encode(_LOGO_SVG.encode("utf-8")).decode("utf-8")
-
-_FONT = "'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif"
-_PRIMARY = "#3B82F6"
-_PRIMARY_HOVER = "#0B5DE3"
-_NEUTRAL_800 = "#1f2937"
-_NEUTRAL_500 = "#6b7280"
-_NEUTRAL_400 = "#9ca3af"
-_NEUTRAL_200 = "#e5e7eb"
-_NEUTRAL_50 = "#f8f9fa"
+_FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif"
+_PRIMARY = "#2563EB"
+_PRIMARY_DARK = "#1D4ED8"
+_PRIMARY_BG = "#EFF6FF"
+_NEUTRAL_800 = "#1F2937"
+_NEUTRAL_500 = "#6B7280"
+_NEUTRAL_400 = "#9CA3AF"
+_NEUTRAL_200 = "#E5E7EB"
+_NEUTRAL_100 = "#F3F4F6"
+_NEUTRAL_50 = "#F8F9FA"
 
 _FOOTER = (
-    '<table role="presentation" cellspacing="0" cellpadding="0" border="0">'
-    '<tr><td style="padding:24px 0 0 0;border-top:1px solid ' + _NEUTRAL_200 + ';"></td></tr>'
-    '<tr><td style="padding:20px 0 0 0;font-size:12px;color:' + _NEUTRAL_400 + ';line-height:1.6;">'
-    'Notifikasi ini dikirim oleh GAMATUTOR. Atur preferensi notifikasi di '
-    '<a href="https://v2.gamatutor.id/account" style="color:' + _NEUTRAL_500 + ';text-decoration:underline;">Settings &rarr; Notification</a>.'
-    '</td></tr></table>'
+    '<tr><td style="padding:0 28px;"><div style="height:1px;background:' + _NEUTRAL_200 + ';font-size:1px;line-height:1px;">&nbsp;</div></td></tr>'
+    '<tr><td style="padding:16px 28px 20px;">'
+    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>'
+    '<td style="vertical-align:middle;">'
+    '<table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>'
+    '<td style="width:22px;height:22px;">'
+    '<img src="' + _LOGO_URI + '" width="22" height="22" alt="" style="display:block;border:0;outline:none;"/>'
+    '</td>'
+    '<td style="padding:0 0 0 8px;font-size:11px;font-weight:700;color:' + _NEUTRAL_500 + ';">GAMATUTOR</td>'
+    '</tr></table>'
+    '</td>'
+    '<td style="text-align:right;vertical-align:middle;">'
+    '<span style="font-size:11px;color:' + _NEUTRAL_400 + ';">'
+    'Atur notifikasi di <a href="https://v2.gamatutor.id/account" style="color:' + _NEUTRAL_400 + ';text-decoration:underline;">Settings</a>'
+    '</span>'
+    '</td>'
+    '</tr></table>'
+    '</td></tr>'
 )
 
 _WRAPPER_START = (
@@ -58,42 +50,72 @@ _WRAPPER_START = (
     'font-family:' + _FONT + ';color:' + _NEUTRAL_800 + ';">'
     '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">'
     '<tr><td align="center" style="padding:40px 16px;">'
-    '<table role="presentation" width="560" cellspacing="0" cellpadding="0" border="0" style="max-width:560px;width:100%;">'
+    '<table role="presentation" width="540" cellspacing="0" cellpadding="0" border="0" style="max-width:540px;width:100%;'
+    'background-color:#ffffff;border-radius:20px;border:0.5px solid ' + _NEUTRAL_200 + ';border-spacing:0;'
+    '-webkit-border-radius:20px;-moz-border-radius:20px;overflow:hidden;">'
     '<tr><td style="height:3px;background-color:{accent};"></td></tr>'
-    '<tr><td style="padding:12px 0 8px 0;">'
+    '<tr><td style="padding:20px 28px 16px;">'
     '<table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>'
-    '<td style="width:36px;height:36px;">'
-    '<img src="' + _LOGO_URI + '" width="36" height="36" alt="GAMATUTOR" style="display:block;border:0;outline:none;text-decoration:none;"/>'
+    '<td style="width:32px;height:32px;">'
+    '<img src="' + _LOGO_URI + '" width="32" height="32" alt="GAMATUTOR" style="display:block;border:0;outline:none;"/>'
     '</td>'
-    '<td style="padding:0 0 0 10px;font-size:16px;font-weight:700;color:' + _NEUTRAL_800 + ';letter-spacing:1.5px;">'
+    '<td style="padding:0 0 0 10px;font-size:18px;font-weight:700;letter-spacing:1.5px;color:' + _NEUTRAL_800 + ';">'
     'GAMATUTOR</td></tr></table></td></tr>'
-    '<tr><td style="border-top:1px solid ' + _NEUTRAL_200 + ';"></td></tr>'
-    '<tr><td style="padding:28px 0 0 0;">'
+    '<tr><td style="padding:0 28px;"><div style="height:0.5px;background:' + _NEUTRAL_200 + ';font-size:1px;line-height:1px;">&nbsp;</div></td></tr>'
+    '<tr><td style="padding:32px 28px 0;">'
 )
 
-_WRAPPER_END = '</td></tr>' + _FOOTER + '</table></td></tr></table></body></html>'
+_WRAPPER_END = '</td></tr>' + _FOOTER + '</table></td></tr>'
+_WRAPPER_END += (
+    '<tr><td align="center" style="padding:16px 16px 40px;">'
+    '<p style="margin:0;font-size:11px;color:' + _NEUTRAL_400 + ';">'
+    '&copy; 2026 GAMATUTOR &middot; <a href="https://v2.gamatutor.id" style="color:' + _NEUTRAL_400 + ';text-decoration:underline;">v2.gamatutor.id</a>'
+    '</p></td></tr>'
+)
+_WRAPPER_END += '</table></body></html>'
 
 
-def _render(subject, body_html, body_text, accent=_PRIMARY):
+def _render(subject, body_html, body_text, accent=_PRIMARY, badge=None):
     html = (
         _WRAPPER_START
         .replace("{subject}", subject)
         .replace("{accent}", accent)
-    ) + body_html + _WRAPPER_END
+    )
+    if badge:
+        html += (
+            '<div style="display:inline-block;background:' + _PRIMARY_BG + ';border-radius:6px;padding:5px 10px;margin:0 0 20px;">'
+            '<table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>'
+            '<td style="width:6px;height:6px;background:' + _PRIMARY + ';border-radius:50%;vertical-align:middle;"></td>'
+            '<td style="padding:0 0 0 6px;font-size:11px;font-weight:500;color:' + _PRIMARY_DARK + ';letter-spacing:0.5px;">' + badge + '</td>'
+            '</tr></table></div>'
+        )
+    html += body_html + _WRAPPER_END
     return subject, html, body_text
 
 
 def _heading(text):
-    return (
-        '<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 20px 0;">'
-        '<tr><td style="font-size:20px;font-weight:700;color:' + _NEUTRAL_800 + ';line-height:1.3;">' + text + '</td></tr></table>'
-    )
+    return '<h2 style="margin:0 0 12px;font-size:22px;font-weight:500;color:' + _NEUTRAL_800 + ';line-height:1.3;">' + text + '</h2>'
 
 
 def _paragraph(text):
+    return '<p style="margin:0 0 28px;font-size:14px;color:' + _NEUTRAL_500 + ';line-height:1.75;">' + text + '</p>'
+
+
+def _info_box(title, desc):
+    """Info card with icon, title, description — like the "Board kamu menunggu" block."""
     return (
-        '<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 16px 0;">'
-        '<tr><td style="font-size:15px;color:' + _NEUTRAL_500 + ';line-height:1.6;">' + text + '</td></tr></table>'
+        '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 28px;'
+        'background:' + _NEUTRAL_100 + ';border-radius:12px;border:0.5px solid ' + _NEUTRAL_200 + ';">'
+        '<tr><td style="padding:16px 18px;">'
+        '<table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>'
+        '<td style="width:40px;height:40px;background:#DBEAFE;border-radius:10px;text-align:center;vertical-align:middle;">'
+        '<img src="' + _LOGO_URI + '" width="20" height="20" alt="" style="display:block;border:0;outline:none;border-radius:5px;"/>'
+        '</td>'
+        '<td style="padding:0 0 0 14px;vertical-align:middle;">'
+    ) + (
+        '<p style="margin:0 0 2px;font-size:13px;font-weight:500;color:' + _NEUTRAL_800 + ';">' + title + '</p>'
+        '<p style="margin:0;font-size:12px;color:' + _NEUTRAL_500 + ';">' + desc + '</p>'
+        '</td></tr></table></td></tr></table>'
     )
 
 
@@ -101,20 +123,22 @@ def _detail_rows(pairs, value_color=_NEUTRAL_800):
     rows = ""
     for label, value in pairs:
         rows += (
-            '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">'
             '<tr>'
-            '<td style="font-size:13px;color:' + _NEUTRAL_400 + ';width:100px;vertical-align:top;padding:4px 0;">' + label + '</td>'
-            '<td style="font-size:14px;color:' + value_color + ';font-weight:600;vertical-align:top;padding:4px 0;">' + value + '</td>'
-            '</tr></table>'
+            '<td style="font-size:13px;color:' + _NEUTRAL_400 + ';width:100px;vertical-align:top;padding:5px 0;">' + label + '</td>'
+            '<td style="font-size:14px;color:' + value_color + ';font-weight:600;vertical-align:top;padding:5px 0;">' + value + '</td>'
+            '</tr>'
         )
-    return rows
+    return (
+        '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"'
+        ' style="margin:0 0 16px 0;">' + rows + '</table>'
+    )
 
 
 def _cta(url, text, accent=_PRIMARY):
     return (
-        '<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:24px 0 8px 0;">'
-        '<tr><td style="background-color:' + accent + ';padding:12px 24px;border-radius:10px;">'
-        '<a href="' + url + '" style="display:inline-block;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">' + text + '</a>'
+        '<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 32px;">'
+        '<tr><td style="background-color:' + accent + ';border-radius:10px;text-align:center;">'
+        '<a href="' + url + '" style="display:inline-block;padding:13px 20px;font-size:13px;font-weight:500;color:#ffffff;text-decoration:none;letter-spacing:0.3px;">' + text + '</a>'
         '</td></tr></table>'
     )
 
@@ -305,6 +329,25 @@ def badge_unlocked(badge_name, badge_tier="bronze"):
         _cta("https://v2.gamatutor.id/progress", "Lihat badge \u2192"),
     ])
     text = f"Badge baru terbuka!\n\nKamu mendapatkan {badge_name}. Teruskan!\n\nLihat badge: https://v2.gamatutor.id/progress"
+    return _render(subject, html, text)
+
+
+# ---------------------------------------------------------------------------
+# Social presence
+# ---------------------------------------------------------------------------
+
+def social_presence(active_count):
+    subject = f"{active_count} mahasiswa sedang belajar"
+    html = "\n".join([
+        _heading("Teman Sedang Belajar"),
+        _paragraph(f"Saat ini ada <strong>{active_count} mahasiswa</strong> yang sedang aktif belajar. "
+                   "Yuk bergabung dan lanjutkan progresmu!"),
+        _cta("https://v2.gamatutor.id", "Mulai belajar \u2192"),
+    ])
+    text = (f"Teman Sedang Belajar\n\n"
+            f"Saat ini ada {active_count} mahasiswa yang sedang aktif belajar. "
+            "Yuk bergabung dan lanjutkan progresmu!\n\n"
+            "Mulai belajar: https://v2.gamatutor.id")
     return _render(subject, html, text)
 
 

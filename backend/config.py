@@ -12,8 +12,8 @@ class Config:
     PORT = int(os.getenv("PORT", 5001))
 
     # SMTP Email
-    SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
-    SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
+    SMTP_HOST = os.getenv("SMTP_HOST", "smtp.titan.email")
+    SMTP_PORT = int(os.getenv("SMTP_PORT", 465))
     SMTP_USER = os.getenv("SMTP_USER")
     SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
     SMTP_FROM = os.getenv("SMTP_FROM", "noreply@gamatutor.id")
