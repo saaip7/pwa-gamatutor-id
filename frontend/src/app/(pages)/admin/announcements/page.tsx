@@ -235,8 +235,8 @@ export default function AdminAnnouncementsPage() {
           <span className="text-xs text-neutral-400">modal popup saat user buka app</span>
         </div>
         <form onSubmit={handleCreate}>
-          <div className="flex flex-col sm:flex-row sm:items-end gap-3">
-            <div className="flex-1" style={{ minWidth: 0 }}>
+          <div className="flex flex-col gap-3">
+            <div>
               <label className="block text-sm font-medium text-neutral-700 mb-1.5">Title</label>
               <input
                 type="text"
@@ -248,29 +248,32 @@ export default function AdminAnnouncementsPage() {
                 style={{ background: "#f9fafb" }}
               />
             </div>
-            <div className="flex-1" style={{ minWidth: 0 }}>
+            <div>
               <label className="block text-sm font-medium text-neutral-700 mb-1.5">Body</label>
-              <input
-                type="text"
+              <textarea
                 value={annBody}
                 onChange={(e) => setAnnBody(e.target.value)}
-                placeholder="Isi pengumuman"
+                placeholder="Isi pengumuman..."
+                rows={4}
                 disabled={annCreating}
                 className="w-full px-3 py-2.5 rounded-lg border border-neutral-200 text-sm outline-none disabled:opacity-50"
                 style={{ background: "#f9fafb" }}
               />
+              <p className="text-[11px] text-neutral-400 mt-1">Mendukung format: **bold**, - bullet list, new line</p>
             </div>
-            <button
-              type="submit"
-              disabled={annCreating || !annTitle.trim() || !annBody.trim()}
-              className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-white shrink-0 disabled:opacity-50"
-              style={{ background: "#d97706" }}
-              onMouseEnter={(e) => { if (!annCreating) e.currentTarget.style.background = "#b45309"; }}
-              onMouseLeave={(e) => { if (!annCreating) e.currentTarget.style.background = "#d97706"; }}
-            >
-              {annCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Megaphone className="w-4 h-4" />}
-              Buat
-            </button>
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={annCreating || !annTitle.trim() || !annBody.trim()}
+                className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-white shrink-0 disabled:opacity-50"
+                style={{ background: "#d97706" }}
+                onMouseEnter={(e) => { if (!annCreating) e.currentTarget.style.background = "#b45309"; }}
+                onMouseLeave={(e) => { if (!annCreating) e.currentTarget.style.background = "#d97706"; }}
+              >
+                {annCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Megaphone className="w-4 h-4" />}
+                Buat
+              </button>
+            </div>
           </div>
         </form>
       </div>
