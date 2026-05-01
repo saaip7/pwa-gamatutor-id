@@ -371,3 +371,18 @@ def generic(subject, body):
 
 def generic_nudge(title, message):
     return generic(title, message)
+
+
+# Admin broadcast email
+# ---------------------------------------------------------------------------
+
+def admin_broadcast(subject, body, link_text=None, link_url=None):
+    """Custom broadcast email from admin. Optional CTA button."""
+    html = _heading(subject) + _paragraph(body)
+    text = f"{subject}\n\n{body}"
+
+    if link_url and link_text:
+        html += _cta(link_url, link_text)
+        text += f"\n\n{link_text}: {link_url}"
+
+    return _render(subject, html, text)

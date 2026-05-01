@@ -9,6 +9,8 @@ import {
   ToggleRight,
   Trash2,
   Loader2,
+  Mail,
+  Link2,
 } from "lucide-react";
 
 interface AnnouncementItem {
@@ -39,6 +41,14 @@ export default function AdminAnnouncementsPage() {
   const [annCreating, setAnnCreating] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Email broadcast
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const [emailLinkText, setEmailLinkText] = useState("");
+  const [emailLinkUrl, setEmailLinkUrl] = useState("");
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailResult, setEmailResult] = useState<string | null>(null);
 
   const fetchAnnouncements = useCallback(async () => {
     setLoading(true);
@@ -95,6 +105,30 @@ export default function AdminAnnouncementsPage() {
       // silent
     } finally {
       setAnnCreating(false);
+    }
+  };
+
+  const handleSendEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailSubject.trim() || !emailBody.trim()) return;
+    setEmailSending(true);
+    setEmailResult(null);
+    try {
+      const res = await api.post<{ sent: number; failed: number; total: number }>("/admin/send-email", {
+        subject: emailSubject.trim(),
+        body: emailBody.trim(),
+        link_text: emailLinkText.trim() || undefined,
+        link_url: emailLinkUrl.trim() || undefined,
+      });
+      setEmailResult(`Berhasil dikirim ke ${res.sent}/${res.total} user`);
+      setEmailSubject("");
+      setEmailBody("");
+      setEmailLinkText("");
+      setEmailLinkUrl("");
+    } catch {
+      setEmailResult("Gagal mengirim email");
+    } finally {
+      setEmailSending(false);
     }
   };
 
@@ -237,6 +271,91 @@ export default function AdminAnnouncementsPage() {
               {annCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Megaphone className="w-4 h-4" />}
               Buat
             </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Email Broadcast Form */}
+      <div className="rounded-lg border border-neutral-200 p-4" style={{ background: "#fff" }}>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-7 h-7 rounded flex items-center justify-center" style={{ background: "rgba(139,92,246,0.1)" }}>
+            <Mail className="w-3.5 h-3.5" style={{ color: "#8b5cf6" }} />
+          </div>
+          <span className="text-sm font-medium text-neutral-800">Broadcast Email</span>
+          <span className="text-xs text-neutral-400">ke semua user</span>
+        </div>
+        <form onSubmit={handleSendEmail}>
+          <div className="flex flex-col gap-3">
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1.5">Subject</label>
+              <input
+                type="text"
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+                placeholder="Subject email"
+                disabled={emailSending}
+                className="w-full px-3 py-2.5 rounded-lg border border-neutral-200 text-sm outline-none disabled:opacity-50"
+                style={{ background: "#f9fafb" }}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1.5">Body</label>
+              <textarea
+                value={emailBody}
+                onChange={(e) => setEmailBody(e.target.value)}
+                placeholder="Isi pesan email..."
+                rows={3}
+                disabled={emailSending}
+                className="w-full px-3 py-2.5 rounded-lg border border-neutral-200 text-sm outline-none disabled:opacity-50 resize-none"
+                style={{ background: "#f9fafb" }}
+              />
+            </div>
+            <div className="flex items-end gap-3">
+              <div className="flex-1" style={{ minWidth: 0 }}>
+                <label className="flex items-center gap-1 text-sm font-medium text-neutral-700 mb-1.5">
+                  <Link2 className="w-3 h-3" /> Link Text <span className="font-normal text-neutral-400">(opsional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={emailLinkText}
+                  onChange={(e) => setEmailLinkText(e.target.value)}
+                  placeholder='mis. "Isi Questionnaire"'
+                  disabled={emailSending}
+                  className="w-full px-3 py-2.5 rounded-lg border border-neutral-200 text-sm outline-none disabled:opacity-50"
+                  style={{ background: "#f9fafb" }}
+                />
+              </div>
+              <div className="flex-1" style={{ minWidth: 0 }}>
+                <label className="block text-sm font-medium text-neutral-700 mb-1.5">Link URL <span className="font-normal text-neutral-400">(opsional)</span></label>
+                <input
+                  type="text"
+                  value={emailLinkUrl}
+                  onChange={(e) => setEmailLinkUrl(e.target.value)}
+                  placeholder="https://..."
+                  disabled={emailSending}
+                  className="w-full px-3 py-2.5 rounded-lg border border-neutral-200 text-sm outline-none disabled:opacity-50"
+                  style={{ background: "#f9fafb" }}
+                />
+              </div>
+            </div>
+            {emailResult && (
+              <p className={`text-sm ${emailResult.startsWith("Berhasil") ? "text-emerald-600" : "text-red-500"}`}>
+                {emailResult}
+              </p>
+            )}
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={emailSending || !emailSubject.trim() || !emailBody.trim()}
+                className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-white shrink-0 disabled:opacity-50"
+                style={{ background: "#8b5cf6" }}
+                onMouseEnter={(e) => { if (!emailSending) e.currentTarget.style.background = "#7c3aed"; }}
+                onMouseLeave={(e) => { if (!emailSending) e.currentTarget.style.background = "#8b5cf6"; }}
+              >
+                {emailSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                Kirim ke Semua User
+              </button>
+            </div>
           </div>
         </form>
       </div>
