@@ -66,9 +66,22 @@ def _classify_activity(prefs):
     return tier
 
 
+def _email_enabled(prefs, email_category):
+    """Check if user has opted in to email for a specific category.
+
+    email_category maps to prefs.notifications.email:
+      - 'deadline'        → deadline_reminder, deadline_urgent, deadline_critical
+      - 'smart_reminder'  → smart_reminder
+      - 'streak_nudge'    → streak_nudge
+      - 'social_presence' → social
+      - 'study_session'   → idle_session, auto_end
+    """
+    email_prefs = prefs.get("notifications", {}).get("email", {})
+    return bool(email_prefs.get(email_category, False))
+
+
 def _sent_today(user_id, notif_type):
     """Check if a notification of this type was already sent today. Dedup by type."""
-    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
     result = mongo.db.notifications.find_one({
         "user_id": user_id,
         "type": notif_type,
@@ -77,8 +90,12 @@ def _sent_today(user_id, notif_type):
     return result is not None
 
 
-def _notify_user(user_id, title, body, data=None, send_email=None, notif_type="reminder", email_template=None, email_vars=None):
-    """Send FCM push + save to DB + optional templated email. Returns dict with push_sent/email_sent."""
+def _notify_user(user_id, title, body, data=None, send_email=None, notif_type="reminder", email_template=None, email_vars=None, email_category=None):
+    """Send FCM push + save to DB + optional templated email. Returns dict with push_sent/email_sent.
+
+    email_category: key in prefs.notifications.email (e.g. 'deadline', 'smart_reminder').
+                    When provided, email is only sent if user has opted in for that category.
+    """
 
     push_sent = False
     prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
@@ -87,7 +104,13 @@ def _notify_user(user_id, title, body, data=None, send_email=None, notif_type="r
         push_sent = send_push(token, title, body, data or {"type": notif_type})
 
     email_sent = False
-    should_email = send_email if send_email is not None else bool(email_template)
+    # Determine if email should be sent: explicit flag or check user preference by category
+    if send_email is not None:
+        should_email = send_email
+    elif email_category and prefs:
+        should_email = _email_enabled(prefs, email_category)
+    else:
+        should_email = bool(email_template)
     if should_email:
         from shared.email import send_templated_email
 
@@ -255,9 +278,8 @@ def job_deadline_reminder():
         prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
         if not prefs:
             continue
+        # Deadline is time-sensitive — always send even during quiet hours
         if not prefs.get("notifications", {}).get("push_enabled", True):
-            continue
-        if _is_quiet_hours(prefs):
             continue
 
         task_name = card.get("task_name", "Tugas")
@@ -288,6 +310,7 @@ def job_deadline_reminder():
             title,
             body,
             data={"type": matched_tier["notif_type"], "card_id": card.get("card_id", str(card["_id"]))},
+            email_category="deadline",
             email_template=matched_tier.get("email_template"),
             email_vars={"task_name": task_name, "hours_left": hours_left, "time_left": time_left},
             notif_type=matched_tier["notif_type"],
@@ -338,6 +361,7 @@ def job_smart_reminder():
             title,
             body,
             data={"type": "smart_reminder", "tier": tier},
+            email_category="smart_reminder",
             email_template=f"smart_reminder_{tier.lower()}",
             notif_type="smart_reminder",
         )
@@ -388,6 +412,7 @@ def job_streak_nudge():
             title,
             body,
             data={"type": "streak_nudge"},
+            email_category="streak_nudge",
             email_template="streak_nudge",
             email_vars={"streak_count": streak_count},
             notif_type="streak_nudge",
@@ -450,6 +475,7 @@ def job_social_presence():
             title,
             body,
             data={"type": "social_presence"},
+            email_category="social_presence",
             email_template="social_presence",
             email_vars={"active_count": count},
             notif_type="social",
@@ -507,6 +533,7 @@ def job_check_idle_sessions():
             title,
             body,
             data={"type": "idle_session", "session_id": str(session["_id"])},
+            email_category="study_session",
             email_template="idle_session",
             notif_type="idle_session",
         )
@@ -552,6 +579,7 @@ def job_auto_end_stale_sessions():
             title,
             body,
             data={"type": "auto_end", "session_id": item["session_id"]},
+            email_category="study_session",
             email_template="auto_end",
             email_vars={"session_duration": "90 menit"},
             notif_type="auto_end",

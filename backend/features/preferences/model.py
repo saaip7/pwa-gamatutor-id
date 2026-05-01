@@ -39,6 +39,13 @@ class Preferences:
             if "end" in qt:
                 updates["notifications.quiet_hours.end"] = qt["end"]
 
+        # Email preferences per category
+        VALID_EMAIL_KEYS = ("deadline", "smart_reminder", "streak_nudge", "social_presence", "study_session")
+        if "email" in data and isinstance(data["email"], dict):
+            for key in VALID_EMAIL_KEYS:
+                if key in data["email"]:
+                    updates[f"notifications.email.{key}"] = bool(data["email"][key])
+
         # Also accept direct backend field names for flexibility
         for field in ["push_enabled", "smart_reminder_enabled", "social_presence_enabled"]:
             if field in data:
