@@ -7,11 +7,13 @@ from shared.fcm import send_push
 from bson import ObjectId
 
 
-def send_notification(user_id, notif_type, title, body, data=None, send_email=False, email_subject=None, email_body=None, email_template=None, email_vars=None):
+def send_notification(user_id, notif_type, title, body, data=None, send_email=False, email_subject=None, email_body=None, email_template=None, email_vars=None, email_category=None):
     """Dual-channel notification: save to DB, send FCM push, and optionally send email.
 
     Supports both plain text email (send_email=True) and templated HTML email
     (email_template="template_name" + email_vars={...}).
+
+    email_category: maps to user prefs.notifications.email for opt-in check.
     """
     from shared.email import send_templated_email
 
@@ -24,7 +26,16 @@ def send_notification(user_id, notif_type, title, body, data=None, send_email=Fa
         push_ok = send_push(token, title, body, data or {"type": notif_type})
 
     email_ok = False
-    if email_template:
+    # Check user email preference if email_category is specified
+    should_email = False
+    if email_category and prefs:
+        email_prefs = prefs.get("notifications", {}).get("email", {})
+        should_email = bool(email_prefs.get(email_category, False))
+    elif email_template or send_email:
+        # Fallback: if no category specified, respect explicit email flags
+        should_email = True
+
+    if should_email and email_template:
         user = mongo.db.users.find_one({"_id": ObjectId(user_id)})
         if user and user.get("email"):
             email_ok = send_templated_email(
@@ -32,7 +43,7 @@ def send_notification(user_id, notif_type, title, body, data=None, send_email=Fa
                 email_template,
                 **(email_vars or {}),
             )
-    elif send_email:
+    elif should_email and send_email:
         email_ok = Notification.send_email(
             user_id,
             email_subject or title,

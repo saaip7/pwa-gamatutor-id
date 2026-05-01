@@ -14,6 +14,13 @@ DEFAULT_PREFERENCES = {
         "reminder_time": "09:00",
         "quiet_hours": {"enabled": False, "start": "22:00", "end": "07:00"},
         "social_presence_enabled": False,
+        "email": {
+            "deadline": True,
+            "smart_reminder": False,
+            "streak_nudge": False,
+            "social_presence": False,
+            "study_session": False,
+        },
     },
     "theme": {
         "mode": "auto",
