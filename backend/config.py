@@ -13,7 +13,7 @@ class Config:
 
     # Email — Resend (primary) + SMTP (fallback for local dev)
     RESEND_API_KEY = os.getenv("RESEND_API_KEY")
-    RESEND_FROM = os.getenv("RESEND_FROM", "GamaTutor <noreply@mail.gamatutor.id>")
+    RESEND_FROM = os.getenv("RESEND_FROM", "Gamatutor <noreply@mail.gamatutor.id>")
     SMTP_HOST = os.getenv("SMTP_HOST", "smtp.titan.email")
     SMTP_PORT = int(os.getenv("SMTP_PORT", 465))
     SMTP_USER = os.getenv("SMTP_USER")
