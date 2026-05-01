@@ -15,7 +15,7 @@ export function TodayTasksList({ tasks, className }: TodayTasksListProps) {
   return (
     <div
       className={cn("anim-fade-in-up", className)}
-      style={{ animationDelay: "0.4s" }}
+      style={{ animationDelay: "0.5s" }}
     >
       <div className="flex justify-between items-center mb-5 px-1">
         <h3 className="text-lg md:text-xl font-bold text-neutral-900 tracking-tight">Tugas Hari Ini</h3>
