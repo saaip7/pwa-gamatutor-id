@@ -81,11 +81,15 @@ def _email_enabled(prefs, email_category):
 
 
 def _sent_today(user_id, notif_type):
-    """Check if a notification of this type was already sent today. Dedup by type."""
+    """Check if a notification of this type was already sent today (WIB). Dedup by type."""
+    wib_now = now_wib()
+    # WIB midnight today → convert back to UTC for DB query
+    today_wib_start = wib_now.replace(hour=0, minute=0, second=0, microsecond=0)
+    today_start_utc = today_wib_start - timedelta(hours=7)
     result = mongo.db.notifications.find_one({
         "user_id": user_id,
         "type": notif_type,
-        "created_at": {"$gte": today_start},
+        "created_at": {"$gte": today_start_utc},
     })
     return result is not None
 
