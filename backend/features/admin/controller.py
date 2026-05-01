@@ -8,6 +8,7 @@ from shared.email import send_email
 from shared.email_templates import admin_broadcast
 import re
 import logging
+from datetime import datetime, timedelta
 import time
 
 logger = logging.getLogger(__name__)
@@ -388,4 +389,155 @@ def send_broadcast_email():
         "sent": sent,
         "failed": failed,
         "total": len(users),
+    }), 200
+
+
+# ---------------------------------------------------------------------------
+# Scheduler Monitoring
+# ---------------------------------------------------------------------------
+
+# Jobs that can be manually triggered (notification jobs)
+TRIGGERABLE_JOBS = {
+    "deadline_reminder": {"label": "Deadline Reminder", "description": "Cek tugas dengan deadline < 24 jam"},
+    "smart_reminder": {"label": "Smart Reminder", "description": "Reminder belajar berdasarkan aktivitas (A/B/C)"},
+    "streak_nudge": {"label": "Streak Nudge", "description": "Nudge user dengan streak aktif yang belum belajar"},
+    "social_presence": {"label": "Social Presence", "description": "Notifikasi teman yang sedang belajar"},
+}
+
+
+def get_scheduler_status():
+    """Return status of all 8 scheduler jobs from APScheduler memory."""
+    from shared.scheduler import scheduler
+
+    jobs = []
+    for job in scheduler.get_jobs():
+        next_run = job.next_run_time
+        jobs.append({
+            "id": job.id,
+            "name": job.name,
+            "trigger": str(job.trigger),
+            "next_run_time": (next_run + timedelta(hours=7)).isoformat() if next_run else None,
+            "triggerable": job.id in TRIGGERABLE_JOBS,
+            "label": TRIGGERABLE_JOBS.get(job.id, {}).get("label", job.id),
+        })
+
+    return jsonify({"jobs": jobs, "total": len(jobs)}), 200
+
+
+def trigger_scheduler_job():
+    """Manually trigger a notification job without modifying its schedule."""
+    import time as _time
+    from datetime import datetime as _dt
+    from shared.scheduler import (
+        _run_deadline_reminder,
+        _run_smart_reminder,
+        _run_streak_nudge,
+        _run_social_presence,
+        _log_job_run,
+    )
+
+    data = request.get_json(silent=True) or {}
+    job_id = data.get("job_id", "").strip()
+
+    if job_id not in TRIGGERABLE_JOBS:
+        return jsonify({
+            "message": f"Job '{job_id}' tidak bisa di-trigger manual. Pilih: {', '.join(TRIGGERABLE_JOBS.keys())}",
+        }), 400
+
+    job_map = {
+        "deadline_reminder": _run_deadline_reminder,
+        "smart_reminder": _run_smart_reminder,
+        "streak_nudge": _run_streak_nudge,
+        "social_presence": _run_social_presence,
+    }
+
+    started = _dt.utcnow()
+    t0 = _time.monotonic()
+    try:
+        fn = job_map[job_id]
+        result = fn()
+        duration_ms = round((_time.monotonic() - t0) * 1000, 1)
+        _log_job_run(
+            job_id,
+            triggered_by="manual",
+            status="success",
+            stats=result if isinstance(result, dict) else None,
+            started_at=started,
+            finished_at=_dt.utcnow(),
+            duration_ms=duration_ms,
+        )
+        return jsonify({
+            "message": f"Job '{job_id}' triggered successfully",
+            "job_id": job_id,
+            "stats": result if isinstance(result, dict) else None,
+        }), 200
+    except Exception as e:
+        duration_ms = round((_time.monotonic() - t0) * 1000, 1)
+        _log_job_run(
+            job_id,
+            triggered_by="manual",
+            status="error",
+            error=str(e),
+            started_at=started,
+            finished_at=_dt.utcnow(),
+            duration_ms=duration_ms,
+        )
+        logger.error(f"[Admin] Manual trigger '{job_id}' failed: {e}")
+        return jsonify({"message": f"Job '{job_id}' gagal: {str(e)}"}), 500
+
+
+def get_scheduler_logs():
+    """Return run history for notification jobs (last 3 days)."""
+    try:
+        page = int(request.args.get("page", 1))
+        per_page = int(request.args.get("per_page", 30))
+    except (ValueError, TypeError):
+        page, per_page = 1, 30
+
+    if page < 1:
+        page = 1
+    if per_page < 1 or per_page > 100:
+        per_page = 30
+
+    job_id_filter = request.args.get("job_id", "").strip()
+    triggered_by_filter = request.args.get("triggered_by", "").strip()
+
+    query = {}
+    if job_id_filter:
+        query["job_id"] = job_id_filter
+    if triggered_by_filter:
+        query["triggered_by"] = triggered_by_filter
+
+    # Only notification jobs
+    query["job_id"] = {"$in": list(TRIGGERABLE_JOBS.keys())}
+    if job_id_filter:
+        query["job_id"] = job_id_filter
+
+    skip = (page - 1) * per_page
+    total = mongo.db.scheduler_logs.count_documents(query)
+
+    cursor = (
+        mongo.db.scheduler_logs.find(query)
+        .sort("started_at", -1)
+        .skip(skip)
+        .limit(per_page)
+    )
+
+    logs = []
+    for doc in cursor:
+        doc["_id"] = str(doc["_id"])
+        for key in ("started_at", "finished_at"):
+            val = doc.get(key)
+            if isinstance(val, datetime):
+                doc[key] = (val + timedelta(hours=7)).isoformat()
+            else:
+                doc[key] = str(val)
+        logs.append(doc)
+
+    return jsonify({
+        "data": logs,
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "pages": (total + per_page - 1) // per_page,
     }), 200
