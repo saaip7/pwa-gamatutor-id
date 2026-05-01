@@ -7,6 +7,7 @@ from features.admin.controller import (
     list_boards,
     get_user_board,
     get_user_analytics,
+    send_broadcast_email,
 )
 
 admin_bp = Blueprint("admin_bp", __name__, url_prefix="/admin")
@@ -24,3 +25,6 @@ admin_bp.route("/analytics/<user_id>", methods=["GET"])(admin_required(get_user_
 
 # Logs
 admin_bp.route("/logs", methods=["GET"])(admin_required(list_logs))
+
+# Email
+admin_bp.route("/send-email", methods=["POST"])(admin_required(send_broadcast_email))

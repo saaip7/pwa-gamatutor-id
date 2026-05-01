@@ -4,7 +4,13 @@ from shared.db import mongo
 from features.analytics.model import Analytics
 from features.board.model import Board, Card
 from features.badge.model import Badge
+from shared.email import send_email
+from shared.email_templates import admin_broadcast
 import re
+import logging
+import time
+
+logger = logging.getLogger(__name__)
 
 
 def _build_board_with_cards(board_doc, user_id):
@@ -334,4 +340,52 @@ def get_user_analytics(user_id):
         "strategy_effectiveness": strategy,
         "confidence_trend": confidence,
         "streak": streak_data,
+    }), 200
+
+
+def send_broadcast_email():
+    """Send broadcast email to all users with valid email."""
+    data = request.get_json(silent=True) or {}
+    subject = (data.get("subject") or "").strip()
+    body = (data.get("body") or "").strip()
+    link_text = (data.get("link_text") or "").strip() or None
+    link_url = (data.get("link_url") or "").strip() or None
+
+    if not subject or not body:
+        return jsonify({"message": "Subject dan body wajib diisi"}), 400
+
+    if link_url and not link_text:
+        link_text = "Buka Link"
+
+    # Get all users with email
+    users = list(mongo.db.users.find(
+        {"email": {"$exists": True, "$ne": None, "$ne": ""}},
+        {"email": 1, "name": 1}
+    ))
+
+    if not users:
+        return jsonify({"message": "Tidak ada user dengan email"}), 400
+
+    # Render template once
+    subj, html, text = admin_broadcast(subject, body, link_text, link_url)
+
+    sent = 0
+    failed = 0
+    for user in users:
+        ok = send_email(user["email"], subj, html, text)
+        if ok:
+            sent += 1
+        else:
+            failed += 1
+        # Rate limit: delay 0.3s between each email to avoid Titan rate limit
+        if user is not users[-1]:
+            time.sleep(0.3)
+
+    logger.info(f"Admin broadcast email: sent={sent}, failed={failed}, subject={subject}")
+
+    return jsonify({
+        "message": f"Email dikirim ke {sent} user",
+        "sent": sent,
+        "failed": failed,
+        "total": len(users),
     }), 200
