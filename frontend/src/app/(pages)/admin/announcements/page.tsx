@@ -303,12 +303,15 @@ export default function AdminAnnouncementsPage() {
               <textarea
                 value={emailBody}
                 onChange={(e) => setEmailBody(e.target.value)}
-                placeholder="Isi pesan email..."
-                rows={3}
+                placeholder={"Isi pesan email...\n\nContoh:\nHalo semua!\n\nBerikut update terbaru:\n- Fitur baru sudah live\n- Deadline Jumat ini\n\n**Jangan lupa belajar!**"}
+                rows={7}
                 disabled={emailSending}
-                className="w-full px-3 py-2.5 rounded-lg border border-neutral-200 text-sm outline-none disabled:opacity-50 resize-none"
+                className="w-full px-3 py-2.5 rounded-lg border border-neutral-200 text-sm outline-none disabled:opacity-50 resize-y"
                 style={{ background: "#f9fafb" }}
               />
+              <p className="text-xs text-neutral-400 mt-1">
+                Mendukung format: <span className="font-medium">**bold**</span>, <span className="font-medium">- bullet list</span>, <span className="font-medium">new line</span>
+              </p>
             </div>
             <div className="flex items-end gap-3">
               <div className="flex-1" style={{ minWidth: 0 }}>

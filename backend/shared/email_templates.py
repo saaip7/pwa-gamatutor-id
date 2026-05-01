@@ -6,6 +6,7 @@ Each public function returns (subject, html_body, plain_text) tuple.
 """
 
 import re as _re
+import markdown as _markdown
 
 _LOGO_URI = "https://v2.gamatutor.id/icon-512x512-secondary.png"
 
@@ -145,6 +146,51 @@ def _cta(url, text, accent=_PRIMARY):
 
 def _strip_tags(html):
     return _re.sub(r"<[^>]+>", "", html).replace("&amp;", "&").replace("&rarr;", "->")
+
+
+_ALLOWED_TAGS = _re.compile(
+    r"<(/?)(p|ul|ol|li|strong|b|em|i|br|a)\b[^>]*>"
+)
+_ALLOWED_ATTR = _re.compile(
+    r'href="[^"]*"'
+)
+
+
+def _markdown_body(raw_md):
+    """Parse markdown → safe HTML block with email-compatible inline styles.
+
+    Only allows safe tags (p, ul, ol, li, strong, b, em, i, br, a).
+    Everything else is stripped.
+    """
+    html = _markdown.markdown(raw_md)
+
+    # Strip disallowed tags but keep inner text
+    def _sanitize(match):
+        tag = _ALLOWED_TAGS.match(match.group(0))
+        if tag:
+            raw = match.group(0)
+            # Strip attributes except href on <a>
+            if raw.startswith("<a"):
+                href = _ALLOWED_ATTR.search(raw)
+                if href:
+                    return '<a ' + href.group(0) + ' style="color:' + _PRIMARY + ';text-decoration:underline;">'
+                return '<a style="color:' + _PRIMARY + ';text-decoration:underline;">'
+            if raw.startswith("<strong") or raw.startswith("<b"):
+                return '<strong>'
+            if raw.startswith("<em") or raw.startswith("<i"):
+                return '<em>'
+            return raw
+        return ""
+
+    html = _re.sub(r"<[^>]+>", _sanitize, html)
+
+    # Style block elements
+    html = html.replace("<p>", '<p style="margin:0 0 14px;font-size:14px;color:' + _NEUTRAL_500 + ';line-height:1.75;">')
+    html = html.replace("<ul>", '<ul style="margin:0 0 14px;padding:0 0 0 20px;font-size:14px;color:' + _NEUTRAL_500 + ';line-height:1.75;">')
+    html = html.replace("<ol>", '<ol style="margin:0 0 14px;padding:0 0 0 20px;font-size:14px;color:' + _NEUTRAL_500 + ';line-height:1.75;">')
+    html = html.replace("<li>", '<li style="margin-bottom:4px;">')
+
+    return html
 
 
 # ---------------------------------------------------------------------------
@@ -377,8 +423,8 @@ def generic_nudge(title, message):
 # ---------------------------------------------------------------------------
 
 def admin_broadcast(subject, body, link_text=None, link_url=None):
-    """Custom broadcast email from admin. Optional CTA button."""
-    html = _heading(subject) + _paragraph(body)
+    """Custom broadcast email from admin. Body supports markdown (newlines, bullets, bold)."""
+    html = _heading(subject) + _markdown_body(body)
     text = f"{subject}\n\n{body}"
 
     if link_url and link_text:
