@@ -107,8 +107,18 @@ const JOB_LABELS: Record<string, string> = {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
+// Backend returns naive UTC ISO strings (e.g. "2025-01-15T03:28:39.123456").
+// APScheduler may include offset (e.g. "+00:00"). Normalize both to UTC before display.
+function toLocalDate(iso: string): Date {
+  if (!iso) return new Date(NaN);
+  // Already has offset like +00:00 or Z → parse as-is (browser converts to local)
+  if (iso.includes("+") || iso.endsWith("Z")) return new Date(iso);
+  // Naive ISO → treat as UTC
+  return new Date(iso + "Z");
+}
+
 function fmtDateTime(iso: string) {
-  return new Date(iso).toLocaleDateString("id-ID", {
+  return toLocalDate(iso).toLocaleDateString("id-ID", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -124,7 +134,7 @@ function fmtDuration(ms: number) {
 
 function getNextRunRelative(iso: string | null) {
   if (!iso) return null;
-  const diff = new Date(iso).getTime() - Date.now();
+  const diff = toLocalDate(iso).getTime() - Date.now();
   if (diff < 0) return "sebentar lagi";
   const mins = Math.floor(diff / 60000);
   if (mins < 60) return `${mins}m`;

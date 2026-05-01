@@ -416,7 +416,7 @@ def get_scheduler_status():
             "id": job.id,
             "name": job.name,
             "trigger": str(job.trigger),
-            "next_run_time": (next_run + timedelta(hours=7)).isoformat() if next_run else None,
+            "next_run_time": next_run.isoformat() if next_run else None,
             "triggerable": job.id in TRIGGERABLE_JOBS,
             "label": TRIGGERABLE_JOBS.get(job.id, {}).get("label", job.id),
         })
@@ -526,12 +526,8 @@ def get_scheduler_logs():
     logs = []
     for doc in cursor:
         doc["_id"] = str(doc["_id"])
-        for key in ("started_at", "finished_at"):
-            val = doc.get(key)
-            if isinstance(val, datetime):
-                doc[key] = (val + timedelta(hours=7)).isoformat()
-            else:
-                doc[key] = str(val)
+        doc["started_at"] = doc["started_at"].isoformat() if isinstance(doc["started_at"], datetime) else str(doc["started_at"])
+        doc["finished_at"] = doc["finished_at"].isoformat() if isinstance(doc["finished_at"], datetime) else str(doc["finished_at"])
         logs.append(doc)
 
     return jsonify({

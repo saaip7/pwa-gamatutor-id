@@ -214,9 +214,14 @@ def deadline_early(task_name, hours_left):
     return _render(subject, html, text)
 
 
-def deadline_urgent(task_name, hours_left):
+def deadline_urgent(task_name, hours_left, time_left=None):
     """3-12h before deadline. Amber accent."""
-    hours_text = f"{hours_left} jam" if hours_left > 1 else "kurang dari 1 jam"
+    if time_left:
+        hours_text = time_left
+    elif hours_left > 1:
+        hours_text = f"{hours_left} jam"
+    else:
+        hours_text = "kurang dari 1 jam"
     subject = f"Deadline sebentar lagi: {task_name}"
     hours_colored = f'<strong style="color:{_AMBER};">{hours_text}</strong>'
     html = "\n".join([
