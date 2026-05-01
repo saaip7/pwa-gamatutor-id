@@ -11,6 +11,7 @@ import { StreakHub } from "@/components/feature/streak/StreakHub";
 import type { StreakData as ComponentStreakData } from "@/components/feature/streak/StreakHub";
 import { StreakFreezeCelebration } from "@/components/feature/streak/StreakFreezeCelebration";
 import { AnnouncementModal } from "@/components/feature/dashboard/AnnouncementModal";
+import { SessionLeaderboard } from "@/components/feature/dashboard/SessionLeaderboard";
 import { useAuthStore } from "@/stores/auth";
 import { useAnalyticsStore } from "@/stores/analytics";
 import { useBoardStore } from "@/stores/board";
@@ -232,7 +233,11 @@ export default function DashboardPage() {
             <StudyPatterns patterns={patterns} />
           </div>
 
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-1">
+            <SessionLeaderboard />
+          </div>
+
+          <div className="lg:col-span-2">
             <TodayTasksList tasks={todayTasks} />
           </div>
 
