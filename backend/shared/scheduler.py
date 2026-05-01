@@ -1,5 +1,6 @@
 import logging
 import random
+import time
 from datetime import datetime, timedelta
 from bson import ObjectId
 
@@ -12,6 +13,95 @@ from features.notification.model import Notification
 logger = logging.getLogger(__name__)
 
 scheduler = BackgroundScheduler()
+
+# Notification job IDs (allowed for manual trigger + history logging)
+NOTIF_JOB_IDS = ["deadline_reminder", "smart_reminder", "streak_nudge", "social_presence"]
+
+# Job display metadata for admin panel
+JOB_META = {
+    "deadline_reminder": {"label": "Deadline Reminder", "icon": "clock"},
+    "smart_reminder":    {"label": "Smart Reminder",   "icon": "brain"},
+    "streak_nudge":      {"label": "Streak Nudge",      "icon": "flame"},
+    "social_presence":   {"label": "Social Presence",   "icon": "users"},
+    "orphan_cleanup":    {"label": "Orphan Cleanup",    "icon": "trash"},
+    "check_idle_sessions":{"label": "Idle Check",       "icon": "timer"},
+    "auto_end_stale_sessions": {"label": "Auto End Stale", "icon": "stop-circle"},
+    "reset_stale_streaks":     {"label": "Reset Stale Streaks","icon": "rotate-ccw"},
+}
+
+
+# ---------------------------------------------------------------------------
+# Run-history logging (MongoDB, 3-day retention)
+# ---------------------------------------------------------------------------
+
+def _log_job_run(job_id, *, triggered_by="scheduler", status="success",
+                 stats=None, error=None, started_at=None, finished_at=None, duration_ms=0):
+    """Persist a scheduler job run to scheduler_logs collection."""
+    try:
+        mongo.db.scheduler_logs.insert_one({
+            "job_id": job_id,
+            "triggered_by": triggered_by,     # "scheduler" | "manual"
+            "status": status,                 # "success" | "error"
+            "stats": stats or {},
+            "error": error,
+            "started_at": started_at or datetime.utcnow(),
+            "finished_at": finished_at or datetime.utcnow(),
+            "duration_ms": duration_ms,
+            "created_at": datetime.utcnow(),
+        })
+        # Cleanup: delete logs older than 3 days
+        cutoff = datetime.utcnow() - timedelta(days=3)
+        mongo.db.scheduler_logs.delete_many({"created_at": {"$lt": cutoff}})
+    except Exception:
+        logger.exception("[Scheduler] Failed to log job run")
+
+
+from contextlib import contextmanager
+import time as _time
+from functools import wraps
+
+
+def _track_job_run(job_id, *, triggered_by="scheduler"):
+    """Decorator / wrapper: logs job result + duration to MongoDB.
+
+    Can be used as a decorator OR called directly:
+        @_track_job_run("smart_reminder")
+        def job_smart_reminder(): ...
+
+        # or
+        _track_job_run("deadline_reminder", triggered_by="manual")(_run_deadline_reminder)
+    """
+    def decorator(fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            started = datetime.utcnow()
+            t0 = _time.monotonic()
+            stats = None
+            error = None
+            status = "success"
+            try:
+                result = fn(*args, **kwargs)
+                if isinstance(result, dict):
+                    stats = result
+                return result
+            except Exception as exc:
+                status = "error"
+                error = str(exc)
+                raise
+            finally:
+                duration_ms = round((_time.monotonic() - t0) * 1000, 1)
+                _log_job_run(
+                    job_id,
+                    triggered_by=triggered_by,
+                    status=status,
+                    stats=stats,
+                    error=error,
+                    started_at=started,
+                    finished_at=datetime.utcnow(),
+                    duration_ms=duration_ms,
+                )
+        return wrapper
+    return decorator
 
 
 # ---------------------------------------------------------------------------
@@ -232,8 +322,13 @@ DEADLINE_TIERS = [
 ]
 
 
+@_track_job_run("deadline_reminder")
 def job_deadline_reminder():
     """Check cards with upcoming deadlines (next 24h) and notify users."""
+    return _run_deadline_reminder()
+
+
+def _run_deadline_reminder():
     logger.info("[Scheduler] Running deadline reminder job")
 
     now = datetime.utcnow()
@@ -323,21 +418,20 @@ def job_deadline_reminder():
         reminded += 1
 
     logger.info(f"[Scheduler] Deadline reminder: {reminded} sent")
+    return {"reminded": reminded}
 
 
 # ---------------------------------------------------------------------------
 # Job 2: Smart Reminder (A/B/C by activity)
 # ---------------------------------------------------------------------------
 
+@_track_job_run("smart_reminder")
 def job_smart_reminder():
-    """Send personalized study reminders based on activity level.
+    """Send personalized study reminders based on activity level."""
+    return _run_smart_reminder()
 
-    Tier A (Rajin):    active 0-1 days ago → competence support / apresiasi
-    Tier B (Medium):   inactive 2-3 days   → neutral nudge
-    Tier C (Pasif):    inactive 4+ days    → autonomy support (gentle, no pressure)
 
-    All tiers: max 1 per day per user. No productive hour gate. No skip for Tier A.
-    """
+def _run_smart_reminder():
     logger.info("[Scheduler] Running smart reminder job")
 
     users = mongo.db.user_preferences.find({
@@ -373,14 +467,20 @@ def job_smart_reminder():
         counts[tier] += 1
 
     logger.info(f"[Scheduler] Smart reminder: A={counts['A']} B={counts['B']} C={counts['C']} sent")
+    return counts
 
 
 # ---------------------------------------------------------------------------
 # Job 3: Streak Nudge
 # ---------------------------------------------------------------------------
 
+@_track_job_run("streak_nudge")
 def job_streak_nudge():
     """Nudge users with active streak (>=2) who haven't studied today."""
+    return _run_streak_nudge()
+
+
+def _run_streak_nudge():
     logger.info("[Scheduler] Running streak nudge job")
 
     users = mongo.db.user_preferences.find({
@@ -425,14 +525,20 @@ def job_streak_nudge():
         nudged += 1
 
     logger.info(f"[Scheduler] Streak nudge: {nudged} sent")
+    return {"nudged": nudged}
 
 
 # ---------------------------------------------------------------------------
 # Job 4: Social Presence
 # ---------------------------------------------------------------------------
 
+@_track_job_run("social_presence")
 def job_social_presence():
     """Notify users about peers who are currently studying."""
+    return _run_social_presence()
+
+
+def _run_social_presence():
     logger.info("[Scheduler] Running social presence job")
 
     now = datetime.utcnow()
@@ -488,6 +594,7 @@ def job_social_presence():
         notified += 1
 
     logger.info(f"[Scheduler] Social presence: {notified} sent ({count} active users, unique tokens: {len(sent_tokens)})")
+    return {"notified": notified, "active_users": count}
 
 
 # ---------------------------------------------------------------------------

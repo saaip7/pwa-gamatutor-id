@@ -8,6 +8,9 @@ from features.admin.controller import (
     get_user_board,
     get_user_analytics,
     send_broadcast_email,
+    get_scheduler_status,
+    trigger_scheduler_job,
+    get_scheduler_logs,
 )
 
 admin_bp = Blueprint("admin_bp", __name__, url_prefix="/admin")
@@ -28,3 +31,8 @@ admin_bp.route("/logs", methods=["GET"])(admin_required(list_logs))
 
 # Email
 admin_bp.route("/send-email", methods=["POST"])(admin_required(send_broadcast_email))
+
+# Scheduler
+admin_bp.route("/scheduler/status", methods=["GET"])(admin_required(get_scheduler_status))
+admin_bp.route("/scheduler/trigger", methods=["POST"])(admin_required(trigger_scheduler_job))
+admin_bp.route("/scheduler/logs", methods=["GET"])(admin_required(get_scheduler_logs))
