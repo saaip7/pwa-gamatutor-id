@@ -6,6 +6,7 @@ from shared.log_model import Log
 from shared.streak import update_streak
 from shared.db import mongo
 from bson import ObjectId
+from datetime import datetime
 
 
 @jwt_required()
@@ -182,3 +183,56 @@ def get_history():
         "available_courses": available_courses,
         "summary": summary,
     }), 200
+
+
+@jwt_required()
+def get_top_sessions():
+    """Get top 3 personal best study sessions for the current user."""
+    user_id = get_jwt_identity()
+    oid = ObjectId(user_id)
+
+    pipeline = [
+        {"$match": {"user_id": oid, "end_time": {"$ne": None}, "orphan": {"$ne": True}}},
+        {"$project": {
+            "net_sec": {"$subtract": [
+                {"$divide": [{"$subtract": ["$end_time", "$start_time"]}, 1000]},
+                {"$divide": [{"$ifNull": ["$hidden_ms", 0]}, 1000]},
+            ]},
+            "card_id": 1,
+            "start_time": 1,
+        }},
+        {"$sort": {"net_sec": -1}},
+        {"$limit": 3},
+    ]
+    top = list(mongo.db.study_sessions.aggregate(pipeline))
+
+    # Resolve card info
+    card_ids = list({s["card_id"] for s in top if s.get("card_id")})
+    card_map = {}
+    if card_ids:
+        for c in mongo.db.cards.find({"card_id": {"$in": card_ids}}, {"card_id": 1, "task_name": 1, "course_name": 1}):
+            card_map[c["card_id"]] = c
+
+    # Resolve course codes
+    course_names = {c.get("course_name") for c in card_map.values() if c.get("course_name")}
+    course_code_map = {}
+    if course_names:
+        for c in mongo.db.courses.find({"course_name": {"$in": list(course_names)}}):
+            course_code_map[c["course_name"]] = c.get("course_code", c["course_name"])
+
+    result = []
+    for i, s in enumerate(top):
+        card = card_map.get(s.get("card_id"), {})
+        net_sec = max(0, int(s["net_sec"]))
+        start = s.get("start_time")
+        result.append({
+            "rank": i + 1,
+            "session_id": str(s["_id"]),
+            "task_name": card.get("task_name", "Tugas tanpa judul"),
+            "course_name": card.get("course_name", ""),
+            "course_code": course_code_map.get(card.get("course_name", ""), ""),
+            "duration_sec": net_sec,
+            "date": start.strftime("%Y-%m-%d") if isinstance(start, datetime) else None,
+        })
+
+    return jsonify({"sessions": result}), 200

@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Megaphone, X } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { api } from "@/lib/api";
 
 
@@ -99,7 +100,27 @@ export function AnnouncementModal() {
               </div>
             </div>
             <div className="px-5 pb-2">
-              <p className="text-sm text-neutral-600 leading-relaxed whitespace-pre-line">{current.body}</p>
+              <ReactMarkdown
+                components={{
+                  p: ({ children }) => (
+                    <p className="text-sm text-neutral-600 leading-relaxed mb-1.5 last:mb-0">{children}</p>
+                  ),
+                  ul: ({ children }) => (
+                    <ul className="text-sm text-neutral-600 leading-relaxed list-disc pl-4 mb-1.5">{children}</ul>
+                  ),
+                  ol: ({ children }) => (
+                    <ol className="text-sm text-neutral-600 leading-relaxed list-decimal pl-4 mb-1.5">{children}</ol>
+                  ),
+                  li: ({ children }) => (
+                    <li className="mb-0.5">{children}</li>
+                  ),
+                  strong: ({ children }) => (
+                    <strong className="font-semibold text-neutral-800">{children}</strong>
+                  ),
+                }}
+              >
+                {current.body}
+              </ReactMarkdown>
             </div>
             <div className="px-5 pb-5 pt-3">
               <button

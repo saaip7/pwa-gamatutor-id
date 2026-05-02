@@ -35,18 +35,19 @@ const COLUMN_STATUS_MAP: Record<string, string> = {
   list4: "Reflection",
 };
 
-function formatDeadline(deadline?: string): string {
-  if (!deadline) return "Belum ada deadline";
+function formatDeadline(deadline?: string): { text: string; isOverdue: boolean } {
+  if (!deadline) return { text: "Belum ada deadline", isOverdue: false };
   const d = new Date(deadline);
-  if (isNaN(d.getTime())) return deadline;
-  if (d.getTime() < Date.now()) return "Terlambat";
-  return d.toLocaleDateString("id-ID", {
+  if (isNaN(d.getTime())) return { text: deadline, isOverdue: false };
+  const isOverdue = d.getTime() < Date.now();
+  const text = d.toLocaleDateString("id-ID", {
     day: "numeric",
     month: "short",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
   });
+  return { text, isOverdue };
 }
 
 function formatPersonalBest(pb: BoardCard["personal_best"]): string {
@@ -143,9 +144,11 @@ export default function TaskDetailPage() {
           </span>
           <p className={cn(
             "text-sm font-bold leading-tight",
-            card.deadline ? "text-neutral-900" : "text-neutral-400"
+            !card.deadline && "text-neutral-400",
+            card.deadline && formatDeadline(card.deadline).isOverdue && "text-red-500",
+            card.deadline && !formatDeadline(card.deadline).isOverdue && "text-neutral-900"
           )}>
-            {formatDeadline(card.deadline)}
+            {formatDeadline(card.deadline).text}
           </p>
         </div>
       </div>
