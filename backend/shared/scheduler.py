@@ -31,6 +31,34 @@ JOB_META = {
 
 
 # ---------------------------------------------------------------------------
+# Job pause/resume state (MongoDB)
+# ---------------------------------------------------------------------------
+
+def _is_paused(job_id):
+    """Check if a scheduler job is paused via admin toggle."""
+    doc = mongo.db.scheduler_state.find_one({"job_id": job_id})
+    return bool(doc and doc.get("paused", False))
+
+
+def set_job_paused(job_id, paused):
+    """Set pause state for a scheduler job. Upserts into scheduler_state."""
+    mongo.db.scheduler_state.update_one(
+        {"job_id": job_id},
+        {"$set": {"paused": paused, "updated_at": datetime.utcnow()}},
+        upsert=True,
+    )
+    logger.info(f"[Scheduler] Job '{job_id}' {'paused' if paused else 'resumed'}")
+
+
+def get_all_job_states():
+    """Return pause state for all known jobs. Missing = not paused."""
+    states = {}
+    for doc in mongo.db.scheduler_state.find():
+        states[doc["job_id"]] = bool(doc.get("paused", False))
+    return states
+
+
+# ---------------------------------------------------------------------------
 # Run-history logging (MongoDB, 3-day retention)
 # ---------------------------------------------------------------------------
 
@@ -165,9 +193,13 @@ def _email_enabled(prefs, email_category):
       - 'streak_nudge'    → streak_nudge
       - 'social_presence' → social
       - 'study_session'   → idle_session, auto_end
+
+    Opt-out model: if user hasn't set any email prefs yet, default is ENABLED.
     """
     email_prefs = prefs.get("notifications", {}).get("email", {})
-    return bool(email_prefs.get(email_category, False))
+    if not email_prefs:
+        return True  # no prefs set yet → default enabled (opt-out)
+    return bool(email_prefs.get(email_category, True))
 
 
 def _sent_today(user_id, notif_type):
@@ -325,6 +357,9 @@ DEADLINE_TIERS = [
 @_track_job_run("deadline_reminder")
 def job_deadline_reminder():
     """Check cards with upcoming deadlines (next 24h) and notify users."""
+    if _is_paused("deadline_reminder"):
+        logger.info("[Scheduler] deadline_reminder is paused — skipping")
+        return {}
     return _run_deadline_reminder()
 
 
@@ -421,6 +456,107 @@ def _run_deadline_reminder():
     return {"reminded": reminded}
 
 
+def _run_deadline_reminder_manual(options=None):
+    """Manual trigger variant of deadline reminder.
+
+    options: dict with keys:
+      - skip_quiet_hours (bool): deadline already bypasses quiet hours, no effect
+      - force_email (bool):      force-send email regardless of user preference
+      - skip_dedup (bool):       skip dedup check (useful for testing)
+    """
+    opts = options or {}
+    logger.info(f"[Scheduler] Running deadline reminder MANUAL trigger (options={opts})")
+
+    now = datetime.utcnow()
+
+    cards_with_deadlines = list(mongo.db.cards.find({
+        "deadline": {"$exists": True, "$ne": None},
+        "column": {"$ne": "list4"},
+        "deleted": {"$ne": True},
+    }))
+
+    reminded = 0
+    skipped_dedup = 0
+
+    for card in cards_with_deadlines:
+        user_id = card["user_id"]
+        deadline_str = card.get("deadline")
+
+        try:
+            if isinstance(deadline_str, str):
+                deadline = datetime.fromisoformat(deadline_str.replace("Z", "+00:00"))
+                if deadline.tzinfo is not None:
+                    from datetime import timezone
+                    deadline = deadline.astimezone(timezone.utc).replace(tzinfo=None)
+            else:
+                deadline = deadline_str
+        except Exception:
+            continue
+
+        hours_left = int((deadline - now).total_seconds() / 3600)
+        minutes_left = int((deadline - now).total_seconds() / 60)
+
+        matched_tier = None
+        for tier in DEADLINE_TIERS:
+            if tier["min_h"] <= hours_left <= tier["max_h"]:
+                matched_tier = tier
+                break
+
+        if not matched_tier:
+            continue
+
+        skip_min = matched_tier.get("skip_below_min", 0)
+        if skip_min > 0 and minutes_left < skip_min:
+            continue
+
+        prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
+        if not prefs:
+            continue
+        if not prefs.get("notifications", {}).get("push_enabled", True):
+            continue
+
+        task_name = card.get("task_name", "Tugas")
+
+        # Dedup — skip if option says so
+        if not opts.get("skip_dedup") and matched_tier["dedup_hours"] > 0:
+            existing = mongo.db.notifications.find_one({
+                "user_id": user_id,
+                "type": matched_tier["notif_type"],
+                "description": {"$regex": task_name},
+                "created_at": {"$gte": now - timedelta(hours=matched_tier["dedup_hours"])},
+            })
+            if existing:
+                skipped_dedup += 1
+                continue
+
+        title = matched_tier["title"]
+        if hours_left >= 1:
+            time_left = f"{hours_left} jam"
+        else:
+            time_left = f"{minutes_left} menit"
+
+        body = matched_tier["body_template"].format(
+            task_name=task_name, time_left=time_left, hours_left=hours_left
+        )
+
+        _notify_user(
+            user_id,
+            title,
+            body,
+            data={"type": matched_tier["notif_type"], "card_id": card.get("card_id", str(card["_id"]))},
+            send_email=True if opts.get("force_email") else None,
+            email_category="deadline" if not opts.get("force_email") else None,
+            email_template=matched_tier.get("email_template"),
+            email_vars={"task_name": task_name, "hours_left": hours_left, "time_left": time_left},
+            notif_type=matched_tier["notif_type"],
+        )
+
+        reminded += 1
+
+    logger.info(f"[Scheduler] Deadline reminder MANUAL: {reminded} sent, {skipped_dedup} skipped_dedup")
+    return {"reminded": reminded, "skipped_dedup": skipped_dedup}
+
+
 # ---------------------------------------------------------------------------
 # Job 2: Smart Reminder (A/B/C by activity)
 # ---------------------------------------------------------------------------
@@ -428,6 +564,9 @@ def _run_deadline_reminder():
 @_track_job_run("smart_reminder")
 def job_smart_reminder():
     """Send personalized study reminders based on activity level."""
+    if _is_paused("smart_reminder"):
+        logger.info("[Scheduler] smart_reminder is paused — skipping")
+        return {}
     return _run_smart_reminder()
 
 
@@ -470,6 +609,58 @@ def _run_smart_reminder():
     return counts
 
 
+def _run_smart_reminder_manual(options=None):
+    """Manual trigger variant of smart reminder.
+
+    options: dict with optional keys (all default False):
+      - skip_quiet_hours (bool): skip quiet hours check
+      - force_email (bool):      force-send email regardless of user preference
+      - skip_dedup (bool):       skip dedup check (useful for testing)
+    """
+    opts = options or {}
+    skip_quiet = opts.get("skip_quiet_hours", False)
+    force_email = opts.get("force_email", False)
+    skip_dedup = opts.get("skip_dedup", False)
+
+    logger.info(f"[Scheduler] Running smart reminder MANUAL trigger (options={opts})")
+
+    users = mongo.db.user_preferences.find({
+        "notifications.smart_reminder_enabled": True,
+    })
+
+    counts = {"A": 0, "B": 0, "C": 0, "skipped_quiet": 0, "skipped_dedup": 0}
+
+    for prefs in users:
+        user_id = prefs["user_id"]
+
+        if not skip_quiet and _is_quiet_hours(prefs):
+            counts["skipped_quiet"] += 1
+            continue
+
+        if not skip_dedup and _sent_today(user_id, "smart_reminder"):
+            counts["skipped_dedup"] += 1
+            continue
+
+        tier = _classify_activity(prefs)
+        title, body = random.choice(SMART_REMINDER_MESSAGES[tier])
+
+        _notify_user(
+            user_id,
+            title,
+            body,
+            data={"type": "smart_reminder", "tier": tier},
+            send_email=True if force_email else None,
+            email_category="smart_reminder" if not force_email else None,
+            email_template=f"smart_reminder_{tier.lower()}",
+            notif_type="smart_reminder",
+        )
+
+        counts[tier] += 1
+
+    logger.info(f"[Scheduler] Smart reminder MANUAL: A={counts['A']} B={counts['B']} C={counts['C']} skipped_quiet={counts['skipped_quiet']} skipped_dedup={counts['skipped_dedup']}")
+    return counts
+
+
 # ---------------------------------------------------------------------------
 # Job 3: Streak Nudge
 # ---------------------------------------------------------------------------
@@ -477,6 +668,9 @@ def _run_smart_reminder():
 @_track_job_run("streak_nudge")
 def job_streak_nudge():
     """Nudge users with active streak (>=2) who haven't studied today."""
+    if _is_paused("streak_nudge"):
+        logger.info("[Scheduler] streak_nudge is paused — skipping")
+        return {}
     return _run_streak_nudge()
 
 
@@ -528,6 +722,68 @@ def _run_streak_nudge():
     return {"nudged": nudged}
 
 
+def _run_streak_nudge_manual(options=None):
+    """Manual trigger variant of streak nudge.
+
+    options: dict with optional keys (all default False):
+      - skip_quiet_hours (bool): skip quiet hours check
+      - force_email (bool):      force-send email regardless of user preference
+      - skip_dedup (bool):       skip dedup check (useful for testing)
+    """
+    opts = options or {}
+    skip_quiet = opts.get("skip_quiet_hours", False)
+    force_email = opts.get("force_email", False)
+    skip_dedup = opts.get("skip_dedup", False)
+
+    logger.info(f"[Scheduler] Running streak nudge MANUAL trigger (options={opts})")
+
+    users = mongo.db.user_preferences.find({
+        "streak.current": {"$gte": 2},
+    })
+
+    counts = {"nudged": 0, "skipped_quiet": 0, "skipped_dedup": 0}
+
+    for prefs in users:
+        user_id = prefs["user_id"]
+
+        if not skip_quiet and _is_quiet_hours(prefs):
+            counts["skipped_quiet"] += 1
+            continue
+
+        # Skip if already active today
+        days = _days_since_active(prefs)
+        if days is not None and days == 0:
+            continue
+
+        streak_count = prefs.get("streak", {}).get("current", 0)
+        if streak_count < 2:
+            continue
+
+        if not skip_dedup and _sent_today(user_id, "streak_nudge"):
+            counts["skipped_dedup"] += 1
+            continue
+
+        title = "Jangan Putus Semangat!"
+        body = random.choice(STREAK_NUDGE_MESSAGES).replace("{n}", str(streak_count))
+
+        _notify_user(
+            user_id,
+            title,
+            body,
+            data={"type": "streak_nudge"},
+            send_email=True if force_email else None,
+            email_category="streak_nudge" if not force_email else None,
+            email_template="streak_nudge",
+            email_vars={"streak_count": streak_count},
+            notif_type="streak_nudge",
+        )
+
+        counts["nudged"] += 1
+
+    logger.info(f"[Scheduler] Streak nudge MANUAL: nudged={counts['nudged']} skipped_quiet={counts['skipped_quiet']} skipped_dedup={counts['skipped_dedup']}")
+    return counts
+
+
 # ---------------------------------------------------------------------------
 # Job 4: Social Presence
 # ---------------------------------------------------------------------------
@@ -535,6 +791,9 @@ def _run_streak_nudge():
 @_track_job_run("social_presence")
 def job_social_presence():
     """Notify users about peers who are currently studying."""
+    if _is_paused("social_presence"):
+        logger.info("[Scheduler] social_presence is paused — skipping")
+        return {}
     return _run_social_presence()
 
 
@@ -597,12 +856,88 @@ def _run_social_presence():
     return {"notified": notified, "active_users": count}
 
 
+def _run_social_presence_manual(options=None):
+    """Manual trigger variant of social presence.
+
+    options: dict with optional keys (all default False):
+      - skip_quiet_hours (bool): skip quiet hours check
+      - force_email (bool):      force-send email regardless of user preference
+      - skip_dedup (bool):       skip dedup check (useful for testing)
+    """
+    opts = options or {}
+    skip_quiet = opts.get("skip_quiet_hours", False)
+    force_email = opts.get("force_email", False)
+    skip_dedup = opts.get("skip_dedup", False)
+
+    logger.info(f"[Scheduler] Running social presence MANUAL trigger (options={opts})")
+
+    now = datetime.utcnow()
+    recent_window = now - timedelta(minutes=30)
+
+    active_sessions = mongo.db.study_sessions.find({
+        "status": "active",
+        "start_time": {"$gte": recent_window},
+    })
+
+    active_user_ids = set()
+    for session in active_sessions:
+        active_user_ids.add(session["user_id"])
+
+    if not active_user_ids:
+        logger.info("[Scheduler] Social presence MANUAL: no active sessions")
+        return {"notified": 0, "active_users": 0, "skipped_quiet": 0, "skipped_dedup": 0}
+
+    count = len(active_user_ids)
+
+    users = mongo.db.user_preferences.find({
+        "notifications.social_presence_enabled": True,
+    })
+
+    counts = {"notified": 0, "skipped_quiet": 0, "skipped_dedup": 0}
+    for prefs in users:
+        user_id = prefs["user_id"]
+
+        if user_id in active_user_ids:
+            continue
+
+        if not skip_quiet and _is_quiet_hours(prefs):
+            counts["skipped_quiet"] += 1
+            continue
+
+        if not skip_dedup and _sent_today(user_id, "social"):
+            counts["skipped_dedup"] += 1
+            continue
+
+        title = "Teman Sedang Belajar"
+        body = f"{count} mahasiswa sedang belajar sekarang. Yuk ikut belajar!"
+
+        _notify_user(
+            user_id,
+            title,
+            body,
+            data={"type": "social_presence"},
+            send_email=True if force_email else None,
+            email_category="social_presence" if not force_email else None,
+            email_template="social_presence",
+            email_vars={"active_count": count},
+            notif_type="social",
+        )
+
+        counts["notified"] += 1
+
+    logger.info(f"[Scheduler] Social presence MANUAL: notified={counts['notified']} skipped_quiet={counts['skipped_quiet']} skipped_dedup={counts['skipped_dedup']} active={count}")
+    return {**counts, "active_users": count}
+
+
 # ---------------------------------------------------------------------------
 # Job 5: Orphan Session Cleanup
 # ---------------------------------------------------------------------------
 
 def job_cleanup_orphan_sessions():
     """End study sessions that have been running for over 3 hours without ending."""
+    if _is_paused("orphan_cleanup"):
+        logger.info("[Scheduler] orphan_cleanup is paused — skipping")
+        return
     from features.study_session.model import StudySession
     cleaned = StudySession.cleanup_orphan_sessions(max_age_hours=3)  # [FLAG STUDY] prod: 3h, test: 10min
     if cleaned:
@@ -615,6 +950,9 @@ def job_cleanup_orphan_sessions():
 
 def job_check_idle_sessions():
     """Find active sessions idle >30 min and send a nudge notification."""
+    if _is_paused("check_idle_sessions"):
+        logger.info("[Scheduler] check_idle_sessions is paused — skipping")
+        return
     logger.info("[Scheduler] Running idle session check")
 
     now = datetime.utcnow()
@@ -667,6 +1005,9 @@ def job_check_idle_sessions():
 
 def job_auto_end_stale_sessions():
     """Auto-end sessions idle >90 min and notify users."""
+    if _is_paused("auto_end_stale_sessions"):
+        logger.info("[Scheduler] auto_end_stale_sessions is paused — skipping")
+        return
     from features.study_session.model import StudySession
     from shared.log_model import Log
 
@@ -711,6 +1052,9 @@ def job_auto_end_stale_sessions():
 
 def job_reset_stale_streaks():
     """Reset streak for users who haven't been active for 2+ days."""
+    if _is_paused("reset_stale_streaks"):
+        logger.info("[Scheduler] reset_stale_streaks is paused — skipping")
+        return
     logger.info("[Scheduler] Running stale streak reset")
 
     wib_now = now_wib()

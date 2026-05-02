@@ -29,6 +29,8 @@ interface SchedulerJob {
   next_run_time: string | null;
   triggerable: boolean;
   label: string;
+  paused: boolean;
+  channel: string;
 }
 
 interface SchedulerLog {
@@ -157,6 +159,10 @@ export default function AdminSchedulerPage() {
   const [loadingJobs, setLoadingJobs] = useState(true);
   const [loadingLogs, setLoadingLogs] = useState(true);
   const [triggeringId, setTriggeringId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [triggerOptions, setTriggerOptions] = useState<
+    Record<string, { skip_quiet_hours: boolean; force_email: boolean; skip_dedup: boolean }>
+  >({});
 
   const LOG_PER_PAGE = 20;
 
@@ -212,10 +218,11 @@ export default function AdminSchedulerPage() {
   const handleTrigger = async (jobId: string) => {
     if (triggeringId) return;
     setTriggeringId(jobId);
+    const opts = triggerOptions[jobId] || {};
     try {
       await api.post<{ message: string; stats: Record<string, number> }>(
         "/admin/scheduler/trigger",
-        { job_id: jobId }
+        { job_id: jobId, options: opts }
       );
       await Promise.all([fetchJobs(), fetchLogs(1, logFilter)]);
       setLogPage(1);
@@ -224,6 +231,19 @@ export default function AdminSchedulerPage() {
       alert("Gagal menjalankan job. Cek console untuk detail.");
     } finally {
       setTriggeringId(null);
+    }
+  };
+
+  const handleToggle = async (jobId: string) => {
+    if (togglingId) return;
+    setTogglingId(jobId);
+    try {
+      await api.post<{ paused: boolean }>("/admin/scheduler/toggle", { job_id: jobId });
+      await fetchJobs();
+    } catch (e) {
+      console.error("Failed to toggle job", e);
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -275,70 +295,176 @@ export default function AdminSchedulerPage() {
               return (
                 <div
                   key={job.id}
-                  className="rounded-lg border border-neutral-200 p-4 flex flex-col sm:flex-row sm:items-center gap-3"
-                  style={{ background: "#fff" }}
+                  className={cn(
+                    "rounded-lg border",
+                    job.paused ? "border-amber-200 bg-amber-50/50" : "border-neutral-200"
+                  )}
+                  style={job.paused ? {} : { background: "#fff" }}
                 >
-                  {/* Icon + Info */}
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div
-                      className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                      style={{ background: meta.bg }}
-                    >
-                      <Icon className="w-4 h-4" style={{ color: meta.color }} />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-neutral-800 truncate">
-                          {JOB_LABELS[job.id] || job.id}
-                        </span>
-                        <span className="text-xs text-neutral-400 truncate hidden sm:inline">
-                          {job.trigger}
-                        </span>
-                      </div>
-                      <p className="text-xs text-neutral-400 mt-0.5">{meta.description}</p>
-                    </div>
-                  </div>
-
-                  {/* Next run + Trigger */}
-                  <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-                    {job.next_run_time && (
-                      <div className="text-right">
-                        <div className="text-xs font-medium text-neutral-600">
-                          {relative || "—"}
-                        </div>
-                        <div className="text-[11px] text-neutral-400">
-                          {new Date(job.next_run_time).toLocaleTimeString("id-ID", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    {job.triggerable ? (
-                      <button
-                        onClick={() => handleTrigger(job.id)}
-                        disabled={!!triggeringId}
-                        className={cn(
-                          "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
-                          triggeringId === job.id
-                            ? "bg-blue-100 text-blue-400 cursor-wait"
-                            : "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
-                        )}
+                  {/* ── Row 1: Info + Controls ── */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 pb-3">
+                    {/* Icon + Info */}
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div
+                        className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                        style={{ background: meta.bg }}
                       >
-                        {triggeringId === job.id ? (
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                        ) : (
-                          <Play className="w-3 h-3" />
+                        <Icon className="w-4 h-4" style={{ color: meta.color }} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-neutral-800 truncate">
+                            {JOB_LABELS[job.id] || job.id}
+                          </span>
+                          <span className="text-xs text-neutral-400 truncate hidden sm:inline">
+                            {job.trigger}
+                          </span>
+                          {/* Channel badge */}
+                          <span
+                            className={cn(
+                              "text-[10px] font-medium px-1.5 py-0.5 rounded-md",
+                              job.channel === "Resend"
+                                ? "bg-purple-100 text-purple-600"
+                                : "bg-emerald-100 text-emerald-600"
+                            )}
+                          >
+                            {job.channel === "Resend" ? "Resend" : "SMTP"}
+                          </span>
+                        </div>
+                        <p className="text-xs text-neutral-400 mt-0.5">{meta.description}</p>
+                      </div>
+                    </div>
+
+                    {/* Next run + Toggle + Trigger */}
+                    <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+                      {job.paused && (
+                        <span className="text-[11px] px-2 py-0.5 rounded-md bg-amber-200/70 text-amber-700 font-medium">
+                          Paused
+                        </span>
+                      )}
+                      {job.next_run_time && !job.paused && (
+                        <div className="text-right">
+                          <div className="text-xs font-medium text-neutral-600">
+                            {relative || "—"}
+                          </div>
+                          <div className="text-[11px] text-neutral-400">
+                            {new Date(job.next_run_time).toLocaleTimeString("id-ID", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Pause/Resume toggle */}
+                      <button
+                        onClick={() => handleToggle(job.id)}
+                        disabled={!!togglingId}
+                        className={cn(
+                          "relative w-10 h-[22px] rounded-full transition-colors shrink-0",
+                          job.paused ? "bg-amber-300" : "bg-emerald-500"
                         )}
-                        {triggeringId === job.id ? "Running..." : "Trigger"}
+                        title={job.paused ? "Resume job" : "Pause job"}
+                      >
+                        <span
+                          className={cn(
+                            "absolute top-[2px] w-[18px] h-[18px] rounded-full bg-white shadow-sm transition-transform",
+                            job.paused ? "left-[2px]" : "left-[20px]"
+                          )}
+                        />
+                        {togglingId === job.id && (
+                          <Loader2 className="absolute inset-0 m-auto w-3 h-3 animate-spin text-white/70" />
+                        )}
                       </button>
-                    ) : (
-                      <span className="text-[11px] px-2.5 py-1 rounded-md bg-neutral-100 text-neutral-400 font-medium">
-                        auto only
-                      </span>
-                    )}
+
+                      {job.triggerable ? (
+                        <button
+                          onClick={() => handleTrigger(job.id)}
+                          disabled={!!triggeringId}
+                          className={cn(
+                            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
+                            triggeringId === job.id
+                              ? "bg-blue-100 text-blue-400 cursor-wait"
+                              : "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
+                          )}
+                        >
+                          {triggeringId === job.id ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Play className="w-3 h-3" />
+                          )}
+                          {triggeringId === job.id ? "Running..." : "Trigger"}
+                        </button>
+                      ) : (
+                        <span className="text-[11px] px-2.5 py-1 rounded-md bg-neutral-100 text-neutral-400 font-medium">
+                          auto only
+                        </span>
+                      )}
+                    </div>
                   </div>
+
+                  {/* ── Row 2: Trigger Options (always visible for triggerable jobs) ── */}
+                  {job.triggerable && (() => {
+                    const opts = triggerOptions[job.id] || { skip_quiet_hours: false, force_email: false, skip_dedup: false };
+                    const setOpt = (key: string, val: boolean) =>
+                      setTriggerOptions((prev) => ({ ...prev, [job.id]: { ...opts, [key]: val } }));
+                    const hasActive = opts.skip_quiet_hours || opts.force_email || opts.skip_dedup;
+                    return (
+                      <div className={cn(
+                        "flex items-center gap-1 sm:gap-1.5 px-4 pb-3 pt-0 flex-wrap",
+                      )}>
+                        <span className="text-[10px] text-neutral-300 uppercase tracking-wider font-semibold mr-1 select-none">
+                          Opsi
+                        </span>
+                        {[
+                          { key: "skip_quiet_hours", label: "Skip Quiet Hours" },
+                          { key: "force_email", label: "Force Email" },
+                          { key: "skip_dedup", label: "Skip Dedup" },
+                        ].map(({ key, label }) => {
+                          const on = (opts as Record<string, boolean>)[key];
+                          return (
+                            <button
+                              key={key}
+                              type="button"
+                              onClick={() => setOpt(key, !on)}
+                              className={cn(
+                                "inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium transition-all select-none border",
+                                on
+                                  ? "bg-blue-50 text-blue-700 border-blue-200"
+                                  : "bg-neutral-50 text-neutral-400 border-neutral-100 hover:border-neutral-200 hover:text-neutral-500"
+                              )}
+                            >
+                              <span className={cn(
+                                "w-2.5 h-2.5 rounded-[3px] border-[1.5px] flex items-center justify-center transition-colors",
+                                on ? "bg-blue-600 border-blue-600" : "border-neutral-300 bg-white"
+                              )}>
+                                {on && (
+                                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="20 6 9 17 4 12" />
+                                  </svg>
+                                )}
+                              </span>
+                              {label}
+                            </button>
+                          );
+                        })}
+                        {hasActive && (
+                          <button
+                            type="button"
+                            onClick={() => setTriggerOptions((prev) => {
+                              const next = { ...prev };
+                              delete next[job.id];
+                              return next;
+                            })}
+                            className="text-[10px] text-neutral-400 hover:text-red-500 ml-1 transition-colors"
+                            title="Reset semua opsi"
+                          >
+                            Reset
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })

@@ -16,8 +16,8 @@ DEFAULT_PREFERENCES = {
         "social_presence_enabled": False,
         "email": {
             "deadline": True,
-            "smart_reminder": False,
-            "streak_nudge": False,
+            "smart_reminder": True,
+            "streak_nudge": True,
             "social_presence": False,
             "study_session": False,
         },
@@ -105,3 +105,21 @@ class User:
             user_id = ObjectId(user_id)
         doc = {**DEFAULT_PREFERENCES, "user_id": user_id, "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()}
         mongo.db.user_preferences.insert_one(doc)
+
+    @staticmethod
+    def migrate_email_preferences():
+        """One-time migration: ensure all existing users have notifications.email prefs.
+
+        For users whose notifications.email field doesn't exist yet, seed with defaults.
+        Run this once from Flask shell: User.migrate_email_preferences()
+        """
+        default_email = DEFAULT_PREFERENCES["notifications"]["email"]
+        result = mongo.db.user_preferences.update_many(
+            {"notifications.email": {"$exists": False}},
+            {"$set": {"notifications.email": default_email}},
+        )
+        if result.modified_count:
+            logger.info(f"[Migration] Seeded email prefs for {result.modified_count} users")
+        else:
+            logger.info("[Migration] No users needed email pref migration")
+        return result.modified_count

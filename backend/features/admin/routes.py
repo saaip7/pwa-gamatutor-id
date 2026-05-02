@@ -10,6 +10,7 @@ from features.admin.controller import (
     send_broadcast_email,
     get_scheduler_status,
     trigger_scheduler_job,
+    toggle_scheduler_job,
     get_scheduler_logs,
 )
 
@@ -35,4 +36,5 @@ admin_bp.route("/send-email", methods=["POST"])(admin_required(send_broadcast_em
 # Scheduler
 admin_bp.route("/scheduler/status", methods=["GET"])(admin_required(get_scheduler_status))
 admin_bp.route("/scheduler/trigger", methods=["POST"])(admin_required(trigger_scheduler_job))
+admin_bp.route("/scheduler/toggle", methods=["POST"])(admin_required(toggle_scheduler_job))
 admin_bp.route("/scheduler/logs", methods=["GET"])(admin_required(get_scheduler_logs))
