@@ -258,6 +258,13 @@ export interface NotificationPreferences {
     start: string;
     end: string;
   };
+  email: {
+    deadline: boolean;
+    smart_reminder: boolean;
+    streak_nudge: boolean;
+    social_presence: boolean;
+    study_session: boolean;
+  };
 }
 
 export interface Announcement {

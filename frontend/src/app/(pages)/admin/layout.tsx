@@ -15,6 +15,7 @@ import {
   Loader2,
   Megaphone,
   MessageCircleWarning,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth";
@@ -25,6 +26,7 @@ const navItems = [
   { href: "/admin/strategies", label: "Strategies", icon: Lightbulb },
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
   { href: "/admin/reports", label: "Laporan", icon: MessageCircleWarning },
+  { href: "/admin/scheduler", label: "Scheduler", icon: Clock },
   { href: "/admin/logs", label: "Logs", icon: ScrollText },
 ];
 

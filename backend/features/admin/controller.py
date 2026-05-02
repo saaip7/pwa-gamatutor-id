@@ -4,7 +4,14 @@ from shared.db import mongo
 from features.analytics.model import Analytics
 from features.board.model import Board, Card
 from features.badge.model import Badge
+from shared.email import send_email
+from shared.email_templates import admin_broadcast
 import re
+import logging
+from datetime import datetime, timedelta
+import time
+
+logger = logging.getLogger(__name__)
 
 
 def _build_board_with_cards(board_doc, user_id):
@@ -334,4 +341,242 @@ def get_user_analytics(user_id):
         "strategy_effectiveness": strategy,
         "confidence_trend": confidence,
         "streak": streak_data,
+    }), 200
+
+
+def send_broadcast_email():
+    """Send broadcast email to all users with valid email."""
+    data = request.get_json(silent=True) or {}
+    subject = (data.get("subject") or "").strip()
+    body = (data.get("body") or "").strip()
+    link_text = (data.get("link_text") or "").strip() or None
+    link_url = (data.get("link_url") or "").strip() or None
+
+    if not subject or not body:
+        return jsonify({"message": "Subject dan body wajib diisi"}), 400
+
+    if link_url and not link_text:
+        link_text = "Buka Link"
+
+    # Get all users with email
+    users = list(mongo.db.users.find(
+        {"email": {"$exists": True, "$ne": None, "$ne": ""}},
+        {"email": 1, "name": 1}
+    ))
+
+    if not users:
+        return jsonify({"message": "Tidak ada user dengan email"}), 400
+
+    # Render template once
+    subj, html, text = admin_broadcast(subject, body, link_text, link_url)
+
+    sent = 0
+    failed = 0
+    for user in users:
+        ok = send_email(user["email"], subj, html, text)
+        if ok:
+            sent += 1
+        else:
+            failed += 1
+        # Rate limit: delay 0.3s between each email to avoid Titan rate limit
+        if user is not users[-1]:
+            time.sleep(0.3)
+
+    logger.info(f"Admin broadcast email: sent={sent}, failed={failed}, subject={subject}")
+
+    return jsonify({
+        "message": f"Email dikirim ke {sent} user",
+        "sent": sent,
+        "failed": failed,
+        "total": len(users),
+    }), 200
+
+
+# ---------------------------------------------------------------------------
+# Scheduler Monitoring
+# ---------------------------------------------------------------------------
+
+# Jobs that can be manually triggered (notification jobs)
+TRIGGERABLE_JOBS = {
+    "deadline_reminder": {"label": "Deadline Reminder", "description": "Cek tugas dengan deadline < 24 jam"},
+    "smart_reminder": {"label": "Smart Reminder", "description": "Reminder belajar berdasarkan aktivitas (A/B/C)"},
+    "streak_nudge": {"label": "Streak Nudge", "description": "Nudge user dengan streak aktif yang belum belajar"},
+    "social_presence": {"label": "Social Presence", "description": "Notifikasi teman yang sedang belajar"},
+}
+
+
+def get_scheduler_status():
+    """Return status of all 8 scheduler jobs from APScheduler memory."""
+    import os
+    from shared.scheduler import scheduler, get_all_job_states, JOB_META
+
+    pause_states = get_all_job_states()
+    has_resend = bool(os.environ.get("RESEND_API_KEY", "").strip())
+
+    jobs = []
+    for job in scheduler.get_jobs():
+        next_run = job.next_run_time
+        jobs.append({
+            "id": job.id,
+            "name": job.name,
+            "trigger": str(job.trigger),
+            "next_run_time": next_run.isoformat() if next_run else None,
+            "triggerable": job.id in TRIGGERABLE_JOBS,
+            "paused": pause_states.get(job.id, False),
+            "label": TRIGGERABLE_JOBS.get(job.id, JOB_META.get(job.id, {}).get("label", job.id)),
+            "channel": "Resend" if has_resend else "SMTP",
+        })
+
+    return jsonify({"jobs": jobs, "total": len(jobs)}), 200
+
+
+def trigger_scheduler_job():
+    """Manually trigger a notification job without modifying its schedule.
+
+    Accepts optional `options` dict with keys:
+      - skip_quiet_hours (bool): skip quiet hours check
+      - force_email (bool):      force-send email regardless of user preference
+      - skip_dedup (bool):       skip dedup check (useful for testing)
+    """
+    import time as _time
+    from datetime import datetime as _dt
+    from shared.scheduler import (
+        _run_deadline_reminder_manual,
+        _run_smart_reminder_manual,
+        _run_streak_nudge_manual,
+        _run_social_presence_manual,
+        _log_job_run,
+    )
+
+    data = request.get_json(silent=True) or {}
+    job_id = data.get("job_id", "").strip()
+    options = data.get("options", {})
+
+    # Sanitize options — only accept known keys
+    options = {k: bool(v) for k, v in options.items() if k in (
+        "skip_quiet_hours", "force_email", "skip_dedup",
+    )}
+
+    if job_id not in TRIGGERABLE_JOBS:
+        return jsonify({
+            "message": f"Job '{job_id}' tidak bisa di-trigger manual. Pilih: {', '.join(TRIGGERABLE_JOBS.keys())}",
+        }), 400
+
+    job_map = {
+        "deadline_reminder": _run_deadline_reminder_manual,
+        "smart_reminder": _run_smart_reminder_manual,
+        "streak_nudge": _run_streak_nudge_manual,
+        "social_presence": _run_social_presence_manual,
+    }
+
+    started = _dt.utcnow()
+    t0 = _time.monotonic()
+    try:
+        fn = job_map[job_id]
+        result = fn(options=options)
+        duration_ms = round((_time.monotonic() - t0) * 1000, 1)
+        _log_job_run(
+            job_id,
+            triggered_by="manual",
+            status="success",
+            stats=result if isinstance(result, dict) else None,
+            started_at=started,
+            finished_at=_dt.utcnow(),
+            duration_ms=duration_ms,
+        )
+        return jsonify({
+            "message": f"Job '{job_id}' triggered successfully",
+            "job_id": job_id,
+            "stats": result if isinstance(result, dict) else None,
+        }), 200
+    except Exception as e:
+        duration_ms = round((_time.monotonic() - t0) * 1000, 1)
+        _log_job_run(
+            job_id,
+            triggered_by="manual",
+            status="error",
+            error=str(e),
+            started_at=started,
+            finished_at=_dt.utcnow(),
+            duration_ms=duration_ms,
+        )
+        logger.error(f"[Admin] Manual trigger '{job_id}' failed: {e}")
+        return jsonify({"message": f"Job '{job_id}' gagal: {str(e)}"}), 500
+
+
+def toggle_scheduler_job():
+    """Toggle pause/resume for a scheduler job via admin dashboard."""
+    from shared.scheduler import _is_paused, set_job_paused, scheduler
+
+    data = request.get_json(silent=True) or {}
+    job_id = data.get("job_id", "").strip()
+
+    # Validate job_id against all known jobs
+    known_ids = [j.id for j in scheduler.get_jobs()]
+    if job_id not in known_ids:
+        return jsonify({
+            "message": f"Job '{job_id}' tidak ditemukan.",
+        }), 400
+
+    current = _is_paused(job_id)
+    new_state = not current
+    set_job_paused(job_id, new_state)
+
+    return jsonify({
+        "job_id": job_id,
+        "paused": new_state,
+        "message": f"Job '{job_id}' {'di-pause' if new_state else 'di-resume'}",
+    }), 200
+
+
+def get_scheduler_logs():
+    """Return run history for notification jobs (last 3 days)."""
+    try:
+        page = int(request.args.get("page", 1))
+        per_page = int(request.args.get("per_page", 30))
+    except (ValueError, TypeError):
+        page, per_page = 1, 30
+
+    if page < 1:
+        page = 1
+    if per_page < 1 or per_page > 100:
+        per_page = 30
+
+    job_id_filter = request.args.get("job_id", "").strip()
+    triggered_by_filter = request.args.get("triggered_by", "").strip()
+
+    query = {}
+    if job_id_filter:
+        query["job_id"] = job_id_filter
+    if triggered_by_filter:
+        query["triggered_by"] = triggered_by_filter
+
+    # Only notification jobs
+    query["job_id"] = {"$in": list(TRIGGERABLE_JOBS.keys())}
+    if job_id_filter:
+        query["job_id"] = job_id_filter
+
+    skip = (page - 1) * per_page
+    total = mongo.db.scheduler_logs.count_documents(query)
+
+    cursor = (
+        mongo.db.scheduler_logs.find(query)
+        .sort("started_at", -1)
+        .skip(skip)
+        .limit(per_page)
+    )
+
+    logs = []
+    for doc in cursor:
+        doc["_id"] = str(doc["_id"])
+        doc["started_at"] = doc["started_at"].isoformat() if isinstance(doc["started_at"], datetime) else str(doc["started_at"])
+        doc["finished_at"] = doc["finished_at"].isoformat() if isinstance(doc["finished_at"], datetime) else str(doc["finished_at"])
+        logs.append(doc)
+
+    return jsonify({
+        "data": logs,
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "pages": (total + per_page - 1) // per_page,
     }), 200
