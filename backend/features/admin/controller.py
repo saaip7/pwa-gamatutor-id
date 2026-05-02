@@ -407,7 +407,11 @@ TRIGGERABLE_JOBS = {
 
 def get_scheduler_status():
     """Return status of all 8 scheduler jobs from APScheduler memory."""
-    from shared.scheduler import scheduler
+    import os
+    from shared.scheduler import scheduler, get_all_job_states, JOB_META
+
+    pause_states = get_all_job_states()
+    has_resend = bool(os.environ.get("RESEND_API_KEY", "").strip())
 
     jobs = []
     for job in scheduler.get_jobs():
@@ -418,26 +422,40 @@ def get_scheduler_status():
             "trigger": str(job.trigger),
             "next_run_time": next_run.isoformat() if next_run else None,
             "triggerable": job.id in TRIGGERABLE_JOBS,
-            "label": TRIGGERABLE_JOBS.get(job.id, {}).get("label", job.id),
+            "paused": pause_states.get(job.id, False),
+            "label": TRIGGERABLE_JOBS.get(job.id, JOB_META.get(job.id, {}).get("label", job.id)),
+            "channel": "Resend" if has_resend else "SMTP",
         })
 
     return jsonify({"jobs": jobs, "total": len(jobs)}), 200
 
 
 def trigger_scheduler_job():
-    """Manually trigger a notification job without modifying its schedule."""
+    """Manually trigger a notification job without modifying its schedule.
+
+    Accepts optional `options` dict with keys:
+      - skip_quiet_hours (bool): skip quiet hours check
+      - force_email (bool):      force-send email regardless of user preference
+      - skip_dedup (bool):       skip dedup check (useful for testing)
+    """
     import time as _time
     from datetime import datetime as _dt
     from shared.scheduler import (
-        _run_deadline_reminder,
-        _run_smart_reminder,
-        _run_streak_nudge,
-        _run_social_presence,
+        _run_deadline_reminder_manual,
+        _run_smart_reminder_manual,
+        _run_streak_nudge_manual,
+        _run_social_presence_manual,
         _log_job_run,
     )
 
     data = request.get_json(silent=True) or {}
     job_id = data.get("job_id", "").strip()
+    options = data.get("options", {})
+
+    # Sanitize options — only accept known keys
+    options = {k: bool(v) for k, v in options.items() if k in (
+        "skip_quiet_hours", "force_email", "skip_dedup",
+    )}
 
     if job_id not in TRIGGERABLE_JOBS:
         return jsonify({
@@ -445,17 +463,17 @@ def trigger_scheduler_job():
         }), 400
 
     job_map = {
-        "deadline_reminder": _run_deadline_reminder,
-        "smart_reminder": _run_smart_reminder,
-        "streak_nudge": _run_streak_nudge,
-        "social_presence": _run_social_presence,
+        "deadline_reminder": _run_deadline_reminder_manual,
+        "smart_reminder": _run_smart_reminder_manual,
+        "streak_nudge": _run_streak_nudge_manual,
+        "social_presence": _run_social_presence_manual,
     }
 
     started = _dt.utcnow()
     t0 = _time.monotonic()
     try:
         fn = job_map[job_id]
-        result = fn()
+        result = fn(options=options)
         duration_ms = round((_time.monotonic() - t0) * 1000, 1)
         _log_job_run(
             job_id,
@@ -484,6 +502,31 @@ def trigger_scheduler_job():
         )
         logger.error(f"[Admin] Manual trigger '{job_id}' failed: {e}")
         return jsonify({"message": f"Job '{job_id}' gagal: {str(e)}"}), 500
+
+
+def toggle_scheduler_job():
+    """Toggle pause/resume for a scheduler job via admin dashboard."""
+    from shared.scheduler import _is_paused, set_job_paused, scheduler
+
+    data = request.get_json(silent=True) or {}
+    job_id = data.get("job_id", "").strip()
+
+    # Validate job_id against all known jobs
+    known_ids = [j.id for j in scheduler.get_jobs()]
+    if job_id not in known_ids:
+        return jsonify({
+            "message": f"Job '{job_id}' tidak ditemukan.",
+        }), 400
+
+    current = _is_paused(job_id)
+    new_state = not current
+    set_job_paused(job_id, new_state)
+
+    return jsonify({
+        "job_id": job_id,
+        "paused": new_state,
+        "message": f"Job '{job_id}' {'di-pause' if new_state else 'di-resume'}",
+    }), 200
 
 
 def get_scheduler_logs():

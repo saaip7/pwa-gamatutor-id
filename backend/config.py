@@ -18,4 +18,4 @@ class Config:
     SMTP_PORT = int(os.getenv("SMTP_PORT", 465))
     SMTP_USER = os.getenv("SMTP_USER")
     SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
-    SMTP_FROM = os.getenv("SMTP_FROM", "noreply@gamatutor.id")
+    SMTP_FROM = os.getenv("SMTP_FROM", "Gamatutor <noreply@mail.gamatutor.id>")
