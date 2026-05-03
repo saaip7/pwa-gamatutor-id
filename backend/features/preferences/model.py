@@ -187,3 +187,75 @@ class Preferences:
             }
         )
         return True, "Streak freeze berhasil digunakan"
+
+    # ------------------------------------------------------------------
+    # Quest freeze — balance-based, no weekly limit
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def add_quest_freezes(user_id, amount):
+        """Add quest freeze balance. Called when quest rewards freeze days."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        mongo.db.user_preferences.update_one(
+            {"user_id": user_id},
+            {"$inc": {"quest_freezes": amount}},
+            upsert=True,
+        )
+
+    @staticmethod
+    def use_quest_freeze(user_id):
+        """Use 1 quest freeze. Returns (success, message)."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+
+        prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
+        if not prefs:
+            return False, "Preferences not found"
+
+        balance = prefs.get("quest_freezes", 0)
+        if balance <= 0:
+            return False, "Tidak punya quest freeze"
+
+        streak = prefs.get("streak", {})
+        now = datetime.utcnow()
+        today = now.date()
+
+        # Check if already active today — no freeze needed
+        last_active = streak.get("last_active_date")
+        if last_active:
+            if isinstance(last_active, str):
+                last_active_date = datetime.fromisoformat(last_active.replace("Z", "+00:00")).date()
+            elif isinstance(last_active, datetime):
+                last_active_date = last_active.date()
+            else:
+                last_active_date = None
+            if last_active_date == today:
+                return False, "Kamu hari ini sudah aktif, tidak perlu streak freeze"
+
+        # Deduct balance
+        mongo.db.user_preferences.update_one(
+            {"user_id": user_id, "quest_freezes": {"$gt": 0}},
+            {"$inc": {"quest_freezes": -1}},
+        )
+
+        # Apply freeze (same logic as use_streak_freeze)
+        updates = {
+            "streak.freeze_used_at": now,
+            "updated_at": now,
+        }
+        today_str = now.date().isoformat()
+
+        if last_active:
+            days_since = (now - last_active).days if isinstance(last_active, datetime) else 1
+            if days_since >= 1:
+                updates["streak.last_active_date"] = now
+
+        mongo.db.user_preferences.update_one(
+            {"user_id": user_id},
+            {
+                "$set": updates,
+                "$addToSet": {"streak.freeze_dates": today_str},
+            }
+        )
+        return True, "Quest freeze berhasil digunakan"

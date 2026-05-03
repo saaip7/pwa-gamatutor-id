@@ -291,6 +291,8 @@ export interface UserPreferences {
     active_dates: string[];
   };
   fcm_token?: string;
+  quest_freezes?: number;
+  quest_unlocked_items?: string[];
   character?: {
     gender: "male" | "female";
     equipped: {
@@ -300,6 +302,45 @@ export interface UserPreferences {
       special: string | null;
     };
   };
+}
+
+// --- Quest ---
+
+export type QuestType = "deep_study" | "reflection_done" | "checklist_use";
+export type QuestRewardType = "freeze" | "quest_item";
+export type QuestStatus = "active" | "completed" | "expired";
+
+export interface QuestData {
+  active: boolean;
+  template_id?: string;
+  title?: string;
+  description?: string;
+  type?: QuestType;
+  config?: {
+    target_count: number;
+    min_duration_min?: number;
+  };
+  reward?: {
+    type: QuestRewardType;
+    value?: number;
+    item_slot?: string;
+    item_level?: string;
+  };
+  start_date?: string;
+  end_date?: string;
+  progress?: number;
+  target?: number;
+  status?: QuestStatus;
+  completed_at?: string;
+}
+
+export interface QuestHistoryItem {
+  _id: string;
+  user_id: string;
+  template_id: string;
+  status: string;
+  completed_at: string;
+  reward_applied: boolean;
 }
 
 // --- Character ---

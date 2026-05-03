@@ -27,6 +27,7 @@ JOB_META = {
     "check_idle_sessions":{"label": "Idle Check",       "icon": "timer"},
     "auto_end_stale_sessions": {"label": "Auto End Stale", "icon": "stop-circle"},
     "reset_stale_streaks":     {"label": "Reset Stale Streaks","icon": "rotate-ccw"},
+    "quest_expiry":            {"label": "Quest Expiry",       "icon": "hourglass"},
 }
 
 
@@ -1080,6 +1081,20 @@ def job_reset_stale_streaks():
 
 
 # ---------------------------------------------------------------------------
+# Quest Expiry
+# ---------------------------------------------------------------------------
+
+def job_expire_quests():
+    """Mark expired quests that have passed their end_date but are still 'active'."""
+    if _is_paused("quest_expiry"):
+        return
+    from features.quest.model import QuestEngine
+    expired = QuestEngine.expire_overdue_quests()
+    if expired > 0:
+        logger.info(f"[Scheduler] Expired {expired} old quests")
+
+
+# ---------------------------------------------------------------------------
 # Init
 # ---------------------------------------------------------------------------
 
@@ -1119,6 +1134,10 @@ def init_scheduler(app):
             job_reset_stale_streaks, "cron", hour=0, minute=0, timezone="Asia/Jakarta",
             id="reset_stale_streaks", replace_existing=True,
         )
+        scheduler.add_job(
+            job_expire_quests, "interval", hours=1,
+            id="quest_expiry", replace_existing=True,
+        )
 
         scheduler.start()
-        logger.info("[Scheduler] Started with 8 jobs: deadline_reminder, smart_reminder, streak_nudge, social_presence, orphan_cleanup, check_idle_sessions, auto_end_stale_sessions, reset_stale_streaks")
+        logger.info("[Scheduler] Started with 9 jobs: deadline_reminder, smart_reminder, streak_nudge, social_presence, orphan_cleanup, check_idle_sessions, auto_end_stale_sessions, reset_stale_streaks, quest_expiry")
