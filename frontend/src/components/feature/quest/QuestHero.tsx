@@ -87,75 +87,103 @@ function ActiveQuest({ quest, className }: { quest: QuestData; className?: strin
     <div className={cn("relative", className)}>
       <div
         className={cn(
-          "relative overflow-hidden rounded-3xl",
-          isCompleted && "bg-emerald-600",
-          isExpired && "bg-neutral-400",
-          !isCompleted && !isExpired && "bg-[var(--primary)]",
+          "relative overflow-hidden rounded-2xl bg-white shadow-[0_2px_12px_-2px_rgba(0,0,0,0.06)] border border-neutral-100",
+          isCompleted && "border-emerald-200 bg-emerald-50/50",
+          isExpired && "border-neutral-200 bg-neutral-50/50",
         )}
       >
-        {/* decorative circles */}
-        <div className="absolute -top-12 -right-12 w-44 h-44 rounded-full bg-white/[0.06] pointer-events-none" />
-        <div className="absolute -bottom-10 -left-8 w-32 h-32 rounded-full bg-white/[0.04] pointer-events-none" />
-
         <div className="relative z-10 px-5 py-4">
           {/* row 1: "Quest Aktif" label (kiri) + type chip badge (kanan) */}
           <div className="flex items-start justify-between mb-2">
             <div className="flex items-center gap-2">
               {!isCompleted && !isExpired && (
-                <span className="w-[6px] h-[6px] rounded-full bg-green-400 shrink-0" />
+                <span className="relative flex h-[7px] w-[7px]">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--primary)] opacity-75" />
+                  <span className="relative inline-flex rounded-full h-[7px] w-[7px] bg-[var(--primary)]" />
+                </span>
               )}
-              {isCompleted && <CheckCircle2 className="w-3.5 h-3.5 text-white/80" />}
-              <span className="text-[11px] font-medium uppercase tracking-[0.07em] text-white/60">
+              {isCompleted && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
+              <span className={cn(
+                "text-[11px] font-semibold uppercase tracking-[0.07em]",
+                isCompleted ? "text-emerald-600" : isExpired ? "text-neutral-400" : "text-[var(--primary)]",
+              )}>
                 {isCompleted ? "Selesai" : isExpired ? "Kadaluarsa" : "Quest Aktif"}
               </span>
             </div>
 
-            {/* type chip — kanan atas, keliatan kyk badge */}
-            <div className="shrink-0 inline-flex items-center gap-1.5 bg-white/[0.18] rounded-lg px-2.5 py-1">
-              <TypeIcon className="w-3 h-3 text-white/80" />
-              <span className="text-[10px] font-semibold text-white tracking-[0.03em] uppercase">
+            {/* type chip */}
+            <div className={cn(
+              "shrink-0 inline-flex items-center gap-1.5 rounded-md px-2 py-0.5",
+              isCompleted ? "bg-emerald-100" : isExpired ? "bg-neutral-100" : "bg-[var(--primary)]/8",
+            )}>
+              <TypeIcon className={cn(
+                "w-3 h-3",
+                isCompleted ? "text-emerald-600" : isExpired ? "text-neutral-400" : "text-[var(--primary)]",
+              )} />
+              <span className={cn(
+                "text-[10px] font-semibold tracking-[0.03em] uppercase",
+                isCompleted ? "text-emerald-700" : isExpired ? "text-neutral-500" : "text-[var(--primary)]",
+              )}>
                 {cfg.label}
               </span>
             </div>
           </div>
 
-          {/* row 2: title */}
-          <h3 className="text-[16px] font-bold text-white leading-snug mb-1">
-            {isCompleted ? "Quest Berhasil!" : (quest.title || cfg.label)}
-          </h3>
-
-          {/* row 2b: description */}
-          {!isCompleted && description && (
-            <p className="text-[12px] text-white/60 leading-relaxed mb-3 line-clamp-2">
+          {/* row 2: description */}
+          {!isCompleted && (
+            <p className="text-[13px] text-neutral-600 leading-relaxed mb-3 line-clamp-2">
               {description}
+            </p>
+          )}
+          {isCompleted && (
+            <p className="text-[13px] text-emerald-700 font-medium mb-3">
+              Quest berhasil diselesaikan!
             </p>
           )}
 
           {/* row 3: progress bar */}
           <div className="flex items-center gap-3 mb-3">
-            <div className="flex-1 h-[5px] bg-white/[0.15] rounded-full overflow-hidden">
+            <div className="flex-1 h-[5px] bg-neutral-100 rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-white rounded-full"
+                className={cn(
+                  "h-full rounded-full",
+                  isCompleted ? "bg-emerald-500" : "bg-[var(--primary)]",
+                )}
                 initial={{ width: 0 }}
                 animate={{ width: `${pct}%` }}
                 transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               />
             </div>
-            <span className="text-[12px] font-bold text-white tabular-nums shrink-0">
+            <span className={cn(
+              "text-[12px] font-bold tabular-nums shrink-0",
+              isCompleted ? "text-emerald-600" : "text-neutral-700",
+            )}>
               {progress}/{target}
             </span>
           </div>
 
           {/* row 4: reward chip (kiri) + time (kanan) */}
           <div className="flex items-center justify-between">
-            <div className="inline-flex items-center gap-1.5 bg-white/[0.16] rounded-lg px-3 py-1.5">
-              <RewardIcon className="w-3.5 h-3.5 text-white" />
-              <span className="text-[12px] font-semibold text-white">
+            <div className={cn(
+              "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1",
+              isCompleted ? "bg-emerald-100" : "bg-neutral-50 border border-neutral-100",
+            )}>
+              <RewardIcon className={cn(
+                "w-3.5 h-3.5",
+                isCompleted ? "text-emerald-600" : "text-[var(--primary)]",
+              )} />
+              <span className={cn(
+                "text-[11px] font-semibold",
+                isCompleted ? "text-emerald-700" : "text-neutral-700",
+              )}>
                 {rewardText}
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5 text-[12px] font-semibold text-white/80">
+            <div className={cn(
+              "flex items-center gap-1.5 text-[11px] font-semibold",
+              isCompleted ? "text-emerald-500" : isExpired ? "text-neutral-400" : "text-neutral-500",
+            )}>
               <Timer className="w-3.5 h-3.5" />
               {timeLabel}
             </div>

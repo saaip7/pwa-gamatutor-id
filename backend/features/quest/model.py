@@ -37,7 +37,6 @@ class QuestTemplate:
                 return None, "Quest overlap dengan quest aktif lainnya"
 
         doc = {
-            "title": data.get("title", ""),
             "description": data.get("description", ""),
             "type": data.get("type"),
             "config": {
@@ -68,7 +67,7 @@ class QuestTemplate:
             template_id = ObjectId(template_id)
 
         updates = {}
-        simple_fields = ["title", "description", "type", "status", "start_date", "end_date"]
+        simple_fields = ["description", "type", "status", "start_date", "end_date"]
         for field in simple_fields:
             if field in data:
                 updates[field] = data[field]
@@ -396,7 +395,7 @@ class QuestEngine:
             )
             return {
                 "template_id": str(template["_id"]),
-                "title": template.get("title", ""),
+                "description": template.get("description", ""),
                 "type": template["type"],
                 "reward": template.get("reward", {}),
                 "message": msg,
@@ -422,7 +421,6 @@ class QuestEngine:
         if completion and completion.get("status") == "completed":
             return {
                 "template_id": str(template["_id"]),
-                "title": template.get("title", ""),
                 "description": template.get("description", ""),
                 "type": template["type"],
                 "config": template.get("config", {}),
@@ -448,7 +446,6 @@ class QuestEngine:
 
         return {
             "template_id": str(template["_id"]),
-            "title": template.get("title", ""),
             "description": template.get("description", ""),
             "type": template["type"],
             "config": template.get("config", {}),
