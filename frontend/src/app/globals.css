@@ -434,3 +434,13 @@ body {
   opacity: 1;
   transition-delay: 350ms;
 }
+
+/* --- Quest Live Dot --- */
+@keyframes quest-live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.quest-live-dot {
+  animation: quest-live-pulse 2s ease-in-out infinite;
+}

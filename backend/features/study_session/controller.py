@@ -2,6 +2,7 @@ from flask import jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from features.study_session.model import StudySession
 from features.badge.badge_engine import BadgeEngine
+from features.quest.model import QuestEngine
 from shared.log_model import Log
 from shared.streak import update_streak
 from shared.db import mongo
@@ -38,9 +39,13 @@ def end():
     badge_results = BadgeEngine.evaluate(user_id, "session_completed")
     Log.create(user_id, "study_session_completed", f"Study session {session_id} completed")
 
+    # Check quest progress for deep_study type
+    quest_result = QuestEngine.check_and_complete(user_id, "deep_study")
+
     return jsonify({
         "message": "Session ended",
         "newly_unlocked": badge_results,
+        "quest_completed": quest_result,
         "duration_ms": success["duration_ms"],
     }), 200
 

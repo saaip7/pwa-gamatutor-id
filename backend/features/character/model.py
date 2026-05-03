@@ -47,18 +47,41 @@ def _get_user_badge_types(user_id):
 
 
 def _validate_equipped(user_id, gender, equipped):
-    """Validate equipped items against user's unlocked badges.
-    Returns (is_valid, error_message). If invalid, resets to base."""
+    """Validate equipped items against user's unlocked badges + quest items.
+    Returns corrected dict. If invalid, resets to base."""
     unlocked_badges = _get_user_badge_types(user_id)
+
+    # Also get quest-unlocked items
+    prefs_doc = mongo.db.user_preferences.find_one(
+        {"user_id": ObjectId(user_id) if isinstance(user_id, str) else user_id},
+        {"quest_unlocked_items": 1},
+    )
+    quest_items = set()
+    for item_key in (prefs_doc or {}).get("quest_unlocked_items", []):
+        # item_key format: "slot:level" e.g. "top:quest_lv1"
+        quest_items.add(item_key)
+
     valid_slots = {"head", "top", "bottom", "special"}
-    valid_levels = {"base", "lv1", "lv2", "lv3", "lv4", "lv5"}
+    valid_levels = {"base", "lv1", "lv2", "lv3", "lv4", "lv5", "quest_lv1", "quest_lv2"}
     corrected = {}
 
     for slot, level in equipped.items():
         if slot not in valid_slots:
             continue
-        if level not in valid_levels:
+        if level is None:
             corrected[slot] = None
+            continue
+        if level not in valid_levels:
+            corrected[slot] = "base"
+            continue
+
+        # Check if this is a quest-only item
+        item_key = f"{slot}:{level}"
+        if level.startswith("quest_"):
+            if item_key in quest_items:
+                corrected[slot] = level
+            else:
+                corrected[slot] = "base"
             continue
 
         req = ITEM_BADGE_REQUIREMENTS.get((slot, level))
@@ -85,9 +108,11 @@ class Character:
 
         prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
         if not prefs:
-            return DEFAULT_CHARACTER.copy()
+            return {**DEFAULT_CHARACTER.copy(), "quest_unlocked_items": []}
 
-        return prefs.get("character", DEFAULT_CHARACTER.copy())
+        char = prefs.get("character", DEFAULT_CHARACTER.copy())
+        char["quest_unlocked_items"] = prefs.get("quest_unlocked_items", [])
+        return char
 
     @staticmethod
     def update(user_id, data):

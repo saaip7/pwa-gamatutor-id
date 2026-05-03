@@ -117,3 +117,25 @@ def use_freeze():
         }), 200
     except Exception as e:
         return jsonify({"message": "An error occurred", "error": str(e)}), 500
+
+
+@jwt_required()
+def use_quest_freeze():
+    """Use a quest-earned streak freeze (from quest_freezes balance)."""
+    user_id = get_jwt_identity()
+    try:
+        success, message = Preferences.use_quest_freeze(user_id)
+        if not success:
+            return jsonify({"message": message}), 400
+        Log.create(user_id, "quest_freeze_used", "Quest streak freeze used")
+
+        badge_results = BadgeEngine.evaluate(user_id, "streak_updated")
+
+        streak = Preferences.get_streak(user_id)
+        return jsonify({
+            "message": message,
+            "streak": streak,
+            "newly_unlocked": badge_results,
+        }), 200
+    except Exception as e:
+        return jsonify({"message": "An error occurred", "error": str(e)}), 500

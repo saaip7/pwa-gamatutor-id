@@ -4,6 +4,7 @@ from bson import ObjectId
 from datetime import datetime, timezone
 from features.board.model import Board, Card, _ensure_card_indexes
 from features.badge.badge_engine import BadgeEngine
+from features.quest.model import QuestEngine
 from shared.db import mongo
 from shared.log_model import Log
 from shared.streak import update_streak
@@ -315,12 +316,23 @@ def update_card(card_id):
 
     # Fire badge triggers based on what was updated
     badge_results = []
+    quest_results = []
 
     if "reflection" in updates and updates["reflection"]:
         update_streak(user_id)
         unlocked = BadgeEngine.evaluate(user_id, "reflection_completed")
         badge_results.extend(unlocked)
         Log.create(user_id, "reflection_completed", f"Reflection saved for card {card_id}")
+        # Quest check: reflection_done
+        qr = QuestEngine.check_and_complete(user_id, "reflection_done")
+        if qr:
+            quest_results.append(qr)
+
+    if "checklists" in updates:
+        # Quest check: checklist_use
+        qr = QuestEngine.check_and_complete(user_id, "checklist_use")
+        if qr:
+            quest_results.append(qr)
 
     if "learning_strategy" in updates and updates["learning_strategy"]:
         unlocked = BadgeEngine.evaluate(user_id, "strategy_used")
@@ -339,6 +351,7 @@ def update_card(card_id):
     return jsonify({
         "message": msg,
         "newly_unlocked": badge_results,
+        "quest_completed": quest_results,
     }), code
 
 
