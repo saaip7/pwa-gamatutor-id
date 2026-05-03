@@ -313,7 +313,6 @@ export type QuestStatus = "active" | "completed" | "expired";
 export interface QuestData {
   active: boolean;
   template_id?: string;
-  title?: string;
   description?: string;
   type?: QuestType;
   config?: {

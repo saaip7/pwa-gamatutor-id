@@ -70,7 +70,7 @@ def create_template():
     if not data:
         return jsonify({"error": "No data provided"}), 400
 
-    required = ["type", "title", "start_date", "end_date", "target_count"]
+    required = ["type", "start_date", "end_date", "target_count"]
     for field in required:
         if not data.get(field):
             return jsonify({"error": f"Missing required field: {field}"}), 400

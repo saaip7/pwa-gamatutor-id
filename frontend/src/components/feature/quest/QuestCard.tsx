@@ -154,7 +154,7 @@ export function QuestCard({ quest, loading, onHistoryOpen, className }: QuestCar
             </div>
             <div>
               <h3 className="text-sm font-bold text-neutral-900 tracking-tight leading-tight">
-                {quest.title || config.label}
+                {config.label}
               </h3>
               {quest.description && (
                 <p className="text-[11px] text-neutral-500 mt-0.5 line-clamp-1">
