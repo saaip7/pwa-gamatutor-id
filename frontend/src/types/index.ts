@@ -330,6 +330,7 @@ export interface QuestData {
   progress?: number;
   target?: number;
   status?: QuestStatus;
+  reward_applied?: boolean;
   completed_at?: string;
 }
 

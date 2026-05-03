@@ -35,7 +35,7 @@ export const useQuestStore = create<QuestState>((set, get) => {
       set({ loading: true });
       try {
         const data = await cachedFetch();
-        set({ quest: data, loading: false });
+        set({ quest: data?.active ? data : null, loading: false });
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : "Gagal memuat quest";
         set({ error: msg, loading: false });
