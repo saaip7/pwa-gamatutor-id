@@ -28,14 +28,6 @@ const QUEST_TYPE: Record<string, { label: string; icon: React.ElementType }> = {
 /* ── Main ────────────────────────────────────────────── */
 
 export function QuestHero({ quest, loading, className }: QuestHeroProps) {
-  if (loading) {
-    return (
-      <div
-        className={cn("rounded-3xl bg-[var(--primary)] h-[120px] animate-pulse", className)}
-      />
-    );
-  }
-
   if (!quest || quest.status === "expired") return <EmptyState className={className} />;
 
   return <ActiveQuest quest={quest} className={className} />;
@@ -55,30 +47,31 @@ function ActiveQuest({ quest, className }: { quest: QuestData; className?: strin
   const pct = target > 0 ? Math.min((progress / target) * 100, 100) : 0;
   const isCompleted = quest.status === "completed";
 
-  // TODO: remove hardcoded dummy once backend sends real data
-  const dummyDesc = "Selesaikan sesi belajar minimal 25 menit sebanyak 3 kali untuk mendapatkan reward";
-  const description = quest.description || dummyDesc;
+  const description = quest.description || `Selesaikan ${target}x ${cfg.label} untuk mendapatkan reward`;
 
-  // TODO: remove hardcoded dummy once backend sends real data
-  const dummyTimeLabel = "3 hari lagi";
   const timeLabel = isCompleted
     ? "Selesai!"
-    : (fmtDaysLeft(quest.end_date) || dummyTimeLabel);
+    : fmtDaysLeft(quest.end_date);
 
-  /* reward — hardcoded dummy for now */
-  // TODO: uncomment real reward logic once backend sends data
-  // const RewardIcon =
-  //   quest.reward?.type === "freeze" ? Snowflake
-  //   : quest.reward?.type === "quest_item" ? Star
-  //   : null;
-  // const rewardText =
-  //   quest.reward?.type === "freeze"
-  //     ? `Streak Freeze +${quest.reward.value ?? 1}`
-  //   : quest.reward?.type === "quest_item"
-  //     ? "Item Eksklusif"
-  //   : null;
-  const RewardIcon = Snowflake;
-  const rewardText = "Streak Freeze +1";
+  const RewardIcon =
+    quest.reward?.type === "freeze" ? Snowflake
+    : quest.reward?.type === "quest_item" ? Star
+    : Snowflake;
+  const rewardText =
+    quest.reward?.type === "freeze"
+      ? `Streak Freeze +${quest.reward.value ?? 1}`
+    : quest.reward?.type === "quest_item"
+      ? "Item Eksklusif"
+    : "Reward";
+
+  const rewardClaimedText =
+    quest.reward?.type === "freeze"
+      ? `Streak Freeze +${quest.reward.value ?? 1} tersimpan!`
+    : quest.reward?.type === "quest_item"
+      ? "Item baru sudah masuk!"
+    : "Reward sudah diterima!";
+
+  const showRewardClaimed = isCompleted && quest.reward_applied;
 
   return (
     <div className={cn("relative", className)}>
@@ -174,7 +167,7 @@ function ActiveQuest({ quest, className }: { quest: QuestData; className?: strin
                 "text-[11px] font-semibold",
                 isCompleted ? "text-emerald-700" : "text-neutral-700",
               )}>
-                {rewardText}
+                {showRewardClaimed ? rewardClaimedText : rewardText}
               </span>
             </div>
 
@@ -199,17 +192,19 @@ function ActiveQuest({ quest, className }: { quest: QuestData; className?: strin
 function EmptyState({ className }: { className?: string }) {
   return (
     <div className={cn("relative", className)}>
-      <div className="rounded-3xl bg-white shadow-[0_8px_30px_-4px_rgba(0,0,0,0.04)] border border-neutral-100 px-5 py-4 flex items-center gap-4">
-        <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-          <Scroll className="w-5 h-5 text-primary" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="text-[14px] font-bold text-neutral-900 tracking-tight">
-            Quest Sedang Disiapkan
-          </h3>
-          <p className="text-[11px] text-neutral-400 mt-0.5">
-            Selesaikan aktivitas belajarmu untuk membuka quest baru
-          </p>
+      <div className="rounded-2xl bg-blue-50/60 border border-blue-100 px-5 py-4">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
+            <Clock className="w-4 h-4 text-blue-500" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[13px] font-semibold text-blue-900">
+              Quest Segera Hadir
+            </p>
+            <p className="text-[11px] text-blue-400 mt-0.5">
+              Petualangan baru sedang disiapkan — nantikan!
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -220,12 +215,14 @@ function EmptyState({ className }: { className?: string }) {
 
 function fmtDaysLeft(endDate?: string | null): string {
   if (!endDate) return "";
-  const diffMs = new Date(endDate).getTime() - Date.now();
+  const end = new Date(endDate);
+  end.setHours(23, 59, 59, 999);
+  const diffMs = end.getTime() - Date.now();
   if (diffMs <= 0) return "Waktu habis";
   const d = Math.floor(diffMs / 86_400_000);
-  if (d > 0) return `${d}h lagi`;
+  if (d > 0) return `${d} hari lagi`;
   const h = Math.floor(diffMs / 3_600_000);
-  if (h > 0) return `${h}j lagi`;
+  if (h > 0) return `${h} jam lagi`;
   const m = Math.floor(diffMs / 60_000);
-  return `${m}m lagi`;
+  return `${m} menit lagi`;
 }

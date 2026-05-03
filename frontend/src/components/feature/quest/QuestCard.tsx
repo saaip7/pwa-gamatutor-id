@@ -113,6 +113,25 @@ export function QuestCard({ quest, loading, onHistoryOpen, className }: QuestCar
       </span>
     ) : null;
 
+  const rewardClaimedLabel =
+    quest.reward?.type === "freeze" ? (
+      <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+        <Snowflake className="w-3 h-3" />
+        Streak Freeze +{quest.reward?.value || 1} tersimpan!
+      </span>
+    ) : quest.reward?.type === "quest_item" ? (
+      <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+        <Star className="w-3 h-3" />
+        Item baru sudah masuk!
+      </span>
+    ) : (
+      <span className="text-[11px] font-semibold text-emerald-600">
+        Reward sudah diterima!
+      </span>
+    );
+
+  const showRewardClaimed = isCompleted && quest.reward_applied;
+
   const timeLeft = isCompleted
     ? "Selesai!"
     : isExpired
@@ -209,10 +228,12 @@ export function QuestCard({ quest, loading, onHistoryOpen, className }: QuestCar
           </div>
         </div>
 
-        {rewardLabel && (
+        {(showRewardClaimed ? rewardClaimedLabel : rewardLabel) && (
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-neutral-400">Hadiah</span>
-            {rewardLabel}
+            <span className="text-[11px] text-neutral-400">
+              {showRewardClaimed ? "Hadiah" : "Hadiah"}
+            </span>
+            {showRewardClaimed ? rewardClaimedLabel : rewardLabel}
           </div>
         )}
       </div>

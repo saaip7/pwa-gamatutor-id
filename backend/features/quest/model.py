@@ -137,12 +137,21 @@ class QuestTemplate:
 
     @staticmethod
     def get_active():
-        """Get the currently active quest template (at most 1)."""
+        """Get the currently active quest template (at most 1).
+        Lazily expires any active template past its end_date."""
         now = datetime.utcnow()
+        today = now.strftime("%Y-%m-%d")
+
+        # Lazy-expire: mark active templates past end_date as 'expired'
+        mongo.db.quest_templates.update_many(
+            {"status": "active", "end_date": {"$lt": today}},
+            {"$set": {"status": "expired"}},
+        )
+
         return mongo.db.quest_templates.find_one({
             "status": "active",
-            "start_date": {"$lte": now},
-            "end_date": {"$gte": now},
+            "start_date": {"$lte": today},
+            "end_date": {"$gte": today},
         })
 
 
@@ -163,17 +172,23 @@ class QuestProgress:
         if not start_date:
             return 0
 
+        # Convert string dates to datetime for DB queries
+        start_dt = start_date if isinstance(start_date, datetime) else datetime.strptime(start_date, "%Y-%m-%d")
+        end_dt = now
+        if end_date:
+            end_dt = end_date if isinstance(end_date, datetime) else datetime.strptime(end_date, "%Y-%m-%d").replace(hour=23, minute=59, second=59)
+
         if quest_type == "deep_study":
             return QuestProgress._count_deep_study(
-                user_id, start_date, now, config
+                user_id, start_dt, end_dt, config
             )
         elif quest_type == "reflection_done":
             return QuestProgress._count_reflection_done(
-                user_id, start_date, now
+                user_id, start_dt, end_dt
             )
         elif quest_type == "checklist_use":
             return QuestProgress._count_checklist_use(
-                user_id, start_date, now
+                user_id, start_dt, end_dt
             )
         return 0
 
@@ -340,12 +355,6 @@ class QuestCompletion:
         )
 
     @staticmethod
-    def mark_expired(user_id, template_id):
-        """Mark a quest as expired for user (optional — we just don't record anything)."""
-        # We don't need to record expired quests — absence in completions = not completed
-        pass
-
-    @staticmethod
     def get_user_history(user_id, limit=20):
         """Get user's completed quests."""
         if isinstance(user_id, str):
@@ -418,6 +427,8 @@ class QuestEngine:
 
         # Check if already completed
         completion = QuestCompletion.get_status(user_id, template["_id"])
+        start_str = template.get("start_date")
+        end_str = template.get("end_date")
         if completion and completion.get("status") == "completed":
             return {
                 "template_id": str(template["_id"]),
@@ -425,11 +436,12 @@ class QuestEngine:
                 "type": template["type"],
                 "config": template.get("config", {}),
                 "reward": template.get("reward", {}),
-                "start_date": template.get("start_date").isoformat() if template.get("start_date") else None,
-                "end_date": template.get("end_date").isoformat() if template.get("end_date") else None,
-                "progress": 0,
+                "start_date": str(start_str) if start_str else None,
+                "end_date": str(end_str) if end_str else None,
+                "progress": template.get("config", {}).get("target_count", 1),
                 "target": template.get("config", {}).get("target_count", 1),
                 "status": "completed",
+                "reward_applied": completion.get("reward_applied", False),
                 "completed_at": completion.get("completed_at").isoformat() if completion.get("completed_at") else None,
             }
 
@@ -437,12 +449,10 @@ class QuestEngine:
         progress = QuestProgress.get_progress(user_id, template)
         target = template.get("config", {}).get("target_count", 1)
 
-        # Check if expired
-        now = datetime.utcnow()
-        end_date = template.get("end_date")
-        status = "active"
-        if end_date and now > end_date:
-            status = "expired"
+        def _date_str(v):
+            if not v:
+                return None
+            return v.isoformat() if isinstance(v, datetime) else str(v)
 
         return {
             "template_id": str(template["_id"]),
@@ -450,30 +460,12 @@ class QuestEngine:
             "type": template["type"],
             "config": template.get("config", {}),
             "reward": template.get("reward", {}),
-            "start_date": template.get("start_date").isoformat() if template.get("start_date") else None,
-            "end_date": template.get("end_date").isoformat() if template.get("end_date") else None,
+            "start_date": _date_str(template.get("start_date")),
+            "end_date": _date_str(template.get("end_date")),
             "progress": progress,
             "target": target,
-            "status": status,
-        }
-
-    @staticmethod
-    def expire_overdue_quests():
-        """
-        Mark quests past their end_date as expired.
-        For our model, we don't need to do anything special — 
-        the status is determined by comparing now vs end_date on read.
-        This exists for cleanup if needed later.
-        """
-        now = datetime.utcnow()
-        # Could log stats here
-        expired_count = mongo.db.quest_templates.count_documents({
             "status": "active",
-            "end_date": {"$lt": now},
-        })
-        if expired_count > 0:
-            logger.info(f"[QuestEngine] {expired_count} quest templates have passed their end_date")
-        return expired_count
+        }
 
     @staticmethod
     def get_stats():

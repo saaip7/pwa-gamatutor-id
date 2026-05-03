@@ -14,6 +14,19 @@ from shared.log_model import Log
 logger = logging.getLogger(__name__)
 
 
+def _serialize(doc):
+    """Recursively convert ObjectId/datetime to string for JSON."""
+    if isinstance(doc, list):
+        return [_serialize(d) for d in doc]
+    if isinstance(doc, dict):
+        return {k: _serialize(v) for k, v in doc.items()}
+    if isinstance(doc, ObjectId):
+        return str(doc)
+    if isinstance(doc, datetime):
+        return doc.isoformat()
+    return doc
+
+
 # ── User-facing ────────────────────────────────────────────────
 
 @jwt_required()
@@ -36,7 +49,7 @@ def get_history():
     user_id = get_jwt_identity()
     limit = request.args.get("limit", 10, type=int)
     completions = QuestCompletion.get_user_history(user_id, limit=limit)
-    return jsonify(completions), 200
+    return jsonify(_serialize(completions)), 200
 
 
 @jwt_required()
@@ -60,7 +73,7 @@ def use_quest_freeze():
 def list_templates():
     """List all quest templates."""
     templates = QuestTemplate.list_all()
-    return jsonify(templates), 200
+    return jsonify(_serialize(templates)), 200
 
 
 @admin_required
@@ -83,7 +96,7 @@ def create_template():
         doc, err = QuestTemplate.create(data)
         if err:
             return jsonify({"error": err}), 409
-        return jsonify(doc), 201
+        return jsonify(_serialize(doc)), 201
     except Exception as e:
         logger.error(f"[Quest] create_template error: {e}")
         return jsonify({"error": str(e)}), 500

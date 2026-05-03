@@ -6,8 +6,9 @@ class ApiError extends Error {
 
   constructor(status: number, data: unknown) {
     let message = `API Error: ${status}`;
-    if (data && typeof data === "object" && "message" in data) {
-      message = String((data as { message: string }).message);
+    if (data && typeof data === "object") {
+      const obj = data as Record<string, unknown>;
+      message = String(obj.message || obj.error || obj.msg || `Error ${status}`);
     } else if (typeof data === "string") {
       message = data;
     }
