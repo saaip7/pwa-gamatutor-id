@@ -15,7 +15,7 @@ def send_notification(user_id, notif_type, title, body, data=None, send_email=Fa
 
     email_category: maps to user prefs.notifications.email for opt-in check.
     """
-    from shared.email import send_templated_email
+    from shared.email import send_templated_email, should_skip_email
 
     Notification.create(user_id, notif_type, title, body)
 
@@ -37,7 +37,7 @@ def send_notification(user_id, notif_type, title, body, data=None, send_email=Fa
 
     if should_email and email_template:
         user = mongo.db.users.find_one({"_id": ObjectId(user_id)})
-        if user and user.get("email"):
+        if user and user.get("email") and not should_skip_email(user["email"], user.get("role")):
             email_ok = send_templated_email(
                 user["email"],
                 email_template,
@@ -156,7 +156,7 @@ def test_push():
 @jwt_required()
 def test_email():
     """Send a test HTML email to the current user's registered email address."""
-    from shared.email import send_templated_email
+    from shared.email import send_templated_email, is_valid_email
 
     user_id = get_jwt_identity()
     template = request.json.get("template", "generic")
@@ -165,6 +165,9 @@ def test_email():
     user = mongo.db.users.find_one({"_id": ObjectId(user_id)})
     if not user or not user.get("email"):
         return jsonify({"error": "Email pengguna belum terdaftar"}), 400
+
+    if not is_valid_email(user["email"]):
+        return jsonify({"error": f"Email '{user['email']}' tidak valid. Hanya gmail.com dan mail.ugm.ac.id yang didukung."}), 400
 
     ok = send_templated_email(user["email"], template, **template_vars)
     return jsonify({"email_sent": ok, "to": user["email"], "template": template}), 200 if ok else 500

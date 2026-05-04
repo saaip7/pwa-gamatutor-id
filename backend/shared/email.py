@@ -1,4 +1,5 @@
 import logging
+import re
 import smtplib
 import time
 from email.mime.text import MIMEText
@@ -6,6 +7,37 @@ from email.mime.multipart import MIMEMultipart
 from config import Config
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Email validation — only gmail.com and mail.ugm.ac.id are accepted
+# ---------------------------------------------------------------------------
+_ALLOWED_DOMAINS = {"gmail.com", "mail.ugm.ac.id"}
+_EMAIL_RE = re.compile(r"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$")
+
+
+def is_valid_email(email):
+    """Return True if *email* has valid format AND domain is whitelisted."""
+    if not email:
+        return False
+    email = email.strip().lower()
+    if not _EMAIL_RE.match(email):
+        return False
+    domain = email.rsplit("@", 1)[-1]
+    return domain in _ALLOWED_DOMAINS
+
+
+def should_skip_email(email, role=None):
+    """Return True if we should NOT send email to this address.
+
+    Reasons to skip:
+      - invalid format or non-whitelisted domain
+      - user role is 'admin'
+    """
+    if not is_valid_email(email):
+        return True
+    if role == "admin":
+        return True
+    return False
 
 # Resend client (lazy init — only created when RESEND_API_KEY exists)
 _resend_client = None
