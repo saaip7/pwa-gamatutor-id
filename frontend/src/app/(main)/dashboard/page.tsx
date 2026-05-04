@@ -93,6 +93,7 @@ const DEFAULT_STREAK_DATA: ComponentStreakData = {
     { label: "Min", state: "future" as const },
   ],
   freezes_available: 0,
+  quest_freezes: 0,
 };
 
 const STREAK_SHOWN_KEY = "streak_hub_shown";

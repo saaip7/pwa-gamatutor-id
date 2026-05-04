@@ -189,6 +189,7 @@ export interface StreakData {
   current: number;
   longest: number;
   freezes_available: number;
+  quest_freezes: number;
   days: StreakDay[];
 }
 
@@ -198,6 +199,7 @@ export interface StreakHistoryData {
   current: number;
   longest: number;
   freezes_available: number;
+  quest_freezes: number;
 }
 
 export interface ReflectionNote {
