@@ -154,7 +154,15 @@ class Preferences:
         current_week_start_date = today - timedelta(days=today.weekday())
 
         # Reset counter if new week - compare dates only
-        week_start_date = week_start.date() if week_start else None
+        if week_start:
+            if isinstance(week_start, datetime):
+                week_start_date = week_start.date()
+            elif isinstance(week_start, str):
+                week_start_date = datetime.fromisoformat(week_start.replace("Z", "+00:00")).date()
+            else:
+                week_start_date = None
+        else:
+            week_start_date = None
         if not week_start_date or week_start_date < current_week_start_date:
             freezes_used = 0
 
@@ -233,13 +241,7 @@ class Preferences:
             if last_active_date == today:
                 return False, "Kamu hari ini sudah aktif, tidak perlu streak freeze"
 
-        # Deduct balance
-        mongo.db.user_preferences.update_one(
-            {"user_id": user_id, "quest_freezes": {"$gt": 0}},
-            {"$inc": {"quest_freezes": -1}},
-        )
-
-        # Apply freeze (same logic as use_streak_freeze)
+        # Build freeze updates
         updates = {
             "streak.freeze_used_at": now,
             "updated_at": now,
@@ -251,11 +253,17 @@ class Preferences:
             if days_since >= 1:
                 updates["streak.last_active_date"] = now
 
-        mongo.db.user_preferences.update_one(
-            {"user_id": user_id},
+        # Single atomic operation: deduct balance + apply freeze
+        result = mongo.db.user_preferences.update_one(
+            {"user_id": user_id, "quest_freezes": {"$gt": 0}},
             {
+                "$inc": {"quest_freezes": -1},
                 "$set": updates,
                 "$addToSet": {"streak.freeze_dates": today_str},
             }
         )
+
+        if result.modified_count == 0:
+            return False, "Quest freeze gagal digunakan. Silakan coba lagi."
+
         return True, "Quest freeze berhasil digunakan"

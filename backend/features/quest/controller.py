@@ -59,12 +59,12 @@ def use_quest_freeze():
     try:
         success, message = Preferences.use_quest_freeze(user_id)
         if not success:
-            return jsonify({"error": message}), 400
+            return jsonify({"message": message}), 400
         Log.create(user_id, "quest_freeze_used", "Quest freeze used")
         return jsonify({"message": message}), 200
     except Exception as e:
-        logger.error(f"[Quest] use_quest_freeze error: {e}")
-        return jsonify({"error": str(e)}), 500
+        logger.exception(f"[Quest] use_quest_freeze error for user {user_id}: {e}")
+        return jsonify({"message": "Terjadi kesalahan saat menggunakan quest freeze. Silakan coba lagi."}), 500
 
 
 # ── Admin ──────────────────────────────────────────────────────

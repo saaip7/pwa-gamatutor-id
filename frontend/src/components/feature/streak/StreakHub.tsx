@@ -6,14 +6,17 @@ import { X, Flame } from "lucide-react";
 import { toast } from "sonner";
 import { StreakCalendar, StreakDay } from "./StreakCalendar";
 import { StreakFreezeCard } from "./StreakFreezeCard";
+import { QuestFreezeCard } from "./QuestFreezeCard";
 import { usePreferencesStore } from "@/stores/preferences";
 import { useAnalyticsStore } from "@/stores/analytics";
+import { useQuestStore } from "@/stores/quest";
 
 export interface StreakData {
   current: number;
   longest: number;
   days: StreakDay[];
   freezes_available: number;
+  quest_freezes: number;
 }
 
 interface StreakHubProps {
@@ -26,7 +29,9 @@ interface StreakHubProps {
 export function StreakHub({ isOpen, onClose, data, onUseFreeze }: StreakHubProps) {
   const useStreakFreeze = usePreferencesStore((s) => s.useStreakFreeze);
   const fetchStreak = useAnalyticsStore((s) => s.fetchStreak);
+  const useQFreeze = useQuestStore((s) => s.useQuestFreeze);
   const [freezeLoading, setFreezeLoading] = useState(false);
+  const [questFreezeLoading, setQuestFreezeLoading] = useState(false);
 
   const handleUseFreeze = async () => {
     setFreezeLoading(true);
@@ -39,6 +44,20 @@ export function StreakHub({ isOpen, onClose, data, onUseFreeze }: StreakHubProps
       toast.error(msg);
     } finally {
       setFreezeLoading(false);
+    }
+  };
+
+  const handleUseQuestFreeze = async () => {
+    setQuestFreezeLoading(true);
+    try {
+      await useQFreeze();
+      await fetchStreak();
+      onUseFreeze?.();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Gagal menggunakan quest freeze";
+      toast.error(msg);
+    } finally {
+      setQuestFreezeLoading(false);
     }
   };
 
@@ -106,11 +125,16 @@ export function StreakHub({ isOpen, onClose, data, onUseFreeze }: StreakHubProps
                 </div>
 
                 {/* Streak Freeze */}
-                <div>
+                <div className="space-y-3">
                   <StreakFreezeCard
                     available={data.freezes_available}
                     onUse={handleUseFreeze}
                     loading={freezeLoading}
+                  />
+                  <QuestFreezeCard
+                    available={data.quest_freezes}
+                    onUse={handleUseQuestFreeze}
+                    loading={questFreezeLoading}
                   />
                 </div>
               </div>

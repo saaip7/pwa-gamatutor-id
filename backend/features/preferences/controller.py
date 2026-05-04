@@ -1,8 +1,12 @@
+import logging
 from flask import jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from features.preferences.model import Preferences
 from features.badge.badge_engine import BadgeEngine
 from shared.log_model import Log
+
+
+logger = logging.getLogger(__name__)
 
 
 @jwt_required()
@@ -116,7 +120,8 @@ def use_freeze():
             "newly_unlocked": badge_results,
         }), 200
     except Exception as e:
-        return jsonify({"message": "An error occurred", "error": str(e)}), 500
+        logger.exception(f"[Preferences] use_freeze error for user {user_id}: {e}")
+        return jsonify({"message": "Terjadi kesalahan saat menggunakan streak freeze. Silakan coba lagi."}), 500
 
 
 @jwt_required()
