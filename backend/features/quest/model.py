@@ -1,7 +1,8 @@
 from shared.db import mongo
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
+from shared.timezone_utils import now_wib
 
 logger = logging.getLogger(__name__)
 
@@ -139,7 +140,7 @@ class QuestTemplate:
     def get_active():
         """Get the currently active quest template (at most 1).
         Lazily expires any active template past its end_date."""
-        now = datetime.utcnow()
+        now = now_wib()
         today = now.strftime("%Y-%m-%d")
 
         # Lazy-expire: mark active templates past end_date as 'expired'
@@ -167,16 +168,20 @@ class QuestProgress:
         config = template.get("config", {})
         start_date = template.get("start_date")
         end_date = template.get("end_date")
-        now = datetime.utcnow()
+        now = now_wib()
 
         if not start_date:
             return 0
 
-        # Convert string dates to datetime for DB queries
+        # Convert WIB date strings to UTC datetimes for DB queries
+        # (start_time / updated_at in DB are stored as UTC)
         start_dt = start_date if isinstance(start_date, datetime) else datetime.strptime(start_date, "%Y-%m-%d")
-        end_dt = now
+        start_dt = start_dt - timedelta(hours=7)  # WIB midnight → UTC
+
+        end_dt = now - timedelta(hours=7)  # WIB now → UTC
         if end_date:
             end_dt = end_date if isinstance(end_date, datetime) else datetime.strptime(end_date, "%Y-%m-%d").replace(hour=23, minute=59, second=59)
+            end_dt = end_dt - timedelta(hours=7)  # WIB end-of-day → UTC
 
         if quest_type == "deep_study":
             return QuestProgress._count_deep_study(

@@ -1,7 +1,7 @@
 from shared.db import mongo
 from bson import ObjectId
 from datetime import datetime, timedelta
-from shared.timezone_utils import utc_to_wib
+from shared.timezone_utils import now_wib, utc_to_wib
 
 
 class Analytics:
@@ -369,12 +369,12 @@ class Analytics:
         freezes_used = streak.get("freezes_used_this_week", 0)
         freeze_used_at = streak.get("freeze_used_at")
 
-        now = datetime.utcnow()
+        today = now_wib().date()
 
         # Backfill freeze_dates from freeze_used_at for legacy data
         if not freeze_dates_list and freeze_used_at:
             if isinstance(freeze_used_at, datetime):
-                freeze_dates_list = [freeze_used_at.date().isoformat()]
+                freeze_dates_list = [utc_to_wib(freeze_used_at).date().isoformat()]
             else:
                 freeze_dates_list = [freeze_used_at.isoformat() if hasattr(freeze_used_at, 'isoformat') else str(freeze_used_at)]
 
@@ -384,9 +384,9 @@ class Analytics:
             if isinstance(last_active, str):
                 last_active = datetime.fromisoformat(last_active.replace("Z", "+00:00")).replace(tzinfo=None)
             if isinstance(last_active, datetime):
-                last_active_date = last_active.replace(hour=0, minute=0, second=0, microsecond=0)
-                yesterday = (now - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
-                yesterday_str = yesterday.date().isoformat()
+                last_active_date = utc_to_wib(last_active).date()
+                yesterday = today - timedelta(days=1)
+                yesterday_str = yesterday.isoformat()
                 yesterday_frozen = yesterday_str in freeze_dates_list
                 if last_active_date < yesterday and not yesterday_frozen:
                     current = 0
@@ -395,7 +395,6 @@ class Analytics:
         quest_freezes = prefs.get("quest_freezes", 0)
 
         # Build current week (Mon-Sun)
-        today = now.date()
         monday = today - timedelta(days=today.weekday())
 
         DAY_LABELS = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"]
@@ -404,7 +403,7 @@ class Analytics:
         frozen_date_str = None
         if freeze_used_at:
             if isinstance(freeze_used_at, datetime):
-                frozen_day = freeze_used_at.date()
+                frozen_day = utc_to_wib(freeze_used_at).date()
             else:
                 frozen_day = freeze_used_at
             # Only count if within current week
@@ -465,7 +464,7 @@ class Analytics:
             freeze_used_at = streak.get("freeze_used_at")
             if freeze_used_at:
                 if isinstance(freeze_used_at, datetime):
-                    frozen_day = freeze_used_at.date().isoformat()
+                    frozen_day = utc_to_wib(freeze_used_at).date().isoformat()
                 else:
                     frozen_day = freeze_used_at.isoformat() if hasattr(freeze_used_at, 'isoformat') else str(freeze_used_at)
                 freeze_dates = [frozen_day]
@@ -475,28 +474,27 @@ class Analytics:
         freezes_used = streak.get("freezes_used_this_week", 0)
         week_start = streak.get("week_start_date")
 
-        now = datetime.utcnow()
-        yesterday = (now - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+        today = now_wib().date()
 
-        # Check if streak is stale (last active >= 2 days ago, no freeze for yesterday)
+        # Check if streak is stale (last active before yesterday WIB, no freeze for yesterday)
         last_active = streak.get("last_active_date")
         if current > 0 and last_active:
             if isinstance(last_active, str):
                 last_active = datetime.fromisoformat(last_active.replace("Z", "+00:00")).replace(tzinfo=None)
             if isinstance(last_active, datetime):
-                last_active_date = last_active.replace(hour=0, minute=0, second=0, microsecond=0)
-                yesterday_str = (now - timedelta(days=1)).date().isoformat()
+                last_active_date = utc_to_wib(last_active).date()
+                yesterday = today - timedelta(days=1)
+                yesterday_str = yesterday.isoformat()
                 yesterday_frozen = yesterday_str in freeze_dates
                 if last_active_date < yesterday and not yesterday_frozen:
                     current = 0
 
-        # Use date comparison to avoid timezone issues
-        today = now.date()
+        # Use WIB date for week comparison
         current_week_start_date = today - timedelta(days=today.weekday())
 
         if week_start:
             if isinstance(week_start, datetime):
-                week_start_date = week_start.date()
+                week_start_date = utc_to_wib(week_start).date()
             elif isinstance(week_start, str):
                 week_start_date = datetime.fromisoformat(week_start.replace("Z", "+00:00")).date()
             else:
