@@ -262,6 +262,12 @@ def create_card():
         except Exception:
             pass
 
+    if data.get("learning_strategy"):
+        try:
+            BadgeEngine.evaluate(user_id, "strategy_used")
+        except Exception:
+            pass
+
     return jsonify({
         "message": "Card created",
         "card": _serialize_card(card),
