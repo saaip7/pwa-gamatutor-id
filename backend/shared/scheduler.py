@@ -1080,6 +1080,8 @@ def job_reset_stale_streaks():
 
 
 # ---------------------------------------------------------------------------
+# Quest Expiry
+# ---------------------------------------------------------------------------
 # Init
 # ---------------------------------------------------------------------------
 
@@ -1119,6 +1121,5 @@ def init_scheduler(app):
             job_reset_stale_streaks, "cron", hour=0, minute=0, timezone="Asia/Jakarta",
             id="reset_stale_streaks", replace_existing=True,
         )
-
         scheduler.start()
         logger.info("[Scheduler] Started with 8 jobs: deadline_reminder, smart_reminder, streak_nudge, social_presence, orphan_cleanup, check_idle_sessions, auto_end_stale_sessions, reset_stale_streaks")

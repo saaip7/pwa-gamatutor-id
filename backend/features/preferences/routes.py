@@ -7,6 +7,7 @@ from features.preferences.controller import (
     update_fcm_token,
     get_streak,
     use_freeze,
+    use_quest_freeze,
 )
 
 preferences_bp = Blueprint("preferences_bp", __name__)
@@ -18,3 +19,4 @@ preferences_bp.route("/api/preferences/onboarding", methods=["PUT"])(update_onbo
 preferences_bp.route("/api/preferences/fcm-token", methods=["PUT"])(update_fcm_token)
 preferences_bp.route("/api/preferences/streak", methods=["GET"])(get_streak)
 preferences_bp.route("/api/preferences/streak/freeze", methods=["POST"])(use_freeze)
+preferences_bp.route("/api/preferences/streak/quest-freeze", methods=["POST"])(use_quest_freeze)

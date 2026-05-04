@@ -16,12 +16,14 @@ import {
   Megaphone,
   MessageCircleWarning,
   Clock,
+  Scroll,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth";
 
 const navItems = [
   { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/quests", label: "Quests", icon: Scroll },
   { href: "/admin/courses", label: "Courses", icon: BookOpen },
   { href: "/admin/strategies", label: "Strategies", icon: Lightbulb },
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },

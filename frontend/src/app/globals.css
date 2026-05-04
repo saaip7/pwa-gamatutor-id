@@ -181,6 +181,30 @@ body {
   animation: pulse-slow 3s ease-in-out infinite;
 }
 
+/* Quest Card Shining Effect */
+@keyframes questShine {
+  0% { transform: translateX(-100%) skewX(-15deg); }
+  100% { transform: translateX(200%) skewX(-15deg); }
+}
+.quest-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(59, 130, 246, 0.06) 40%,
+    rgba(59, 130, 246, 0.12) 50%,
+    rgba(59, 130, 246, 0.06) 60%,
+    transparent 100%
+  );
+  transform: translateX(-100%) skewX(-15deg);
+  animation: questShine 4s ease-in-out infinite;
+  animation-delay: 1.5s;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
 /* Mastery Badge Styles */
 .badge-svg-container {
   filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.15));
@@ -433,4 +457,14 @@ body {
 .badge-modal-wrap[data-state="open"] .badge-modal-date {
   opacity: 1;
   transition-delay: 350ms;
+}
+
+/* --- Quest Live Dot --- */
+@keyframes quest-live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.quest-live-dot {
+  animation: quest-live-pulse 2s ease-in-out infinite;
 }
