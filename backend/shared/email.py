@@ -1,5 +1,6 @@
 import logging
 import smtplib
+import time
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from config import Config
@@ -27,7 +28,7 @@ def send_email(to_email, subject, body_html=None, body_text=None):
     """
     from_email = Config.RESEND_FROM or Config.SMTP_FROM
 
-    # --- Try Resend first ---
+    # --- Try Resend first (with retry on rate limit) ---
     client = _get_resend_client()
     if client:
         try:
@@ -41,11 +42,26 @@ def send_email(to_email, subject, body_html=None, body_text=None):
             if body_text:
                 params["text"] = body_text
 
-            client.Emails.send(params)
-            logger.info(f"[Resend] Email sent to {to_email}: {subject}")
-            return True
+            for attempt in range(2):  # initial + 1 retry
+                try:
+                    client.Emails.send(params)
+                    logger.info(f"[Resend] Email sent to {to_email}: {subject}")
+                    return True
+                except Exception as send_err:
+                    err_str = str(send_err).lower()
+                    is_rate_limit = "429" in err_str or "rate" in err_str or "too many" in err_str
+                    if is_rate_limit and attempt == 0:
+                        logger.warning(f"[Resend] Rate limited sending to {to_email}, retrying in 2s...")
+                        time.sleep(2)
+                        continue
+                    elif is_rate_limit:
+                        logger.warning(f"[Resend] Rate limited again on retry for {to_email} — falling back to SMTP")
+                        break
+                    else:
+                        logger.warning(f"[Resend] Failed to send to {to_email}: {send_err} — falling back to SMTP")
+                        break
         except Exception as e:
-            logger.warning(f"[Resend] Failed to send to {to_email}: {e} — falling back to SMTP")
+            logger.warning(f"[Resend] Unexpected error for {to_email}: {e} — falling back to SMTP")
 
     # --- Fallback: SMTP ---
     if not Config.SMTP_USER or not Config.SMTP_PASSWORD:

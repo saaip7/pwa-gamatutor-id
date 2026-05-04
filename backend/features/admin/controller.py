@@ -378,9 +378,9 @@ def send_broadcast_email():
             sent += 1
         else:
             failed += 1
-        # Rate limit: delay 0.3s between each email to avoid Titan rate limit
+        # Rate limit: delay 1s between each email to stay well under Resend limit (5 req/s)
         if user is not users[-1]:
-            time.sleep(0.3)
+            time.sleep(1)
 
     logger.info(f"Admin broadcast email: sent={sent}, failed={failed}, subject={subject}")
 
