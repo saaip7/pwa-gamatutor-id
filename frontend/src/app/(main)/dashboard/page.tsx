@@ -16,6 +16,8 @@ import { useAuthStore } from "@/stores/auth";
 import { useAnalyticsStore } from "@/stores/analytics";
 import { useBoardStore } from "@/stores/board";
 import { useNotificationsStore } from "@/stores/notifications";
+import { useQuestStore } from "@/stores/quest";
+import { QuestHero } from "@/components/feature/quest/QuestHero";
 import type { BoardCard } from "@/types";
 
 // --- Helpers ---
@@ -91,6 +93,7 @@ const DEFAULT_STREAK_DATA: ComponentStreakData = {
     { label: "Min", state: "future" as const },
   ],
   freezes_available: 0,
+  quest_freezes: 0,
 };
 
 const STREAK_SHOWN_KEY = "streak_hub_shown";
@@ -99,19 +102,19 @@ export default function DashboardPage() {
   const [isStreakHubOpen, setIsStreakHubOpen] = useState(false);
   const [isCelebrationOpen, setIsCelebrationOpen] = useState(false);
 
-  // Store selectors
   const { user } = useAuthStore();
   const { dashboard, streak, fetchDashboard, fetchStreak } = useAnalyticsStore();
   const { tasks: boardTasks, columns, fetchBoard } = useBoardStore();
   const { unreadCount, fetchUnreadCount } = useNotificationsStore();
+  const { quest: activeQuest, fetchQuest } = useQuestStore();
 
-  // Fetch page-specific data on mount (profile/badges/preferences handled by AuthGuard)
   useEffect(() => {
     fetchDashboard();
     fetchStreak();
     fetchBoard();
     fetchUnreadCount();
-  }, [fetchDashboard, fetchStreak, fetchBoard, fetchUnreadCount]);
+    fetchQuest();
+  }, [fetchDashboard, fetchStreak, fetchBoard, fetchUnreadCount, fetchQuest]);
 
   // Determine if we're still loading core data
   const isInitialLoading = !dashboard && !user;
@@ -209,6 +212,13 @@ export default function DashboardPage() {
         streak={stats.streak}
         tasks_completed={stats.tasks_completed}
       />
+
+      <div className="px-6 lg:px-0 mb-6">
+        <QuestHero
+          quest={activeQuest}
+          loading={!dashboard}
+        />
+      </div>
 
       <div className="px-6 lg:px-0 mb-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

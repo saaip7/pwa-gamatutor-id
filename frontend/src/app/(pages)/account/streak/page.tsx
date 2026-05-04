@@ -5,9 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Flame, Trophy, ChevronLeft } from "lucide-react";
 import { SettingsHeader } from "@/components/feature/settings/SettingsHeader";
 import { StreakFreezeCard } from "@/components/feature/streak/StreakFreezeCard";
+import { QuestFreezeCard } from "@/components/feature/streak/QuestFreezeCard";
 import { StreakFreezeCelebration } from "@/components/feature/streak/StreakFreezeCelebration";
 import { useAnalyticsStore } from "@/stores/analytics";
 import { usePreferencesStore } from "@/stores/preferences";
+import { useQuestStore } from "@/stores/quest";
 import { toast } from "sonner";
 
 const WEEKDAYS = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
@@ -97,8 +99,10 @@ function getMonthActivityCounts(activeDates: string[], year: number): number[] {
 export default function StreakPage() {
   const { streakHistory, fetchStreakHistory, fetchStreak } = useAnalyticsStore();
   const useStreakFreeze = usePreferencesStore((s) => s.useStreakFreeze);
+  const useQFreeze = useQuestStore((s) => s.useQuestFreeze);
   const [isCelebrationOpen, setIsCelebrationOpen] = useState(false);
   const [freezeLoading, setFreezeLoading] = useState(false);
+  const [questFreezeLoading, setQuestFreezeLoading] = useState(false);
 
   const today = new Date();
   const currentYear = today.getFullYear();
@@ -115,6 +119,7 @@ export default function StreakPage() {
   const currentStreak = streakHistory?.current ?? 0;
   const longestStreak = streakHistory?.longest ?? 0;
   const freezesAvailable = streakHistory?.freezes_available ?? 0;
+  const questFreezes = streakHistory?.quest_freezes ?? 0;
 
   const rows = useMemo(
     () => buildCalendarRows(selectedYear, selectedMonth, activeDates, freezeDates, today),
@@ -143,6 +148,24 @@ export default function StreakPage() {
       toast.error(e instanceof Error ? e.message : "Gagal menggunakan streak freeze");
     } finally {
       setFreezeLoading(false);
+    }
+  };
+
+  const handleUseQuestFreeze = async () => {
+    setQuestFreezeLoading(true);
+    try {
+      const msg = await useQFreeze();
+      if (msg) {
+        await fetchStreakHistory();
+        toast.success(msg);
+        setIsCelebrationOpen(true);
+      } else {
+        toast.error("Gagal menggunakan quest freeze");
+      }
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Gagal menggunakan quest freeze");
+    } finally {
+      setQuestFreezeLoading(false);
     }
   };
 
@@ -329,11 +352,17 @@ export default function StreakPage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
+          className="space-y-3"
         >
           <StreakFreezeCard
             available={freezesAvailable}
             onUse={handleUseFreeze}
             loading={freezeLoading}
+          />
+          <QuestFreezeCard
+            available={questFreezes}
+            onUse={handleUseQuestFreeze}
+            loading={questFreezeLoading}
           />
         </motion.section>
       </main>

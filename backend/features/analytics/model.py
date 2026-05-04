@@ -359,7 +359,7 @@ class Analytics:
 
         prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
         if not prefs:
-            return {"current": 0, "longest": 0, "days": [], "freezes_available": 0}
+            return {"current": 0, "longest": 0, "days": [], "freezes_available": 0, "quest_freezes": 0}
 
         streak = prefs.get("streak", {})
         current = streak.get("current", 0)
@@ -392,6 +392,7 @@ class Analytics:
                     current = 0
 
         freezes_available = 1 if freezes_used < 1 else 0
+        quest_freezes = prefs.get("quest_freezes", 0)
 
         # Build current week (Mon-Sun)
         today = now.date()
@@ -441,6 +442,7 @@ class Analytics:
             "longest": longest,
             "days": days,
             "freezes_available": freezes_available,
+            "quest_freezes": quest_freezes,
         }
 
     @staticmethod
@@ -451,7 +453,7 @@ class Analytics:
 
         prefs = mongo.db.user_preferences.find_one({"user_id": user_id})
         if not prefs:
-            return {"active_dates": [], "current": 0, "longest": 0, "freezes_available": 0}
+            return {"active_dates": [], "current": 0, "longest": 0, "freezes_available": 0, "quest_freezes": 0}
 
         streak = prefs.get("streak", {})
         active_dates = streak.get("active_dates", [])
@@ -492,11 +494,21 @@ class Analytics:
         today = now.date()
         current_week_start_date = today - timedelta(days=today.weekday())
 
-        week_start_date = week_start.date() if week_start else None
+        if week_start:
+            if isinstance(week_start, datetime):
+                week_start_date = week_start.date()
+            elif isinstance(week_start, str):
+                week_start_date = datetime.fromisoformat(week_start.replace("Z", "+00:00")).date()
+            else:
+                week_start_date = None
+        else:
+            week_start_date = None
         if not week_start_date or week_start_date < current_week_start_date:
             freezes_used = 0
 
         freezes_available = 1 if freezes_used < 1 else 0
+
+        quest_freezes = prefs.get("quest_freezes", 0)
 
         return {
             "active_dates": active_dates,
@@ -504,6 +516,7 @@ class Analytics:
             "current": current,
             "longest": longest,
             "freezes_available": freezes_available,
+            "quest_freezes": quest_freezes,
         }
 
     @staticmethod

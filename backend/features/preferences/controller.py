@@ -1,8 +1,12 @@
+import logging
 from flask import jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from features.preferences.model import Preferences
 from features.badge.badge_engine import BadgeEngine
 from shared.log_model import Log
+
+
+logger = logging.getLogger(__name__)
 
 
 @jwt_required()
@@ -107,6 +111,29 @@ def use_freeze():
         Log.create(user_id, "streak_freeze_used", "Streak freeze used")
 
         # Check streak-based badges
+        badge_results = BadgeEngine.evaluate(user_id, "streak_updated")
+
+        streak = Preferences.get_streak(user_id)
+        return jsonify({
+            "message": message,
+            "streak": streak,
+            "newly_unlocked": badge_results,
+        }), 200
+    except Exception as e:
+        logger.exception(f"[Preferences] use_freeze error for user {user_id}: {e}")
+        return jsonify({"message": "Terjadi kesalahan saat menggunakan streak freeze. Silakan coba lagi."}), 500
+
+
+@jwt_required()
+def use_quest_freeze():
+    """Use a quest-earned streak freeze (from quest_freezes balance)."""
+    user_id = get_jwt_identity()
+    try:
+        success, message = Preferences.use_quest_freeze(user_id)
+        if not success:
+            return jsonify({"message": message}), 400
+        Log.create(user_id, "quest_freeze_used", "Quest streak freeze used")
+
         badge_results = BadgeEngine.evaluate(user_id, "streak_updated")
 
         streak = Preferences.get_streak(user_id)
