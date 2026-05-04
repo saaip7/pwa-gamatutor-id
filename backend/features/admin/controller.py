@@ -358,14 +358,18 @@ def send_broadcast_email():
     if link_url and not link_text:
         link_text = "Buka Link"
 
-    # Get all users with email
+    # Get all users with email (include role for filtering)
     users = list(mongo.db.users.find(
         {"email": {"$exists": True, "$ne": None, "$ne": ""}},
-        {"email": 1, "name": 1}
+        {"email": 1, "name": 1, "role": 1}
     ))
 
+    # Filter out admin accounts and invalid/non-whitelisted emails
+    from shared.email import should_skip_email
+    users = [u for u in users if not should_skip_email(u.get("email"), u.get("role"))]
+
     if not users:
-        return jsonify({"message": "Tidak ada user dengan email"}), 400
+        return jsonify({"message": "Tidak ada user dengan email yang valid"}), 400
 
     # Render template once
     subj, html, text = admin_broadcast(subject, body, link_text, link_url)
