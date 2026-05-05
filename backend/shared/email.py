@@ -88,17 +88,17 @@ def _get_resend_client():
     return _resend_client
 
 
-def send_email(to_email, subject, body_html=None, body_text=None):
+def send_email(to_email, subject, body_html=None, body_text=None, force_channel=None):
     """Send email via Resend API (HTTPS), falling back to SMTP.
 
-    Resend works on Railway free tier because it uses HTTPS (port 443)
-    instead of raw SMTP which Railway blocks on non-Pro plans.
+    force_channel: "smtp" to skip Resend entirely, "resend" to skip SMTP fallback.
+                   None = default behavior (Resend first, SMTP fallback).
     """
     from_email = Config.RESEND_FROM or Config.SMTP_FROM
 
     # --- Try Resend first (with retry on rate limit) ---
     client = _get_resend_client()
-    if client:
+    if client and force_channel != "smtp":
         try:
             params = {
                 "from": from_email,
@@ -136,6 +136,8 @@ def send_email(to_email, subject, body_html=None, body_text=None):
             logger.warning(f"[Resend] Unexpected error for {to_email}: {e} — falling back to SMTP")
 
     # --- Fallback: SMTP ---
+    if force_channel == "resend":
+        return False
     if not Config.SMTP_USER or not Config.SMTP_PASSWORD:
         logger.warning("SMTP not configured — email skipped")
         return False
@@ -164,16 +166,7 @@ def send_email(to_email, subject, body_html=None, body_text=None):
         return False
 
 
-def send_templated_email(to_email, template_name, **kwargs):
-    """Send an email using a template from shared.email_templates.
-
-    Args:
-        to_email: recipient email address
-        template_name: name of the template function in email_templates
-        **kwargs: variables passed to the template
-
-    Returns True on success, False on failure.
-    """
+def send_templated_email(to_email, template_name, force_channel=None, **kwargs):
     try:
         from shared import email_templates
         render = getattr(email_templates, template_name, None)
@@ -181,7 +174,56 @@ def send_templated_email(to_email, template_name, **kwargs):
             logger.error(f"Email template '{template_name}' not found")
             return False
         subject, body_html, body_text = render(**kwargs)
-        return send_email(to_email, subject, body_html, body_text)
+        return send_email(to_email, subject, body_html, body_text, force_channel=force_channel)
     except Exception as e:
         logger.error(f"Failed to render/send templated email '{template_name}': {e}")
         return False
+
+
+SMTP_BATCH_SIZE = 50
+SMTP_BATCH_DELAY = 5400
+
+
+def send_batch_smtp(recipients):
+    """Send templated emails in batches via SMTP with auto-split.
+
+    recipients: list of dicts, each:
+        {
+            "email": "user@mail.ugm.ac.id",
+            "template": "template_name",
+            "vars": {"key": "value", ...}
+        }
+
+    Returns {"sent": N, "failed": N, "bounced": N, "batches": M}.
+    """
+    total = len(recipients)
+    if total == 0:
+        return {"sent": 0, "failed": 0, "bounced": 0, "batches": 0}
+
+    batches = [recipients[i:i + SMTP_BATCH_SIZE] for i in range(0, total, SMTP_BATCH_SIZE)]
+    stats = {"sent": 0, "failed": 0, "bounced": 0, "batches": len(batches)}
+
+    logger.info(f"[Batch] Sending {total} emails in {len(batches)} batch(es) (size={SMTP_BATCH_SIZE}, delay={SMTP_BATCH_DELAY}s)")
+
+    for idx, batch in enumerate(batches):
+        logger.info(f"[Batch] Batch {idx + 1}/{len(batches)} — {len(batch)} recipients")
+        for r in batch:
+            ok = send_templated_email(
+                r["email"],
+                r.get("template", "generic"),
+                force_channel="smtp",
+                **(r.get("vars", {})),
+            )
+            if ok:
+                stats["sent"] += 1
+            else:
+                stats["failed"] += 1
+            if is_bounced(r["email"]):
+                stats["bounced"] += 1
+
+        if idx < len(batches) - 1:
+            logger.info(f"[Batch] Batch {idx + 1} done. Sleeping {SMTP_BATCH_DELAY}s before next batch...")
+            time.sleep(SMTP_BATCH_DELAY)
+
+    logger.info(f"[Batch] Complete — sent={stats['sent']}, failed={stats['failed']}, bounced={stats['bounced']}")
+    return stats

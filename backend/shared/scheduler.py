@@ -580,7 +580,6 @@ def _run_smart_reminder():
     })
 
     counts = {"A": 0, "B": 0, "C": 0}
-    sent_tokens = set()  # Token-level dedup: prevent duplicate push to same FCM token
 
     for prefs in users:
         user_id = prefs["user_id"]
@@ -588,7 +587,6 @@ def _run_smart_reminder():
         if _is_quiet_hours(prefs):
             continue
 
-        # [FLAG NOTIF] test: disabled dedup, prod: enabled
         if _sent_today(user_id, "smart_reminder"):
             continue
 
@@ -618,7 +616,12 @@ def _run_smart_reminder_manual(options=None):
       - skip_quiet_hours (bool): skip quiet hours check
       - force_email (bool):      force-send email regardless of user preference
       - skip_dedup (bool):       skip dedup check (useful for testing)
+    
+    Email sending uses SMTP batch split (send_batch_smtp) to respect
+    SMTP hourly limits. Push notifications are sent immediately for all users.
     """
+    from shared.email import should_skip_email, is_bounced, send_batch_smtp
+
     opts = options or {}
     skip_quiet = opts.get("skip_quiet_hours", False)
     force_email = opts.get("force_email", False)
@@ -631,6 +634,7 @@ def _run_smart_reminder_manual(options=None):
     })
 
     counts = {"A": 0, "B": 0, "C": 0, "skipped_quiet": 0, "skipped_dedup": 0}
+    pending_emails = []
 
     for prefs in users:
         user_id = prefs["user_id"]
@@ -651,13 +655,23 @@ def _run_smart_reminder_manual(options=None):
             title,
             body,
             data={"type": "smart_reminder", "tier": tier},
-            send_email=True if force_email else None,
-            email_category="smart_reminder" if not force_email else None,
-            email_template=f"smart_reminder_{tier.lower()}",
+            send_email=False,
             notif_type="smart_reminder",
         )
 
+        user = mongo.db.users.find_one({"_id": user_id})
+        email = user.get("email") if user else None
+        if email and not should_skip_email(email, user.get("role")) and not is_bounced(email):
+            pending_emails.append({
+                "email": email,
+                "template": f"smart_reminder_{tier.lower()}",
+            })
+
         counts[tier] += 1
+
+    if pending_emails:
+        batch_result = send_batch_smtp(pending_emails)
+        logger.info(f"[Scheduler] Smart reminder MANUAL batch: {batch_result}")
 
     logger.info(f"[Scheduler] Smart reminder MANUAL: A={counts['A']} B={counts['B']} C={counts['C']} skipped_quiet={counts['skipped_quiet']} skipped_dedup={counts['skipped_dedup']}")
     return counts
