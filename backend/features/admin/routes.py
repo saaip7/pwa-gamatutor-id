@@ -14,6 +14,7 @@ from features.admin.controller import (
     get_scheduler_logs,
     get_email_blacklist,
     delete_from_blacklist,
+    add_to_blacklist,
 )
 
 admin_bp = Blueprint("admin_bp", __name__, url_prefix="/admin")
@@ -43,4 +44,5 @@ admin_bp.route("/scheduler/logs", methods=["GET"])(admin_required(get_scheduler_
 
 # Email Blacklist
 admin_bp.route("/blacklist", methods=["GET"])(admin_required(get_email_blacklist))
+admin_bp.route("/blacklist", methods=["POST"])(admin_required(add_to_blacklist))
 admin_bp.route("/blacklist/<email>", methods=["DELETE"])(admin_required(delete_from_blacklist))

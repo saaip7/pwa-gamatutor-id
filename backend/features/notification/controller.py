@@ -15,7 +15,7 @@ def send_notification(user_id, notif_type, title, body, data=None, send_email=Fa
 
     email_category: maps to user prefs.notifications.email for opt-in check.
     """
-    from shared.email import send_templated_email, should_skip_email
+    from shared.email import send_templated_email, should_skip_email, is_bounced
 
     Notification.create(user_id, notif_type, title, body)
 
@@ -37,7 +37,7 @@ def send_notification(user_id, notif_type, title, body, data=None, send_email=Fa
 
     if should_email and email_template:
         user = mongo.db.users.find_one({"_id": ObjectId(user_id)})
-        if user and user.get("email") and not should_skip_email(user["email"], user.get("role")):
+        if user and user.get("email") and not should_skip_email(user["email"], user.get("role")) and not is_bounced(user["email"]):
             email_ok = send_templated_email(
                 user["email"],
                 email_template,

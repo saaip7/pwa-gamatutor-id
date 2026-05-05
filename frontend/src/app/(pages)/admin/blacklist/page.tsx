@@ -10,6 +10,7 @@ import {
   Trash2,
   Mail,
   Clock,
+  Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -36,6 +37,10 @@ export default function AdminBlacklistPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [newEmail, setNewEmail] = useState("");
+  const [newReason, setNewReason] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
 
   const fetchBlacklist = useCallback(async () => {
     setLoading(true);
@@ -69,6 +74,24 @@ export default function AdminBlacklistPage() {
     }
   };
 
+  const handleAdd = async () => {
+    const email = newEmail.trim().toLowerCase();
+    if (!email) return;
+    setAdding(true);
+    setAddError(null);
+    try {
+      await api.post("/admin/blacklist", { email, reason: newReason.trim() || undefined });
+      setNewEmail("");
+      setNewReason("");
+      fetchBlacklist();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Gagal menambahkan";
+      setAddError(message);
+    } finally {
+      setAdding(false);
+    }
+  };
+
   return (
     <div className="mx-auto space-y-5">
       <div className="flex items-center justify-between">
@@ -93,6 +116,46 @@ export default function AdminBlacklistPage() {
           Email di bawah ini di-skip otomatis dari semua pengiriman (broadcast + scheduler).
           Hapus dari blacklist untuk mengaktifkan kembali.
         </span>
+      </div>
+
+      <div className="bg-white rounded-lg border border-neutral-200 p-3 space-y-2">
+        <div className="flex gap-2">
+          <input
+            type="email"
+            placeholder="user@mail.ugm.ac.id"
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && !adding && handleAdd()}
+            className="flex-1 px-3 py-1.5 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+          />
+          <input
+            type="text"
+            placeholder="Alasan (opsional)"
+            value={newReason}
+            onChange={(e) => setNewReason(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && !adding && handleAdd()}
+            className="flex-1 px-3 py-1.5 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+          />
+          <button
+            onClick={handleAdd}
+            disabled={adding || !newEmail.trim()}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors",
+              adding || !newEmail.trim()
+                ? "text-neutral-300 bg-neutral-50 border border-neutral-100 cursor-not-allowed"
+                : "text-white bg-blue-600 hover:bg-blue-700"
+            )}
+          >
+            {adding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+            Tambah
+          </button>
+        </div>
+        {addError && (
+          <p className="text-xs text-red-500 flex items-center gap-1">
+            <AlertCircle className="w-3 h-3" />
+            {addError}
+          </p>
+        )}
       </div>
 
       {loading && (

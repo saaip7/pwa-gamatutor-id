@@ -4,7 +4,7 @@ from shared.db import mongo
 from features.analytics.model import Analytics
 from features.board.model import Board, Card
 from features.badge.model import Badge
-from shared.email import send_email
+from shared.email import send_email, is_valid_email
 from shared.email_templates import admin_broadcast
 import re
 import logging
@@ -364,36 +364,57 @@ def send_broadcast_email():
         {"email": 1, "name": 1, "role": 1}
     ))
 
-    # Filter out admin accounts and invalid/non-whitelisted emails
-    from shared.email import should_skip_email
-    users = [u for u in users if not should_skip_email(u.get("email"), u.get("role"))]
+    from shared.email import should_skip_email, is_bounced, send_batch_smtp
+    from config import Config
+
+    users = [u for u in users if not should_skip_email(u.get("email"), u.get("role")) and not is_bounced(u.get("email"))]
 
     if not users:
         return jsonify({"message": "Tidak ada user dengan email yang valid"}), 400
 
-    # Render template once
-    subj, html, text = admin_broadcast(subject, body, link_text, link_url)
+    if Config.RESEND_API_KEY:
+        subj, html, text = admin_broadcast(subject, body, link_text, link_url)
 
-    sent = 0
-    failed = 0
-    for user in users:
-        ok = send_email(user["email"], subj, html, text)
-        if ok:
-            sent += 1
-        else:
-            failed += 1
-        # Rate limit: delay 1s between each email to stay well under Resend limit (5 req/s)
-        if user is not users[-1]:
-            time.sleep(1)
+        sent = 0
+        failed = 0
+        for user in users:
+            ok = send_email(user["email"], subj, html, text)
+            if ok:
+                sent += 1
+            else:
+                failed += 1
+            if user is not users[-1]:
+                time.sleep(1)
 
-    logger.info(f"Admin broadcast email: sent={sent}, failed={failed}, subject={subject}")
+        logger.info(f"Admin broadcast email (Resend): sent={sent}, failed={failed}, subject={subject}")
 
-    return jsonify({
-        "message": f"Email dikirim ke {sent} user",
-        "sent": sent,
-        "failed": failed,
-        "total": len(users),
-    }), 200
+        return jsonify({
+            "message": f"Email dikirim ke {sent} user",
+            "sent": sent,
+            "failed": failed,
+            "total": len(users),
+        }), 200
+    else:
+        recipients = [
+            {
+                "email": u["email"],
+                "template": "admin_broadcast",
+                "vars": {"subject": subject, "body": body, "link_text": link_text, "link_url": link_url},
+            }
+            for u in users
+        ]
+        result = send_batch_smtp(recipients)
+
+        logger.info(f"Admin broadcast email (SMTP batch): {result}, subject={subject}")
+
+        return jsonify({
+            "message": f"Email dikirim ke {result['sent']} user",
+            "sent": result["sent"],
+            "failed": result["failed"],
+            "bounced": result["bounced"],
+            "total": len(users),
+            "batches": result["batches"],
+        }), 200
 
 
 # ---------------------------------------------------------------------------
@@ -627,3 +648,30 @@ def delete_from_blacklist():
 
     logger.info(f"[Admin] Removed {email} from blacklist")
     return jsonify({"message": f"{email} removed from blacklist"}), 200
+
+
+def add_to_blacklist():
+    data = request.get_json() or {}
+    email = data.get("email", "").strip().lower()
+    reason = data.get("reason", "").strip()
+
+    if not email:
+        return jsonify({"error": "email is required"}), 400
+
+    if not is_valid_email(email):
+        return jsonify({"error": "Invalid email format or domain not allowed"}), 400
+
+    existing = mongo.db.email_blacklist.find_one({"email": email})
+    if existing:
+        return jsonify({"error": f"{email} already in blacklist"}), 409
+
+    doc = {
+        "email": email,
+        "reason": f"manual: {reason}" if reason else "manual",
+        "channel": "manual",
+        "bounced_at": datetime.utcnow(),
+    }
+    mongo.db.email_blacklist.insert_one(doc)
+
+    logger.info(f"[Admin] Added {email} to blacklist (reason: {reason or 'manual'})")
+    return jsonify({"message": f"{email} added to blacklist"}), 201
