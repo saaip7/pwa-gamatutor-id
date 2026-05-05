@@ -238,7 +238,7 @@ def _notify_user(user_id, title, body, data=None, send_email=None, notif_type="r
     else:
         should_email = bool(email_template)
     if should_email:
-        from shared.email import send_templated_email
+        from shared.email import send_templated_email, should_skip_email
 
         dedup_window = datetime.utcnow() - timedelta(minutes=5)
         recent_email = mongo.db.notifications.find_one({
@@ -250,14 +250,14 @@ def _notify_user(user_id, title, body, data=None, send_email=None, notif_type="r
             logger.info(f"[Notify] Email dedup skipped — user={user_id}, type={notif_type}")
         else:
             user = mongo.db.users.find_one({"_id": user_id})
-            if user and user.get("email"):
+            if user and user.get("email") and not should_skip_email(user["email"], user.get("role")):
                 email_sent = send_templated_email(
                     user["email"],
                     email_template or "generic",
                     **(email_vars or {}),
                 )
             else:
-                logger.warning(f"[Notify] Email skipped — user_id={user_id}, has_user={bool(user)}, has_email={bool(user.get('email')) if user else 'N/A'}")
+                logger.warning(f"[Notify] Email skipped — user_id={user_id}, invalid_email_or_admin")
 
     Notification.create(str(user_id), notif_type, title, body)
 

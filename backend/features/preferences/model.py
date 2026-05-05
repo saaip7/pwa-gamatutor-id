@@ -1,6 +1,7 @@
 from shared.db import mongo
 from bson import ObjectId
 from datetime import datetime, timedelta
+from shared.timezone_utils import now_wib
 
 
 class Preferences:
@@ -133,15 +134,17 @@ class Preferences:
             return False, "Preferences not found"
 
         streak = prefs.get("streak", {})
-        now = datetime.utcnow()
-        today = now.date()
+        utc_now = datetime.utcnow()
+        today = now_wib().date()
 
+        # Check if already active today (WIB) — no freeze needed
         last_active = streak.get("last_active_date")
         if last_active:
             if isinstance(last_active, str):
                 last_active_date = datetime.fromisoformat(last_active.replace("Z", "+00:00")).date()
             elif isinstance(last_active, datetime):
-                last_active_date = last_active.date()
+                # last_active_date stored as UTC — convert to WIB date
+                last_active_date = (last_active + timedelta(hours=7)).date()
             else:
                 last_active_date = None
             if last_active_date == today:
@@ -150,13 +153,14 @@ class Preferences:
         freezes_used = streak.get("freezes_used_this_week", 0)
         week_start = streak.get("week_start_date")
 
-        # Calculate start of current week (Monday) - use date for comparison
+        # Calculate start of current week (Monday) - use WIB date
         current_week_start_date = today - timedelta(days=today.weekday())
+
 
         # Reset counter if new week - compare dates only
         if week_start:
             if isinstance(week_start, datetime):
-                week_start_date = week_start.date()
+                week_start_date = (week_start + timedelta(hours=7)).date()
             elif isinstance(week_start, str):
                 week_start_date = datetime.fromisoformat(week_start.replace("Z", "+00:00")).date()
             else:
@@ -173,19 +177,22 @@ class Preferences:
         updates = {
             "streak.freezes_used_this_week": freezes_used + 1,
             "streak.week_start_date": current_week_start_date,
-            "streak.freeze_used_at": now,
-            "updated_at": now,
+            "streak.freeze_used_at": utc_now,
+            "updated_at": utc_now,
         }
 
-        # Determine which day the freeze covers (today)
-        today_str = now.date().isoformat()
+        # Determine which day the freeze covers (today in WIB)
+        today_str = today.isoformat()
 
         # If streak was about to break (yesterday no activity), preserve it
         last_active = streak.get("last_active_date")
         if last_active:
-            days_since = (now - last_active).days if isinstance(last_active, datetime) else 1
+            if isinstance(last_active, datetime):
+                days_since = (utc_now - last_active).days
+            else:
+                days_since = 1
             if days_since >= 1:
-                updates["streak.last_active_date"] = now
+                updates["streak.last_active_date"] = utc_now
 
         mongo.db.user_preferences.update_one(
             {"user_id": user_id},
@@ -226,16 +233,17 @@ class Preferences:
             return False, "Tidak punya quest freeze"
 
         streak = prefs.get("streak", {})
-        now = datetime.utcnow()
-        today = now.date()
+        utc_now = datetime.utcnow()
+        today = now_wib().date()
 
-        # Check if already active today — no freeze needed
+        # Check if already active today (WIB) — no freeze needed
         last_active = streak.get("last_active_date")
         if last_active:
             if isinstance(last_active, str):
                 last_active_date = datetime.fromisoformat(last_active.replace("Z", "+00:00")).date()
             elif isinstance(last_active, datetime):
-                last_active_date = last_active.date()
+                # last_active_date stored as UTC — convert to WIB date
+                last_active_date = (last_active + timedelta(hours=7)).date()
             else:
                 last_active_date = None
             if last_active_date == today:
@@ -243,15 +251,18 @@ class Preferences:
 
         # Build freeze updates
         updates = {
-            "streak.freeze_used_at": now,
-            "updated_at": now,
+            "streak.freeze_used_at": utc_now,
+            "updated_at": utc_now,
         }
-        today_str = now.date().isoformat()
+        today_str = today.isoformat()
 
         if last_active:
-            days_since = (now - last_active).days if isinstance(last_active, datetime) else 1
+            if isinstance(last_active, datetime):
+                days_since = (utc_now - last_active).days
+            else:
+                days_since = 1
             if days_since >= 1:
-                updates["streak.last_active_date"] = now
+                updates["streak.last_active_date"] = utc_now
 
         # Single atomic operation: deduct balance + apply freeze
         result = mongo.db.user_preferences.update_one(
