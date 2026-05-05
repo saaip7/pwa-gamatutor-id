@@ -2,6 +2,7 @@ import logging
 import re
 import smtplib
 import time
+from datetime import datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from config import Config
@@ -15,27 +16,62 @@ _ALLOWED_DOMAINS = {"gmail.com", "mail.ugm.ac.id"}
 _EMAIL_RE = re.compile(r"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$")
 
 
+_MIN_USERNAME_LEN = 5
+
+
 def is_valid_email(email):
-    """Return True if *email* has valid format AND domain is whitelisted."""
     if not email:
         return False
     email = email.strip().lower()
     if not _EMAIL_RE.match(email):
+        return False
+    username = email.split("@", 1)[0]
+    if len(username) < _MIN_USERNAME_LEN:
         return False
     domain = email.rsplit("@", 1)[-1]
     return domain in _ALLOWED_DOMAINS
 
 
 def should_skip_email(email, role=None):
-    """Return True if we should NOT send email to this address.
-
-    Reasons to skip:
-      - invalid format or non-whitelisted domain
-      - user role is 'admin'
-    """
     if not is_valid_email(email):
         return True
     if role == "admin":
+        return True
+    return False
+
+
+def is_bounced(email):
+    from shared.db import mongo
+    if not email:
+        return False
+    return mongo.db.email_blacklist.find_one({"email": email.strip().lower()}) is not None
+
+
+def _mark_bounced(email, reason="", channel=""):
+    from shared.db import mongo
+    email = email.strip().lower()
+    mongo.db.email_blacklist.update_one(
+        {"email": email},
+        {"$set": {"email": email, "reason": reason, "channel": channel,
+                  "bounced_at": datetime.utcnow()}},
+        upsert=True,
+    )
+    logger.warning(f"[Blacklist] Added: {email} — {reason}")
+
+
+_BOUNCE_SMTP_CODES = {"550", "551", "552", "553", "550 5.1.1", "550 5.7.1", "554"}
+_BOUNCE_RESEND_CODES = {"422", "invalid_email", "invalid_recipient", "not_found", "rejected"}
+
+
+def _looks_like_bounce(error_str):
+    s = str(error_str).lower()
+    for code in _BOUNCE_SMTP_CODES:
+        if code in s:
+            return True
+    for keyword in _BOUNCE_RESEND_CODES:
+        if keyword in s:
+            return True
+    if "bounce" in s or "does not exist" in s or "no such user" in s or "recipient invalid" in s:
         return True
     return False
 
@@ -90,9 +126,13 @@ def send_email(to_email, subject, body_html=None, body_text=None):
                         logger.warning(f"[Resend] Rate limited again on retry for {to_email} — falling back to SMTP")
                         break
                     else:
+                        if _looks_like_bounce(send_err):
+                            _mark_bounced(to_email, str(send_err), "resend")
                         logger.warning(f"[Resend] Failed to send to {to_email}: {send_err} — falling back to SMTP")
                         break
         except Exception as e:
+            if _looks_like_bounce(e):
+                _mark_bounced(to_email, str(e), "resend")
             logger.warning(f"[Resend] Unexpected error for {to_email}: {e} — falling back to SMTP")
 
     # --- Fallback: SMTP ---
@@ -118,6 +158,8 @@ def send_email(to_email, subject, body_html=None, body_text=None):
         logger.info(f"[SMTP] Email sent to {to_email}: {subject}")
         return True
     except Exception as e:
+        if _looks_like_bounce(e):
+            _mark_bounced(to_email, str(e), "smtp")
         logger.error(f"[SMTP] Failed to send email to {to_email}: {e}")
         return False
 

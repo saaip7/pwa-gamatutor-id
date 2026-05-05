@@ -17,6 +17,7 @@ import {
   MessageCircleWarning,
   Clock,
   Scroll,
+  ShieldBan,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth";
@@ -29,6 +30,7 @@ const navItems = [
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
   { href: "/admin/reports", label: "Laporan", icon: MessageCircleWarning },
   { href: "/admin/scheduler", label: "Scheduler", icon: Clock },
+  { href: "/admin/blacklist", label: "Blacklist", icon: ShieldBan },
   { href: "/admin/logs", label: "Logs", icon: ScrollText },
 ];
 

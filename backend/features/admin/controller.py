@@ -584,3 +584,46 @@ def get_scheduler_logs():
         "total": total,
         "pages": (total + per_page - 1) // per_page,
     }), 200
+
+
+def get_email_blacklist():
+    page = int(request.args.get("page", 1))
+    per_page = int(request.args.get("per_page", 20))
+
+    skip = (page - 1) * per_page
+    total = mongo.db.email_blacklist.count_documents({})
+
+    cursor = (
+        mongo.db.email_blacklist.find({})
+        .sort("bounced_at", -1)
+        .skip(skip)
+        .limit(per_page)
+    )
+
+    items = []
+    for doc in cursor:
+        doc["_id"] = str(doc["_id"])
+        doc["bounced_at"] = doc["bounced_at"].isoformat() if isinstance(doc.get("bounced_at"), datetime) else str(doc.get("bounced_at", ""))
+        items.append(doc)
+
+    return jsonify({
+        "data": items,
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "pages": (total + per_page - 1) // per_page,
+    }), 200
+
+
+def delete_from_blacklist():
+    data = request.get_json() or {}
+    email = data.get("email", "").strip().lower()
+    if not email:
+        return jsonify({"error": "email is required"}), 400
+
+    result = mongo.db.email_blacklist.delete_one({"email": email})
+    if result.deleted_count == 0:
+        return jsonify({"error": "Email not found in blacklist"}), 404
+
+    logger.info(f"[Admin] Removed {email} from blacklist")
+    return jsonify({"message": f"{email} removed from blacklist"}), 200
