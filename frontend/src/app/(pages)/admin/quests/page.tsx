@@ -29,7 +29,7 @@ interface QuestTemplate {
     type: RewardType;
     value: number;
     item_slot?: string;
-    item_level?: number;
+    item_level?: string;
   };
   start_date: string;
   end_date: string;
@@ -148,6 +148,7 @@ export default function AdminQuestsPage() {
           type: form.reward_type,
           value: form.reward_value,
           item_slot: form.reward_type === "quest_item" ? "special" : undefined,
+          item_level: form.reward_type === "quest_item" ? "korsa_engineering" : undefined,
         },
       };
       await api.post("/api/admin/quests", payload);
