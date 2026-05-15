@@ -116,7 +116,9 @@ export const ITEMS: ItemDef[] = [
 
   // SPECIAL (quest reward items)
   { id: "quest_lv1", slot: "special", names: { male: "Korsa Engineering", female: "Korsa Engineering" },
-    badgeId: { male: null, female: null } },
+    badgeId: { male: null, female: null },
+    preview: { female: { offsetY: -20, scale: 1.15} }
+  },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────

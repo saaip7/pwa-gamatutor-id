@@ -258,7 +258,11 @@ export default function WardrobePage() {
           ) : (
           <div className="grid grid-cols-3 gap-4">
             {items.map((item) => {
-              const isEquipped = equipped[activeTab as keyof Equipped] === item.id;
+              const isEquipped = !equipped.special && activeTab !== "special"
+                ? equipped[activeTab as keyof Equipped] === item.id
+                : activeTab === "special"
+                  ? equipped.special === item.id
+                  : false;
               const isUnlocked = isItemUnlocked(item, unlockedBadgeTypes, gender);
               const slotKey = activeTab as "head" | "top" | "bottom" | "special";
               const getItemFn = SLOT_COMPONENT_FN[slotKey];
