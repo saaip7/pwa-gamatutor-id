@@ -22,7 +22,7 @@ class QuestTemplate:
     def get_used_reward_items():
         """Return dict {item_level: description} for items used in active quests."""
         quests = mongo.db.quest_templates.find(
-            {"status": "active", "reward.type": "quest_item"},
+            {"reward.type": "quest_item", "status": {"$in": ["active", "expired"]}},
             {"reward.item_level": 1, "description": 1},
         )
         used = {}
@@ -57,7 +57,7 @@ class QuestTemplate:
                 existing = mongo.db.quest_templates.find_one({
                     "reward.type": "quest_item",
                     "reward.item_level": item_level,
-                    "status": "active",
+                    "status": {"$in": ["active", "expired"]},
                 })
                 if existing:
                     return None, f"Item sudah digunakan di quest: {existing.get('description', '')}"
@@ -148,7 +148,7 @@ class QuestTemplate:
                 existing = mongo.db.quest_templates.find_one({
                     "reward.type": "quest_item",
                     "reward.item_level": check_level,
-                    "status": "active",
+                    "status": {"$in": ["active", "expired"]},
                     "_id": {"$ne": template_id},
                 })
                 if existing:
