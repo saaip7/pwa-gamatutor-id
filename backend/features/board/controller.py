@@ -256,6 +256,8 @@ def create_card():
     Log.create(user_id, "task_created", f"Card created: {card.get('task_name', '')}")
     update_streak(user_id)
 
+    quest_results = []
+
     if data.get("goal_check") and data["goal_check"].get("goal_text"):
         try:
             BadgeEngine.evaluate(user_id, "goal_linked")
@@ -268,9 +270,18 @@ def create_card():
         except Exception:
             pass
 
+    if data.get("checklists") and len(data.get("checklists", [])) > 0:
+        try:
+            qr = QuestEngine.check_and_complete(user_id, "checklist_use")
+            if qr:
+                quest_results.append(qr)
+        except Exception:
+            pass
+
     return jsonify({
         "message": "Card created",
         "card": _serialize_card(card),
+        "quest_completed": quest_results,
     }), 201
 
 

@@ -121,14 +121,30 @@ export const ITEMS: ItemDef[] = [
   },
 ];
 
+// ─── Special Items (quest rewards) ────────────────────────────
+
+export const SPECIAL_ITEMS: { id: SlotLevel; name: string }[] = ITEMS.filter(
+  (item) => item.slot === "special",
+).map((item) => ({
+  id: item.id,
+  name: item.names.male,
+}));
+
 // ─── Helpers ──────────────────────────────────────────────────
 
 export function getItemsBySlot(slot: SlotType): ItemDef[] {
   return ITEMS.filter((item) => item.slot === slot);
 }
 
-export function isItemUnlocked(item: ItemDef, unlockedBadges: string[], gender: Gender): boolean {
-  if (item.slot === "special" && item.id === "quest_lv1") return true;
+export function isItemUnlocked(
+  item: ItemDef,
+  unlockedBadges: string[],
+  gender: Gender,
+  questUnlockedItems: string[] = [],
+): boolean {
+  if (item.slot === "special") {
+    return questUnlockedItems.includes(`${item.slot}:${item.id}`);
+  }
   if (!item.badgeId[gender]) return true;
   return unlockedBadges.includes(item.badgeId[gender]!);
 }

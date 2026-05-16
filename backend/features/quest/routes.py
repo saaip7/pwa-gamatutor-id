@@ -8,6 +8,7 @@ from features.quest.controller import (
     update_template,
     delete_template,
     get_stats,
+    get_used_items,
 )
 
 quest_bp = Blueprint("quest_bp", __name__, url_prefix="/api/quests")
@@ -25,3 +26,4 @@ quest_admin_bp.route("", methods=["POST"])(create_template)
 quest_admin_bp.route("/<template_id>", methods=["PUT"])(update_template)
 quest_admin_bp.route("/<template_id>", methods=["DELETE"])(delete_template)
 quest_admin_bp.route("/stats", methods=["GET"])(get_stats)
+quest_admin_bp.route("/used-items", methods=["GET"])(get_used_items)

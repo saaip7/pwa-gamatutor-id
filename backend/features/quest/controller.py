@@ -92,6 +92,11 @@ def create_template():
     if data["type"] not in valid_types:
         return jsonify({"error": f"Invalid type. Must be one of: {valid_types}"}), 400
 
+    if data["type"] == "deep_study":
+        min_dur = data.get("config", {}).get("min_duration_min")
+        if min_dur is None or min_dur < 1:
+            return jsonify({"error": "min_duration_min wajib diisi dan minimal 1 untuk quest deep_study"}), 400
+
     try:
         doc, err = QuestTemplate.create(data)
         if err:
@@ -108,6 +113,16 @@ def update_template(template_id):
     data = request.get_json()
     if not data:
         return jsonify({"error": "No data provided"}), 400
+
+    if "config" in data and "min_duration_min" in data.get("config", {}):
+        current = mongo.db.quest_templates.find_one({"_id": ObjectId(template_id)})
+        if not current:
+            return jsonify({"error": "Template not found"}), 404
+        quest_type = data.get("type", current.get("type"))
+        if quest_type != "deep_study":
+            return jsonify({"error": "min_duration_min hanya untuk quest tipe deep_study"}), 400
+        if data["config"]["min_duration_min"] < 1:
+            return jsonify({"error": "min_duration_min minimal 1 menit"}), 400
 
     try:
         result, err = QuestTemplate.update(template_id, data)
@@ -135,3 +150,10 @@ def get_stats():
     """Get quest completion stats across users."""
     stats = QuestEngine.get_stats()
     return jsonify(stats), 200
+
+
+@admin_required
+def get_used_items():
+    """Get item_level values already used in active quests."""
+    used = QuestTemplate.get_used_reward_items()
+    return jsonify({"used_items": used}), 200

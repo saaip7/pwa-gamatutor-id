@@ -56,7 +56,6 @@ def _validate_equipped(user_id, gender, equipped):
     )
     quest_items = set()
     for item_key in (prefs_doc or {}).get("quest_unlocked_items", []):
-        # item_key format: "slot:item_key" e.g. "special:korsa_engineering"
         quest_items.add(item_key)
 
     valid_slots = {"head", "top", "bottom", "special"}
@@ -73,10 +72,12 @@ def _validate_equipped(user_id, gender, equipped):
             corrected[slot] = "base"
             continue
 
-        # Check if this is a quest-only item
-        item_key = f"{slot}:korsa_engineering" if level == "quest_lv1" else f"{slot}:{level}"
+        item_key = f"{slot}:{level}"
         if level.startswith("quest_"):
-            corrected[slot] = level
+            if item_key in quest_items:
+                corrected[slot] = level
+            else:
+                corrected[slot] = None
             continue
 
         req = ITEM_BADGE_REQUIREMENTS.get((slot, level))

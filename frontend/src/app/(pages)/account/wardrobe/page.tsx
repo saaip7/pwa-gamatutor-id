@@ -169,7 +169,7 @@ export default function WardrobePage() {
       const currentLevel = safeEquipped[slot];
       if (currentLevel) {
         const itemDef = getItemsBySlot(slot).find((i) => i.id === currentLevel);
-        if (itemDef && !isItemUnlocked(itemDef, unlockedBadgeTypes, newGender)) {
+        if (itemDef && !isItemUnlocked(itemDef, unlockedBadgeTypes, newGender, questUnlockedItems)) {
           safeEquipped[slot] = "base" as SlotLevel;
         }
       }
@@ -184,7 +184,7 @@ export default function WardrobePage() {
       const currentLevel = safeEquipped[slot];
       if (currentLevel) {
         const itemDef = getItemsBySlot(slot).find((i) => i.id === currentLevel);
-        if (itemDef && !isItemUnlocked(itemDef, unlockedBadgeTypes, gender)) {
+        if (itemDef && !isItemUnlocked(itemDef, unlockedBadgeTypes, gender, questUnlockedItems)) {
           safeEquipped[slot] = "base" as SlotLevel;
         }
       }
@@ -263,7 +263,7 @@ export default function WardrobePage() {
                 : activeTab === "special"
                   ? equipped.special === item.id
                   : false;
-              const isUnlocked = isItemUnlocked(item, unlockedBadgeTypes, gender);
+              const isUnlocked = isItemUnlocked(item, unlockedBadgeTypes, gender, questUnlockedItems);
               const slotKey = activeTab as "head" | "top" | "bottom" | "special";
               const getItemFn = SLOT_COMPONENT_FN[slotKey];
               if (!getItemFn) return null;
