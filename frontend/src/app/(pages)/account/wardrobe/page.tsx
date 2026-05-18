@@ -18,6 +18,7 @@ import {
   getHeadComponent,
   getTopComponent,
   getBottomComponent,
+  getItemComponent,
   isItemUnlocked,
   getItemDisplayName,
   getItemPreviewStyle,
@@ -27,6 +28,7 @@ const SLOT_COMPONENT_FN = {
   head: getHeadComponent,
   top: getTopComponent,
   bottom: getBottomComponent,
+  special: (level: SlotLevel) => getItemComponent("special", level),
 } as const;
 
 // --- Equipped state ---
@@ -95,6 +97,7 @@ function CharacterStage({ equipped, gender, onGenderChange }: { equipped: Equipp
           head={equipped.head}
           top={equipped.top}
           bottom={equipped.bottom}
+          special={equipped.special}
           className="w-[140px] h-[280px] drop-shadow-xl"
         />
       </div>
@@ -116,7 +119,11 @@ export default function WardrobePage() {
 
   const { badges } = useBadgesStore();
   const fetchBadges = useBadgesStore((s) => s.fetchBadges);
-  const unlockedBadgeTypes = badges.filter((b) => b.unlocked).map((b) => b.type);
+  const questUnlockedItems = preferences?.quest_unlocked_items ?? [];
+  const unlockedBadgeTypes = [
+    ...badges.filter((b) => b.unlocked).map((b) => b.type),
+    ...questUnlockedItems.map((item) => `quest:${item.split(":")[1]}`),
+  ];
 
   const [activeTab, setActiveTab] = useState<"head" | "top" | "bottom" | "special">("head");
   const [gender, setGender] = useState<Gender>("male");
@@ -156,13 +163,13 @@ export default function WardrobePage() {
 
   const handleGenderChange = (newGender: Gender) => {
     setGender(newGender);
-    const slots: Array<"head" | "top" | "bottom"> = ["head", "top", "bottom"];
+    const slots: Array<"head" | "top" | "bottom" | "special"> = ["head", "top", "bottom", "special"];
     const safeEquipped = { ...equipped };
     for (const slot of slots) {
       const currentLevel = safeEquipped[slot];
       if (currentLevel) {
         const itemDef = getItemsBySlot(slot).find((i) => i.id === currentLevel);
-        if (itemDef && !isItemUnlocked(itemDef, unlockedBadgeTypes, newGender)) {
+        if (itemDef && !isItemUnlocked(itemDef, unlockedBadgeTypes, newGender, questUnlockedItems)) {
           safeEquipped[slot] = "base" as SlotLevel;
         }
       }
@@ -171,13 +178,13 @@ export default function WardrobePage() {
   };
 
   const handleSave = async () => {
-    const slots: Array<"head" | "top" | "bottom"> = ["head", "top", "bottom"];
+    const slots: Array<"head" | "top" | "bottom" | "special"> = ["head", "top", "bottom", "special"];
     const safeEquipped = { ...equipped };
     for (const slot of slots) {
       const currentLevel = safeEquipped[slot];
       if (currentLevel) {
         const itemDef = getItemsBySlot(slot).find((i) => i.id === currentLevel);
-        if (itemDef && !isItemUnlocked(itemDef, unlockedBadgeTypes, gender)) {
+        if (itemDef && !isItemUnlocked(itemDef, unlockedBadgeTypes, gender, questUnlockedItems)) {
           safeEquipped[slot] = "base" as SlotLevel;
         }
       }
@@ -245,15 +252,19 @@ export default function WardrobePage() {
               {/* Text */}
               <div className="text-center px-8">
                 <p className="text-[15px] font-bold text-neutral-300 tracking-tight">Belum Ada Item Spesial</p>
-                <p className="text-[12px] text-neutral-300/80 mt-1.5 leading-relaxed">Kumpulkan badge untuk membuka aksesori eksklusif</p>
+                <p className="text-[12px] text-neutral-300/80 mt-1.5 leading-relaxed">Selesaikan quest untuk membuka item spesial</p>
               </div>
             </motion.div>
           ) : (
           <div className="grid grid-cols-3 gap-4">
             {items.map((item) => {
-              const isEquipped = equipped[activeTab as keyof Equipped] === item.id;
-              const isUnlocked = isItemUnlocked(item, unlockedBadgeTypes, gender);
-              const slotKey = activeTab as "head" | "top" | "bottom";
+              const isEquipped = !equipped.special && activeTab !== "special"
+                ? equipped[activeTab as keyof Equipped] === item.id
+                : activeTab === "special"
+                  ? equipped.special === item.id
+                  : false;
+              const isUnlocked = isItemUnlocked(item, unlockedBadgeTypes, gender, questUnlockedItems);
+              const slotKey = activeTab as "head" | "top" | "bottom" | "special";
               const getItemFn = SLOT_COMPONENT_FN[slotKey];
               if (!getItemFn) return null;
               const ItemPreview = getItemFn(item.id);
@@ -261,7 +272,11 @@ export default function WardrobePage() {
                 <motion.button
                   key={item.id}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => isUnlocked && setEquipped((prev) => ({ ...prev, [activeTab]: item.id }))}
+                  onClick={() => isUnlocked && setEquipped((prev) => {
+                  const next = { ...prev, [activeTab]: item.id };
+                  if (activeTab === "top") next.special = null;
+                  return next;
+                })}
                   className="flex flex-col items-center gap-2 group outline-none"
                 >
                   <div className={cn(
@@ -305,3 +320,4 @@ export default function WardrobePage() {
     </div>
   );
 }
+

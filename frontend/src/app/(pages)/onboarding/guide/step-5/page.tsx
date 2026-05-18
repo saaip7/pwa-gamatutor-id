@@ -268,7 +268,7 @@ export default function GuideStep4Page() {
             <div className="grid grid-cols-3 gap-4">
               {items.map((item) => {
                 const isEquipped = equipped[activeTab as keyof Equipped] === item.id;
-                const isUnlocked = isItemUnlocked(item, unlockedBadgeTypes, gender);
+                const isUnlocked = isItemUnlocked(item, unlockedBadgeTypes, gender, []);
                 const slotKey = activeTab as "head" | "top" | "bottom";
                 const getItemFn = SLOT_COMPONENT_FN[slotKey];
                 if (!getItemFn) return null;

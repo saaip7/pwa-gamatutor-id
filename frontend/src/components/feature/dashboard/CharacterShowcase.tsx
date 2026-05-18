@@ -97,9 +97,11 @@ export function CharacterShowcase({ stats, onStreakTap, className }: CharacterSh
                 head={(character?.equipped?.head as SlotLevel) ?? "base"}
                 top={(character?.equipped?.top as SlotLevel) ?? "base"}
                 bottom={(character?.equipped?.bottom as SlotLevel) ?? "base"}
+                special={(character?.equipped?.special as SlotLevel) ?? null}
                 className="h-full w-auto"
                 slotClassNames={{
                   top: styles.torso,
+                  special: styles.torso,
                   head: styles.head,
                 }}
               />

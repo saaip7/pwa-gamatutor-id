@@ -2,13 +2,14 @@
 
 import React from "react";
 import { Gender } from "./types";
-import { SlotLevel, getHeadComponent, getTopComponent, getBottomComponent } from "./item-registry";
+import { SlotLevel, getHeadComponent, getTopComponent, getBottomComponent, getItemComponent } from "./item-registry";
 
 interface CharacterComposerProps {
   gender: Gender;
   head?: SlotLevel;
   top?: SlotLevel;
   bottom?: SlotLevel;
+  special?: SlotLevel | null;
   className?: string;
   /** Override the outer SVG viewBox (e.g. "0 0 120 175" for bust/head+shoulders crop). */
   viewBox?: string;
@@ -16,6 +17,7 @@ interface CharacterComposerProps {
     head?: string;
     top?: string;
     bottom?: string;
+    special?: string;
   };
 }
 
@@ -46,6 +48,7 @@ const FEMALE_BOTTOM_OFFSET: Record<SlotLevel, number> = {
   lv3: -8,
   lv4: -5,
   lv5: -5,
+  quest_lv1: -5,
 };
 
 interface SlotLayout {
@@ -58,16 +61,19 @@ const LAYOUT: Record<Gender, {
   head:    SlotLayout;
   top:     SlotLayout;
   bottom:  SlotLayout;
+  special: SlotLayout;
 }> = {
   male: {
     head:    { x: 0, y: 25,  maxH: 120 },
     top:     { x: 0, y: 130, maxH: 170 },
     bottom:  { x: 0, y: 238, maxH: 150 },
+    special: { x: 0, y: 130, maxH: 170 },
   },
   female: {
     head:    { x: 0, y: 29,  maxH: 120 },
     top:     { x: 0, y: 97,  maxH: 170 },
     bottom:  { x: 4, y: 225, maxH: 150 },
+    special: { x: 0, y: 97,  maxH: 170 },
   },
 };
 
@@ -76,6 +82,7 @@ export function CharacterComposer({
   head = "base",
   top = "base",
   bottom = "base",
+  special,
   className,
   viewBox,
   slotClassNames,
@@ -85,7 +92,8 @@ export function CharacterComposer({
   const BottomComponent = getBottomComponent(bottom);
 
   const layout = LAYOUT[gender];
-  const bottomOffset = gender === "female" ? FEMALE_BOTTOM_OFFSET[top] : 0;
+  const bottomAnchor = special ?? top;
+  const bottomOffset = gender === "female" ? FEMALE_BOTTOM_OFFSET[bottomAnchor] : 0;
   const scale = GENDER_SCALE[gender];
 
   const renderSlot = (
@@ -122,9 +130,12 @@ export function CharacterComposer({
     >
       <g transform={`translate(${cx},${cy}) scale(${scale}) translate(${-cx},${-cy})`}>
         {renderSlot(BottomComponent, layout.bottom, bottomOffset, slotClassNames?.bottom)}
-        {renderSlot(TopComponent, layout.top, 0, slotClassNames?.top)}
+        {special
+          ? renderSlot(getItemComponent("special", special), layout.special, 0, slotClassNames?.special)
+          : renderSlot(TopComponent, layout.top, 0, slotClassNames?.top)}
         {renderSlot(HeadComponent, layout.head, 0, slotClassNames?.head)}
       </g>
     </svg>
   );
 }
+

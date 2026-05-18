@@ -21,15 +21,12 @@ import { BottomLv2 } from "./items/bottom/bottom-lv2";
 import { BottomLv3 } from "./items/bottom/bottom-lv3";
 import { BottomLv4 } from "./items/bottom/bottom-lv4";
 import { BottomLv5 } from "./items/bottom/bottom-lv5";
-// Special items — to be added later
-// import { SpecialLv1 } from "./items/special/special-lv1";
-// import { SpecialLv2 } from "./items/special/special-lv2";
-// import { SpecialLv3 } from "./items/special/special-lv3";
+import { SpecialLv1 } from "./items/special/special-lv1";
 
 // ─── Types ────────────────────────────────────────────────────
 
 export type SlotType = "head" | "top" | "bottom" | "special";
-export type SlotLevel = "base" | "lv1" | "lv2" | "lv3" | "lv4" | "lv5";
+export type SlotLevel = "base" | "lv1" | "lv2" | "lv3" | "lv4" | "lv5" | "quest_lv1";
 
 export interface EquippedItems {
   head: SlotLevel;
@@ -117,14 +114,21 @@ export const ITEMS: ItemDef[] = [
   { id: "lv5", slot: "bottom", names: { male: "Khaki Chinos", female: "Floral Skirt" },
     badgeId: { male: "improver", female: "zenith" } },
 
-  // SPECIAL (3 items: all unlockable)
-  { id: "lv1", slot: "special", names: { male: "Mirror Pendant", female: "Mirror Pendant" },
-    badgeId: { male: "reflector", female: "reflector" } },
-  { id: "lv2", slot: "special", names: { male: "Growth Shield", female: "Growth Shield" },
-    badgeId: { male: "improver", female: "improver" } },
-  { id: "lv3", slot: "special", names: { male: "Zenith Crown", female: "Zenith Crown" },
-    badgeId: { male: "zenith", female: "zenith" } },
+  // SPECIAL (quest reward items)
+  { id: "quest_lv1", slot: "special", names: { male: "Korsa Engineering", female: "Korsa Engineering" },
+    badgeId: { male: null, female: null },
+    preview: { female: { offsetY: -20, scale: 1.15} }
+  },
 ];
+
+// ─── Special Items (quest rewards) ────────────────────────────
+
+export const SPECIAL_ITEMS: { id: SlotLevel; name: string }[] = ITEMS.filter(
+  (item) => item.slot === "special",
+).map((item) => ({
+  id: item.id,
+  name: item.names.male,
+}));
 
 // ─── Helpers ──────────────────────────────────────────────────
 
@@ -132,8 +136,16 @@ export function getItemsBySlot(slot: SlotType): ItemDef[] {
   return ITEMS.filter((item) => item.slot === slot);
 }
 
-export function isItemUnlocked(item: ItemDef, unlockedBadges: string[], gender: Gender): boolean {
-  if (!item.badgeId[gender]) return true; // base items always available
+export function isItemUnlocked(
+  item: ItemDef,
+  unlockedBadges: string[],
+  gender: Gender,
+  questUnlockedItems: string[] = [],
+): boolean {
+  if (item.slot === "special") {
+    return questUnlockedItems.includes(`${item.slot}:${item.id}`);
+  }
+  if (!item.badgeId[gender]) return true;
   return unlockedBadges.includes(item.badgeId[gender]!);
 }
 
@@ -157,7 +169,8 @@ const HEAD_MAP: Record<SlotLevel, React.FC<{ gender: Gender }>> = {
   lv2: HeadLv2,
   lv3: HeadLv3,
   lv4: HeadLv4,
-  lv5: HeadBase, // no lv5 head, fallback to base
+  lv5: HeadBase,
+  quest_lv1: HeadBase,
 };
 
 const TOP_MAP: Record<SlotLevel, React.FC<{ gender: Gender }>> = {
@@ -167,6 +180,7 @@ const TOP_MAP: Record<SlotLevel, React.FC<{ gender: Gender }>> = {
   lv3: TopLv3,
   lv4: TopLv4,
   lv5: TopLv5,
+  quest_lv1: TopBase,
 };
 
 const BOTTOM_MAP: Record<SlotLevel, React.FC<{ gender: Gender }>> = {
@@ -176,16 +190,24 @@ const BOTTOM_MAP: Record<SlotLevel, React.FC<{ gender: Gender }>> = {
   lv3: BottomLv3,
   lv4: BottomLv4,
   lv5: BottomLv5,
+  quest_lv1: BottomBase,
 };
 
-// Special items not yet implemented — will be added later
-// const SPECIAL_MAP: Record<SlotLevel, React.FC<{ gender: Gender }>> = { ... };
+const SPECIAL_MAP: Record<SlotLevel, React.FC<{ gender: Gender }>> = {
+  base: SpecialLv1,
+  lv1: SpecialLv1,
+  lv2: SpecialLv1,
+  lv3: SpecialLv1,
+  lv4: SpecialLv1,
+  lv5: SpecialLv1,
+  quest_lv1: SpecialLv1,
+};
 
 const SLOT_MAP: Record<SlotType, Record<SlotLevel, React.FC<{ gender: Gender }>>> = {
   head: HEAD_MAP,
   top: TOP_MAP,
   bottom: BOTTOM_MAP,
-  special: HEAD_MAP, // placeholder until special items are ready
+  special: SPECIAL_MAP
 };
 
 export function getItemComponent(slot: SlotType, level: SlotLevel) {
@@ -196,3 +218,4 @@ export function getItemComponent(slot: SlotType, level: SlotLevel) {
 export const getHeadComponent = (level: SlotLevel) => HEAD_MAP[level];
 export const getTopComponent = (level: SlotLevel) => TOP_MAP[level];
 export const getBottomComponent = (level: SlotLevel) => BOTTOM_MAP[level];
+

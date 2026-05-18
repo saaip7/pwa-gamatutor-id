@@ -19,6 +19,20 @@ class QuestTemplate:
     collection = "quest_templates"
 
     @staticmethod
+    def get_used_reward_items():
+        """Return dict {item_level: description} for items used in active quests."""
+        quests = mongo.db.quest_templates.find(
+            {"reward.type": "quest_item", "status": {"$in": ["active", "expired"]}},
+            {"reward.item_level": 1, "description": 1},
+        )
+        used = {}
+        for q in quests:
+            item_level = q.get("reward", {}).get("item_level")
+            if item_level:
+                used[item_level] = q.get("description", "")
+        return used
+
+    @staticmethod
     def create(data):
         """Create a new quest template. Returns the inserted doc."""
         now = datetime.utcnow()
@@ -36,6 +50,17 @@ class QuestTemplate:
             })
             if overlapping:
                 return None, "Quest overlap dengan quest aktif lainnya"
+
+        if data.get("reward", {}).get("type") == "quest_item":
+            item_level = data.get("reward", {}).get("item_level")
+            if item_level:
+                existing = mongo.db.quest_templates.find_one({
+                    "reward.type": "quest_item",
+                    "reward.item_level": item_level,
+                    "status": {"$in": ["active", "expired"]},
+                })
+                if existing:
+                    return None, f"Item sudah digunakan di quest: {existing.get('description', '')}"
 
         doc = {
             "description": data.get("description", ""),
@@ -104,6 +129,30 @@ class QuestTemplate:
                     })
                     if overlapping:
                         return None, "Quest overlap dengan quest aktif lainnya"
+
+        if "reward" in data:
+            reward_type = data["reward"].get("type")
+            item_level = data["reward"].get("item_level")
+            check_type = reward_type
+            check_level = item_level
+
+            if not check_type or not check_level:
+                current = mongo.db.quest_templates.find_one({"_id": template_id})
+                if current:
+                    if not check_type:
+                        check_type = current.get("reward", {}).get("type")
+                    if not check_level:
+                        check_level = current.get("reward", {}).get("item_level")
+
+            if check_type == "quest_item" and check_level:
+                existing = mongo.db.quest_templates.find_one({
+                    "reward.type": "quest_item",
+                    "reward.item_level": check_level,
+                    "status": {"$in": ["active", "expired"]},
+                    "_id": {"$ne": template_id},
+                })
+                if existing:
+                    return None, f"Item sudah digunakan di quest: {existing.get('description', '')}"
 
         result = mongo.db.quest_templates.update_one(
             {"_id": template_id},
@@ -252,20 +301,45 @@ class QuestProgress:
             "user_id": user_id,
             "updated_at": {"$gte": start_date, "$lte": now},
             "reflection": {"$exists": True, "$ne": None},
-            "reflection.q1_strategy": {"$exists": True},
+            "reflection.q2_confidence": {"$exists": True, "$ne": None},
         })
 
     @staticmethod
     def _count_checklist_use(user_id, start_date, now):
-        """Count cards that have non-empty checklists, updated in date range."""
+        """Count total completed checklist items for cards created in date range."""
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
 
-        return mongo.db.cards.count_documents({
-            "user_id": user_id,
-            "updated_at": {"$gte": start_date, "$lte": now},
-            "checklists": {"$exists": True, "$ne": []},
-        })
+        pipeline = [
+            {
+                "$match": {
+                    "user_id": user_id,
+                    "created_at": {"$gte": start_date, "$lte": now},
+                    "checklists": {"$exists": True, "$ne": []},
+                }
+            },
+            {
+                "$project": {
+                    "completed_count": {
+                        "$size": {
+                            "$filter": {
+                                "input": "$checklists",
+                                "as": "item",
+                                "cond": {"$eq": ["$$item.isCompleted", True]},
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "$group": {
+                    "_id": None,
+                    "total_completed": {"$sum": "$completed_count"},
+                }
+            },
+        ]
+        result = list(mongo.db.cards.aggregate(pipeline))
+        return result[0]["total_completed"] if result else 0
 
 
 # ─── Quest Completions ─────────────────────────────────────────
@@ -335,8 +409,15 @@ class QuestCompletion:
             if not item_slot or not item_level:
                 return False, "Item reward tidak valid"
 
-            # Add to quest_unlocked_items array
             item_key = f"{item_slot}:{item_level}"
+            prefs = mongo.db.user_preferences.find_one(
+                {"user_id": user_id},
+                {"quest_unlocked_items": 1},
+            )
+            already_owned = item_key in (prefs or {}).get("quest_unlocked_items", [])
+            if already_owned:
+                return True, "Item ini sudah kamu miliki sebelumnya"
+
             mongo.db.user_preferences.update_one(
                 {"user_id": user_id},
                 {"$addToSet": {"quest_unlocked_items": item_key}},

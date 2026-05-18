@@ -32,6 +32,7 @@ export function ProfileCard({ name, title }: ProfileCardProps) {
           head={(character?.equipped?.head as SlotLevel) ?? "base"}
           top={(character?.equipped?.top as SlotLevel) ?? "base"}
           bottom={(character?.equipped?.bottom as SlotLevel) ?? "base"}
+          special={(character?.equipped?.special as SlotLevel) ?? null}
           viewBox="0 25 120 150"
           className="w-full h-full drop-shadow-sm"
         />

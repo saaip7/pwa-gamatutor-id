@@ -11,11 +11,33 @@ import {
   Pencil,
   X,
   Check,
+  HelpCircle,
 } from "lucide-react";
 import { api } from "@/lib/api";
+import { SPECIAL_ITEMS } from "@/components/feature/character/item-registry";
 
 type QuestType = "deep_study" | "reflection_done" | "checklist_use";
 type RewardType = "freeze" | "quest_item";
+
+function MinDurationTooltip() {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative inline-block ml-1">
+      <button type="button" onClick={() => setShow(!show)}>
+        <HelpCircle className="w-4 h-4 text-neutral-400" />
+      </button>
+      {show && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setShow(false)} />
+          <div className="absolute left-0 bottom-full mb-2 w-64 bg-neutral-800 text-white text-xs rounded-lg px-3 py-2 shadow-lg z-50">
+            Hanya sesi belajar dengan durasi &gt;= X menit yang dihitung sebagai progress quest.
+            <div className="absolute top-full left-4 -mt-1 w-2 h-2 bg-neutral-800 transform rotate-45" />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 interface QuestTemplate {
   _id: string;
@@ -29,7 +51,7 @@ interface QuestTemplate {
     type: RewardType;
     value: number;
     item_slot?: string;
-    item_level?: number;
+    item_level?: string;
   };
   start_date: string;
   end_date: string;
@@ -86,6 +108,12 @@ function statusBadge(status: string) {
   );
 }
 
+function getItemName(itemLevel?: string): string {
+  if (!itemLevel) return "";
+  const found = SPECIAL_ITEMS.find((i) => i.id === itemLevel);
+  return found?.name || itemLevel;
+}
+
 const emptyForm = {
   type: "deep_study" as QuestType,
   description: "",
@@ -93,6 +121,7 @@ const emptyForm = {
   min_duration_min: 25,
   reward_type: "freeze" as RewardType,
   reward_value: 1,
+  reward_item_level: "",
   start_date: "",
   end_date: "",
 };
@@ -105,10 +134,20 @@ export default function AdminQuestsPage() {
   const [adding, setAdding] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [usedItems, setUsedItems] = useState<Record<string, string>>({});
 
   const [editId, setEditId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<QuestTemplate>>({});
   const [saving, setSaving] = useState(false);
+
+  async function fetchUsedItems() {
+    try {
+      const data = await api.get<{ used_items: Record<string, string> }>("/api/admin/quests/used-items");
+      setUsedItems(data.used_items);
+    } catch {
+      setUsedItems({});
+    }
+  }
 
   useEffect(() => {
     fetchQuests();
@@ -126,11 +165,17 @@ export default function AdminQuestsPage() {
     } finally {
       setLoading(false);
     }
+    await fetchUsedItems();
   }
+
+  const availableItems = useMemo(() => {
+    return SPECIAL_ITEMS.filter((item) => !usedItems[item.id]);
+  }, [usedItems]);
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!form.start_date || !form.end_date || !form.description.trim()) return;
+    if (form.reward_type === "quest_item" && !form.reward_item_level) return;
     setAdding(true);
     setError(null);
     try {
@@ -148,6 +193,7 @@ export default function AdminQuestsPage() {
           type: form.reward_type,
           value: form.reward_value,
           item_slot: form.reward_type === "quest_item" ? "special" : undefined,
+          item_level: form.reward_type === "quest_item" ? form.reward_item_level : undefined,
         },
       };
       await api.post("/api/admin/quests", payload);
@@ -167,6 +213,7 @@ export default function AdminQuestsPage() {
     try {
       await api.delete(`/api/admin/quests/${id}`);
       setQuests((prev) => prev.filter((q) => q._id !== id));
+      await fetchUsedItems();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Gagal menghapus quest";
       setError(msg);
@@ -223,7 +270,8 @@ export default function AdminQuestsPage() {
       (t) =>
         t.type.toLowerCase().includes(q) ||
         t.description?.toLowerCase().includes(q) ||
-        t.status.toLowerCase().includes(q)
+        t.status.toLowerCase().includes(q) ||
+        getItemName(t.reward.item_level).toLowerCase().includes(q)
     );
   }, [quests, search]);
 
@@ -277,9 +325,14 @@ export default function AdminQuestsPage() {
               </label>
               <select
                 value={form.type}
-                onChange={(e) =>
-                  setForm({ ...form, type: e.target.value as QuestType })
-                }
+                onChange={(e) => {
+                  const newType = e.target.value as QuestType;
+                  setForm({
+                    ...form,
+                    type: newType,
+                    min_duration_min: newType === "deep_study" ? form.min_duration_min : 25,
+                  });
+                }}
                 disabled={adding}
                 className={inputCls}
                 style={inputBg}
@@ -307,25 +360,32 @@ export default function AdminQuestsPage() {
                 style={inputBg}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                Min Duration (menit)
-              </label>
-              <input
-                type="number"
-                min={1}
-                value={form.min_duration_min}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    min_duration_min: Number(e.target.value),
-                  })
-                }
-                disabled={adding}
-                className={inputCls}
-                style={inputBg}
-              />
-            </div>
+            {form.type === "deep_study" && (
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                  <span className="flex items-center">
+                    Min Duration (menit)
+                    <MinDurationTooltip />
+                    <span className="text-red-400 ml-1">*</span>
+                  </span>
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  value={form.min_duration_min}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      min_duration_min: Number(e.target.value),
+                    })
+                  }
+                  disabled={adding}
+                  required
+                  className={inputCls}
+                  style={inputBg}
+                />
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-1.5">
                 Reward
@@ -336,6 +396,7 @@ export default function AdminQuestsPage() {
                   setForm({
                     ...form,
                     reward_type: e.target.value as RewardType,
+                    reward_item_level: "",
                   })
                 }
                 disabled={adding}
@@ -380,6 +441,37 @@ export default function AdminQuestsPage() {
               />
             </div>
           </div>
+
+          {form.reward_type === "quest_item" && (
+            <div style={{ marginTop: "12px" }}>
+              <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                Item Reward
+              </label>
+              {availableItems.length === 0 ? (
+                <p className="text-sm text-neutral-400 py-2.5 px-3 rounded-lg bg-neutral-50 border border-neutral-200">
+                  Semua item spesial sudah digunakan di quest lain.
+                </p>
+              ) : (
+                <select
+                  value={form.reward_item_level}
+                  onChange={(e) =>
+                    setForm({ ...form, reward_item_level: e.target.value })
+                  }
+                  disabled={adding}
+                  className={inputCls}
+                  style={inputBg}
+                >
+                  <option value="">Pilih item...</option>
+                  {availableItems.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
+
           <div style={{ marginTop: "12px" }}>
             <label className="block text-sm font-medium text-neutral-700 mb-1.5">
               Deskripsi{" "}
@@ -406,7 +498,12 @@ export default function AdminQuestsPage() {
           >
             <button
               type="submit"
-              disabled={adding || !form.start_date || !form.end_date}
+              disabled={
+                adding ||
+                !form.start_date ||
+                !form.end_date ||
+                (form.reward_type === "quest_item" && !form.reward_item_level)
+              }
               className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-white shrink-0 disabled:opacity-50"
               style={{ background: "#3B82F6" }}
               onMouseEnter={(e) => {
@@ -563,7 +660,69 @@ export default function AdminQuestsPage() {
                         style={inputBg}
                       />
                     </div>
+                    {(editForm.type || quest.type) === "deep_study" && (
+                      <div>
+                        <label className="block text-xs font-medium text-neutral-600 mb-1">
+                          <span className="flex items-center">
+                            Min Duration
+                            <MinDurationTooltip />
+                          </span>
+                        </label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={
+                            editForm.config?.min_duration_min ??
+                            quest.config.min_duration_min
+                          }
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              config: {
+                                ...(editForm.config || quest.config),
+                                min_duration_min: Number(e.target.value),
+                              },
+                            })
+                          }
+                          className={inputCls}
+                          style={inputBg}
+                        />
+                      </div>
+                    )}
                   </div>
+
+                  {editForm.reward?.type === "quest_item" && (
+                    <div>
+                      <label className="block text-xs font-medium text-neutral-600 mb-1">
+                        Item Reward
+                      </label>
+                      <select
+                        value={editForm.reward?.item_level || ""}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            reward: {
+                              ...editForm.reward!,
+                              item_level: e.target.value,
+                            },
+                          })
+                        }
+                        className={inputCls}
+                        style={inputBg}
+                      >
+                        {SPECIAL_ITEMS.filter(
+                          (item) =>
+                            !usedItems[item.id] ||
+                            item.id === quest.reward.item_level,
+                        ).map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
                   <div>
                     <label className="block text-xs font-medium text-neutral-600 mb-1">
                       Deskripsi
@@ -659,8 +818,16 @@ export default function AdminQuestsPage() {
                         {REWARD_TYPES.find(
                           (r) => r.value === quest.reward.type
                         )?.label || quest.reward.type}
-                        {quest.reward.type === "quest_item" &&
+                        {quest.reward.type === "freeze" &&
                           ` ×${quest.reward.value}`}
+                        {quest.reward.type === "quest_item" && (
+                          <>
+                            {" · "}
+                            <span className="font-medium text-neutral-600">
+                              {getItemName(quest.reward.item_level)}
+                            </span>
+                          </>
+                        )}
                       </span>
                     </div>
                   </div>

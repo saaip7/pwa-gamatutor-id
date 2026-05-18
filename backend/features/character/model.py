@@ -32,9 +32,7 @@ ITEM_BADGE_REQUIREMENTS = {
     ("bottom", "lv3"): {"male": "ritualist", "female": "reflector"},
     ("bottom", "lv4"): {"male": "strategist", "female": "explorer"},
     ("bottom", "lv5"): {"male": "improver", "female": "zenith"},
-    ("special", "lv1"): {"male": "reflector", "female": "reflector"},
-    ("special", "lv2"): {"male": "improver", "female": "improver"},
-    ("special", "lv3"): {"male": "zenith", "female": "zenith"},
+    ("special", "quest_lv1"): {"male": None, "female": None},
 }
 
 
@@ -58,7 +56,6 @@ def _validate_equipped(user_id, gender, equipped):
     )
     quest_items = set()
     for item_key in (prefs_doc or {}).get("quest_unlocked_items", []):
-        # item_key format: "slot:level" e.g. "top:quest_lv1"
         quest_items.add(item_key)
 
     valid_slots = {"head", "top", "bottom", "special"}
@@ -75,13 +72,12 @@ def _validate_equipped(user_id, gender, equipped):
             corrected[slot] = "base"
             continue
 
-        # Check if this is a quest-only item
         item_key = f"{slot}:{level}"
         if level.startswith("quest_"):
             if item_key in quest_items:
                 corrected[slot] = level
             else:
-                corrected[slot] = "base"
+                corrected[slot] = None
             continue
 
         req = ITEM_BADGE_REQUIREMENTS.get((slot, level))
@@ -150,3 +146,4 @@ class Character:
             {"$set": updates},
         )
         return True
+
