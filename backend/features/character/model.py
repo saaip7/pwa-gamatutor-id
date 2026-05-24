@@ -33,6 +33,7 @@ ITEM_BADGE_REQUIREMENTS = {
     ("bottom", "lv4"): {"male": "strategist", "female": "explorer"},
     ("bottom", "lv5"): {"male": "improver", "female": "zenith"},
     ("special", "quest_lv1"): {"male": None, "female": None},
+    ("special", "quest_lv2"): {"male": None, "female": None},
 }
 
 

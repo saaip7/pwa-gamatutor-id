@@ -22,11 +22,12 @@ import { BottomLv3 } from "./items/bottom/bottom-lv3";
 import { BottomLv4 } from "./items/bottom/bottom-lv4";
 import { BottomLv5 } from "./items/bottom/bottom-lv5";
 import { SpecialLv1 } from "./items/special/special-lv1";
+import { SpecialLv2 } from "./items/special/special-lv2";
 
 // ─── Types ────────────────────────────────────────────────────
 
 export type SlotType = "head" | "top" | "bottom" | "special";
-export type SlotLevel = "base" | "lv1" | "lv2" | "lv3" | "lv4" | "lv5" | "quest_lv1";
+export type SlotLevel = "base" | "lv1" | "lv2" | "lv3" | "lv4" | "lv5" | "quest_lv1" | "quest_lv2";
 
 export interface EquippedItems {
   head: SlotLevel;
@@ -119,6 +120,10 @@ export const ITEMS: ItemDef[] = [
     badgeId: { male: null, female: null },
     preview: { female: { offsetY: -20, scale: 1.15} }
   },
+  { id: "quest_lv2", slot: "special", names: { male: "Kaos Sutet", female: "Kaos Sutet" },
+    badgeId: { male: null, female: null },
+    preview: { female: { offsetY: -9, scale: 1.13 } },
+  },
 ];
 
 // ─── Special Items (quest rewards) ────────────────────────────
@@ -171,6 +176,7 @@ const HEAD_MAP: Record<SlotLevel, React.FC<{ gender: Gender }>> = {
   lv4: HeadLv4,
   lv5: HeadBase,
   quest_lv1: HeadBase,
+  quest_lv2: HeadBase,
 };
 
 const TOP_MAP: Record<SlotLevel, React.FC<{ gender: Gender }>> = {
@@ -181,6 +187,7 @@ const TOP_MAP: Record<SlotLevel, React.FC<{ gender: Gender }>> = {
   lv4: TopLv4,
   lv5: TopLv5,
   quest_lv1: TopBase,
+  quest_lv2: TopBase,
 };
 
 const BOTTOM_MAP: Record<SlotLevel, React.FC<{ gender: Gender }>> = {
@@ -191,6 +198,7 @@ const BOTTOM_MAP: Record<SlotLevel, React.FC<{ gender: Gender }>> = {
   lv4: BottomLv4,
   lv5: BottomLv5,
   quest_lv1: BottomBase,
+  quest_lv2: BottomBase,
 };
 
 const SPECIAL_MAP: Record<SlotLevel, React.FC<{ gender: Gender }>> = {
@@ -201,6 +209,7 @@ const SPECIAL_MAP: Record<SlotLevel, React.FC<{ gender: Gender }>> = {
   lv4: SpecialLv1,
   lv5: SpecialLv1,
   quest_lv1: SpecialLv1,
+  quest_lv2: SpecialLv2,
 };
 
 const SLOT_MAP: Record<SlotType, Record<SlotLevel, React.FC<{ gender: Gender }>>> = {

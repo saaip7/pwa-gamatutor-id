@@ -49,6 +49,7 @@ const FEMALE_BOTTOM_OFFSET: Record<SlotLevel, number> = {
   lv4: -5,
   lv5: -5,
   quest_lv1: -5,
+  quest_lv2: 5,
 };
 
 interface SlotLayout {
