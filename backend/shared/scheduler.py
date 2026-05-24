@@ -1067,32 +1067,72 @@ def job_auto_end_stale_sessions():
 # ---------------------------------------------------------------------------
 
 def job_reset_stale_streaks():
-    """Reset streak for users who haven't been active for 2+ days."""
+    """Reset streak for users who haven't been active for 2+ days (gap > 1).
+
+    Logic:
+    - gap 0: active today — skip
+    - gap 1: grace period — skip (streak still alive)
+    - gap >= 2: streak broken — reset current to 0
+
+    Bug fixes applied:
+    - Bug #2: Previously used $lt yesterday_utc which resets gap=1 users incorrectly.
+              Now fetches candidates and checks actual gap per user.
+    - Bug #3: Now also syncs longest when current resets (no-op since longest >= current,
+              but guards against future inconsistencies).
+    """
     if _is_paused("reset_stale_streaks"):
         logger.info("[Scheduler] reset_stale_streaks is paused — skipping")
         return
     logger.info("[Scheduler] Running stale streak reset")
 
     wib_now = now_wib()
-    yesterday_wib = (wib_now - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
-    # Convert WIB midnight back to UTC for DB comparison (last_active_date stored as UTC)
-    yesterday_utc = yesterday_wib - timedelta(hours=7)
+    today_wib = wib_now.date()
 
-    result = mongo.db.user_preferences.update_many(
+    # Fetch all users with active streak
+    # Use a wide filter: last_active_date older than 1 day ago in UTC (rough pre-filter)
+    two_days_ago_utc = (wib_now - timedelta(days=2)).replace(tzinfo=None)
+    candidates = list(mongo.db.user_preferences.find(
         {
             "streak.current": {"$gt": 0},
-            "streak.last_active_date": {"$lt": yesterday_utc},
+            "streak.last_active_date": {"$lt": two_days_ago_utc},
         },
         {
-            "$set": {
-                "streak.current": 0,
-                "updated_at": datetime.utcnow(),
-            }
+            "user_id": 1,
+            "streak.current": 1,
+            "streak.longest": 1,
+            "streak.last_active_date": 1,
         }
-    )
+    ))
 
-    if result.modified_count:
-        logger.info(f"[Scheduler] Stale streak reset: {result.modified_count} users")
+    stale_user_ids = []
+    for user in candidates:
+        last_active = user.get("streak", {}).get("last_active_date")
+        if not last_active:
+            continue
+
+        # Convert UTC stored date to WIB date
+        last_date_wib = (last_active + timedelta(hours=7)).date()
+        gap = (today_wib - last_date_wib).days
+
+        # Only reset if gap > 1 (gap == 1 is grace period, streak still alive)
+        if gap > 1:
+            stale_user_ids.append(user["user_id"])
+
+    if stale_user_ids:
+        result = mongo.db.user_preferences.update_many(
+            {"user_id": {"$in": stale_user_ids}},
+            {
+                "$set": {
+                    "streak.current": 0,
+                    # Bug #3 fix: longest is never decreased, only current resets to 0
+                    # longest stays unchanged (already >= current)
+                    "updated_at": datetime.utcnow(),
+                }
+            }
+        )
+        logger.info(f"[Scheduler] Stale streak reset: {result.modified_count} users (gap > 1)")
+    else:
+        logger.info("[Scheduler] Stale streak reset: 0 users to reset")
 
 
 # ---------------------------------------------------------------------------

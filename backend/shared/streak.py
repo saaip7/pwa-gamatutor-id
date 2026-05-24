@@ -50,8 +50,8 @@ def update_streak(user_id):
         # Yesterday or first time — increment
         new_current = current + 1
     else:
-        # Gap > 1 — streak broken, reset
-        new_current = 1
+        # Gap > 1 — streak broken, reset to 0 then start fresh next activity
+        new_current = 0
 
     new_longest = max(longest, new_current)
 

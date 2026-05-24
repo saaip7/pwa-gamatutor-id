@@ -1,0 +1,1005 @@
+[
+  {
+    "_id": "69eea018b6cf66ac04d4cb85",
+    "streak": {
+      "current": 0,
+      "longest": 2,
+      "last_active_date": "2026-04-30T02:22:25.945000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-27",
+        "2026-04-28",
+        "2026-04-30"
+      ]
+    },
+    "user_id": "69eea018b6cf66ac04d4cb84"
+  },
+  {
+    "_id": "69eece82434b4976c3073bc9",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69eece82434b4976c3073bc8"
+  },
+  {
+    "_id": "69ef196a2f6a2716694d3f64",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef196a2f6a2716694d3f63"
+  },
+  {
+    "_id": "69ef19802f6a2716694d3f6b",
+    "streak": {
+      "current": 0,
+      "longest": 1,
+      "last_active_date": "2026-04-27T08:15:20.375000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-27"
+      ]
+    },
+    "user_id": "69ef19802f6a2716694d3f6a"
+  },
+  {
+    "_id": "69ef19842f6a2716694d3f70",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19842f6a2716694d3f6f"
+  },
+  {
+    "_id": "69ef19872f6a2716694d3f75",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19872f6a2716694d3f74"
+  },
+  {
+    "_id": "69ef198f2f6a2716694d3f7a",
+    "streak": {
+      "current": 0,
+      "longest": 4,
+      "last_active_date": "2026-05-14T12:06:15.358000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-27",
+        "2026-04-28",
+        "2026-04-30",
+        "2026-05-04",
+        "2026-05-05",
+        "2026-05-09",
+        "2026-05-10",
+        "2026-05-11",
+        "2026-05-12",
+        "2026-05-14"
+      ]
+    },
+    "user_id": "69ef198e2f6a2716694d3f79"
+  },
+  {
+    "_id": "69ef19952f6a2716694d3f80",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19942f6a2716694d3f7e"
+  },
+  {
+    "_id": "69ef19982f6a2716694d3f86",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19982f6a2716694d3f85"
+  },
+  {
+    "_id": "69ef19a22f6a2716694d3f8d",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19a22f6a2716694d3f8c"
+  },
+  {
+    "_id": "69ef19a22f6a2716694d3f90",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19a22f6a2716694d3f8e"
+  },
+  {
+    "_id": "69ef19a32f6a2716694d3f97",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19a32f6a2716694d3f96"
+  },
+  {
+    "_id": "69ef19a52f6a2716694d3f9d",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19a42f6a2716694d3f9c"
+  },
+  {
+    "_id": "69ef19aa2f6a2716694d3fa3",
+    "streak": {
+      "current": 0,
+      "longest": 2,
+      "last_active_date": "2026-05-05T03:58:15.494000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-27",
+        "2026-05-04",
+        "2026-05-05"
+      ]
+    },
+    "user_id": "69ef19a92f6a2716694d3fa2"
+  },
+  {
+    "_id": "69ef19ac2f6a2716694d3fa8",
+    "streak": {
+      "current": 0,
+      "longest": 1,
+      "last_active_date": "2026-04-27T08:13:46.787000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-27"
+      ]
+    },
+    "user_id": "69ef19ac2f6a2716694d3fa7"
+  },
+  {
+    "_id": "69ef19af2f6a2716694d3fb2",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19af2f6a2716694d3fb0"
+  },
+  {
+    "_id": "69ef19af2f6a2716694d3fb3",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19af2f6a2716694d3fb1"
+  },
+  {
+    "_id": "69ef19b82f6a2716694d3fc2",
+    "streak": {
+      "current": 0,
+      "longest": 1,
+      "last_active_date": "2026-05-05T01:31:39.269000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-28",
+        "2026-05-05"
+      ]
+    },
+    "user_id": "69ef19b82f6a2716694d3fc1"
+  },
+  {
+    "_id": "69ef19be2f6a2716694d3fce",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19be2f6a2716694d3fcd"
+  },
+  {
+    "_id": "69ef19bf2f6a2716694d3fd2",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19bf2f6a2716694d3fd1"
+  },
+  {
+    "_id": "69ef19c32f6a2716694d3fd8",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19c22f6a2716694d3fd7"
+  },
+  {
+    "_id": "69ef19c62f6a2716694d3fdf",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19c62f6a2716694d3fde"
+  },
+  {
+    "_id": "69ef19d12f6a2716694d3fee",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19d12f6a2716694d3fed"
+  },
+  {
+    "_id": "69ef19d52f6a2716694d3ff3",
+    "streak": {
+      "current": 0,
+      "longest": 1,
+      "last_active_date": "2026-04-27T08:15:59.311000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-27"
+      ]
+    },
+    "user_id": "69ef19d52f6a2716694d3ff2"
+  },
+  {
+    "_id": "69ef19d82f6a2716694d3ffb",
+    "streak": {
+      "current": 0,
+      "longest": 6,
+      "last_active_date": "2026-05-16T01:41:36.591000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-27",
+        "2026-04-28",
+        "2026-04-29",
+        "2026-05-01",
+        "2026-05-02",
+        "2026-05-05",
+        "2026-05-06",
+        "2026-05-10",
+        "2026-05-11",
+        "2026-05-12",
+        "2026-05-14",
+        "2026-05-15",
+        "2026-05-16"
+      ],
+      "freeze_dates": [
+        "2026-05-13"
+      ],
+      "freeze_used_at": "2026-05-13T09:07:07.247000"
+    },
+    "user_id": "69ef19d82f6a2716694d3ffa"
+  },
+  {
+    "_id": "69ef19dd2f6a2716694d4003",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19dd2f6a2716694d4002"
+  },
+  {
+    "_id": "69ef19e62f6a2716694d4013",
+    "streak": {
+      "current": 0,
+      "longest": 1,
+      "last_active_date": "2026-04-27T08:15:09.575000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-27"
+      ]
+    },
+    "user_id": "69ef19e52f6a2716694d4012"
+  },
+  {
+    "_id": "69ef19ec2f6a2716694d401c",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19ec2f6a2716694d401b"
+  },
+  {
+    "_id": "69ef19ed2f6a2716694d4022",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19ed2f6a2716694d4021"
+  },
+  {
+    "_id": "69ef19ef2f6a2716694d402d",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19ee2f6a2716694d402b"
+  },
+  {
+    "_id": "69ef19f32f6a2716694d4035",
+    "streak": {
+      "current": 0,
+      "longest": 1,
+      "last_active_date": "2026-04-27T08:14:12.131000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-27"
+      ]
+    },
+    "user_id": "69ef19f32f6a2716694d4034"
+  },
+  {
+    "_id": "69ef19f42f6a2716694d4039",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19f42f6a2716694d4038"
+  },
+  {
+    "_id": "69ef19f72f6a2716694d4041",
+    "streak": {
+      "current": 0,
+      "longest": 4,
+      "last_active_date": "2026-05-04T14:34:30.554000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-27",
+        "2026-04-28",
+        "2026-04-29",
+        "2026-05-01",
+        "2026-05-02",
+        "2026-05-03",
+        "2026-05-04"
+      ]
+    },
+    "user_id": "69ef19f72f6a2716694d403f"
+  },
+  {
+    "_id": "69ef19fb2f6a2716694d4048",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19fa2f6a2716694d4047"
+  },
+  {
+    "_id": "69ef19fb2f6a2716694d404b",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef19fb2f6a2716694d4049"
+  },
+  {
+    "_id": "69ef1a002f6a2716694d4058",
+    "streak": {
+      "current": 0,
+      "longest": 1,
+      "last_active_date": "2026-04-27T08:15:55.759000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-27"
+      ]
+    },
+    "user_id": "69ef1a002f6a2716694d4057"
+  },
+  {
+    "_id": "69ef1a022f6a2716694d405d",
+    "streak": {
+      "current": 0,
+      "longest": 3,
+      "last_active_date": "2026-04-29T00:51:17.452000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-27",
+        "2026-04-28",
+        "2026-04-29"
+      ]
+    },
+    "user_id": "69ef1a022f6a2716694d405b"
+  },
+  {
+    "_id": "69ef1a082f6a2716694d4066",
+    "streak": {
+      "current": 0,
+      "longest": 1,
+      "last_active_date": "2026-04-27T18:58:26.221000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-27"
+      ]
+    },
+    "user_id": "69ef1a082f6a2716694d4065"
+  },
+  {
+    "_id": "69ef1a0b2f6a2716694d406d",
+    "streak": {
+      "current": 1,
+      "longest": 24,
+      "last_active_date": "2026-05-24T15:52:58.133000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-27",
+        "2026-04-28",
+        "2026-04-29",
+        "2026-04-30",
+        "2026-05-01",
+        "2026-05-03",
+        "2026-05-04",
+        "2026-05-05",
+        "2026-05-06",
+        "2026-05-07",
+        "2026-05-08",
+        "2026-05-10",
+        "2026-05-11",
+        "2026-05-12",
+        "2026-05-13",
+        "2026-05-14",
+        "2026-05-15",
+        "2026-05-16",
+        "2026-05-17",
+        "2026-05-18",
+        "2026-05-19",
+        "2026-05-20",
+        "2026-05-21",
+        "2026-05-22",
+        "2026-05-24"
+      ],
+      "freeze_dates": [
+        "2026-05-09"
+      ],
+      "freeze_used_at": "2026-05-09T06:08:11.649000"
+    },
+    "user_id": "69ef1a0b2f6a2716694d406c"
+  },
+  {
+    "_id": "69ef1a0c2f6a2716694d4071",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a0c2f6a2716694d4070"
+  },
+  {
+    "_id": "69ef1a0e2f6a2716694d407c",
+    "streak": {
+      "current": 0,
+      "longest": 1,
+      "last_active_date": "2026-04-27T08:16:42.891000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-27"
+      ]
+    },
+    "user_id": "69ef1a0d2f6a2716694d407a"
+  },
+  {
+    "_id": "69ef1a112f6a2716694d408c",
+    "streak": {
+      "current": 0,
+      "longest": 1,
+      "last_active_date": "2026-04-28T03:23:57.323000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-28"
+      ]
+    },
+    "user_id": "69ef1a102f6a2716694d408a"
+  },
+  {
+    "_id": "69ef1a132f6a2716694d4099",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a132f6a2716694d4097"
+  },
+  {
+    "_id": "69ef1a192f6a2716694d40a2",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a192f6a2716694d40a1"
+  },
+  {
+    "_id": "69ef1a1a2f6a2716694d40a8",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a1a2f6a2716694d40a6"
+  },
+  {
+    "_id": "69ef1a1e2f6a2716694d40b1",
+    "streak": {
+      "current": 0,
+      "longest": 6,
+      "last_active_date": "2026-05-06T01:00:06.809000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-29",
+        "2026-04-30",
+        "2026-05-01",
+        "2026-05-02",
+        "2026-05-03",
+        "2026-05-04",
+        "2026-05-06"
+      ]
+    },
+    "user_id": "69ef1a1e2f6a2716694d40b0"
+  },
+  {
+    "_id": "69ef1a1f2f6a2716694d40b5",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a1f2f6a2716694d40b4"
+  },
+  {
+    "_id": "69ef1a202f6a2716694d40bf",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a202f6a2716694d40bb"
+  },
+  {
+    "_id": "69ef1a252f6a2716694d40cf",
+    "streak": {
+      "current": 0,
+      "longest": 7,
+      "last_active_date": "2026-05-21T09:37:51.924000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-27",
+        "2026-04-28",
+        "2026-04-30",
+        "2026-05-04",
+        "2026-05-06",
+        "2026-05-07",
+        "2026-05-12",
+        "2026-05-13",
+        "2026-05-16",
+        "2026-05-19",
+        "2026-05-20",
+        "2026-05-21"
+      ]
+    },
+    "user_id": "69ef1a252f6a2716694d40ce"
+  },
+  {
+    "_id": "69ef1a252f6a2716694d40d3",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a252f6a2716694d40d2"
+  },
+  {
+    "_id": "69ef1a2c2f6a2716694d40e2",
+    "streak": {
+      "current": 0,
+      "longest": 3,
+      "last_active_date": "2026-05-05T07:39:37.237000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-28",
+        "2026-04-29",
+        "2026-04-30",
+        "2026-05-02",
+        "2026-05-05"
+      ]
+    },
+    "user_id": "69ef1a2c2f6a2716694d40e1"
+  },
+  {
+    "_id": "69ef1a312f6a2716694d40eb",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a302f6a2716694d40e9"
+  },
+  {
+    "_id": "69ef1a362f6a2716694d40f5",
+    "streak": {
+      "current": 0,
+      "longest": 1,
+      "last_active_date": "2026-05-06T00:55:10.914000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-05-06"
+      ]
+    },
+    "user_id": "69ef1a362f6a2716694d40f4"
+  },
+  {
+    "_id": "69ef1a402f6a2716694d410b",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a402f6a2716694d4109"
+  },
+  {
+    "_id": "69ef1a422f6a2716694d4110",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a412f6a2716694d410e"
+  },
+  {
+    "_id": "69ef1a432f6a2716694d4118",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a432f6a2716694d4116"
+  },
+  {
+    "_id": "69ef1a452f6a2716694d411f",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a452f6a2716694d411d"
+  },
+  {
+    "_id": "69ef1a482f6a2716694d4127",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a472f6a2716694d4125"
+  },
+  {
+    "_id": "69ef1a482f6a2716694d412a",
+    "streak": {
+      "current": 0,
+      "longest": 1,
+      "last_active_date": "2026-04-27T08:18:01.133000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-27"
+      ]
+    },
+    "user_id": "69ef1a482f6a2716694d4128"
+  },
+  {
+    "_id": "69ef1a482f6a2716694d412f",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a482f6a2716694d412d"
+  },
+  {
+    "_id": "69ef1a532f6a2716694d4155",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a532f6a2716694d4151"
+  },
+  {
+    "_id": "69ef1a542f6a2716694d415b",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a542f6a2716694d4159"
+  },
+  {
+    "_id": "69ef1a562f6a2716694d4160",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a562f6a2716694d415f"
+  },
+  {
+    "_id": "69ef1a572f6a2716694d4166",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a572f6a2716694d4165"
+  },
+  {
+    "_id": "69ef1a582f6a2716694d416b",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a582f6a2716694d416a"
+  },
+  {
+    "_id": "69ef1a672f6a2716694d4186",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a672f6a2716694d4184"
+  },
+  {
+    "_id": "69ef1a6a2f6a2716694d418c",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a6a2f6a2716694d418b"
+  },
+  {
+    "_id": "69ef1a6d2f6a2716694d4192",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a6d2f6a2716694d4191"
+  },
+  {
+    "_id": "69ef1a712f6a2716694d419c",
+    "streak": {
+      "current": 0,
+      "longest": 1,
+      "last_active_date": "2026-05-03T05:34:27.275000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-27",
+        "2026-05-03"
+      ]
+    },
+    "user_id": "69ef1a712f6a2716694d419b"
+  },
+  {
+    "_id": "69ef1a8d2f6a2716694d41c1",
+    "streak": {
+      "current": 1,
+      "longest": 14,
+      "last_active_date": "2026-05-24T03:39:46.454000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-27",
+        "2026-04-28",
+        "2026-04-29",
+        "2026-04-30",
+        "2026-05-01",
+        "2026-05-02",
+        "2026-05-03",
+        "2026-05-04",
+        "2026-05-05",
+        "2026-05-06",
+        "2026-05-07",
+        "2026-05-08",
+        "2026-05-09",
+        "2026-05-11",
+        "2026-05-12",
+        "2026-05-13",
+        "2026-05-16",
+        "2026-05-17",
+        "2026-05-18",
+        "2026-05-19",
+        "2026-05-20",
+        "2026-05-21",
+        "2026-05-22",
+        "2026-05-24"
+      ]
+    },
+    "user_id": "69ef1a8d2f6a2716694d41c0"
+  },
+  {
+    "_id": "69ef1a992f6a2716694d41ce",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a982f6a2716694d41cd"
+  },
+  {
+    "_id": "69ef1a9c2f6a2716694d41d4",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1a9c2f6a2716694d41d3"
+  },
+  {
+    "_id": "69ef1ab02f6a2716694d41eb",
+    "streak": {
+      "current": 0,
+      "longest": 1,
+      "last_active_date": "2026-04-30T05:07:42.754000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-28",
+        "2026-04-30"
+      ]
+    },
+    "user_id": "69ef1aaf2f6a2716694d41ea"
+  },
+  {
+    "_id": "69ef1ab52f6a2716694d41f2",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1ab52f6a2716694d41f1"
+  },
+  {
+    "_id": "69ef1ac12f6a2716694d4202",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1ac12f6a2716694d4201"
+  },
+  {
+    "_id": "69ef1ac32f6a2716694d4206",
+    "streak": {
+      "current": 0,
+      "longest": 1,
+      "last_active_date": "2026-04-27T08:22:03.899000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-04-27"
+      ]
+    },
+    "user_id": "69ef1ac32f6a2716694d4205"
+  },
+  {
+    "_id": "69ef1ad72f6a2716694d421a",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1ad72f6a2716694d4219"
+  },
+  {
+    "_id": "69ef1ada2f6a2716694d421e",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1ada2f6a2716694d421d"
+  },
+  {
+    "_id": "69ef1b412f6a2716694d427e",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69ef1b402f6a2716694d427d"
+  },
+  {
+    "_id": "69ef1c1a2f6a2716694d42b0",
+    "streak": {
+      "current": 0,
+      "longest": 1,
+      "last_active_date": "2026-05-05T07:27:04.553000",
+      "updated_at": null,
+      "active_dates": [
+        "2026-05-05"
+      ]
+    },
+    "user_id": "69ef1c192f6a2716694d42af"
+  },
+  {
+    "_id": "69fd7a13b5117bb3e704d4ae",
+    "streak": {
+      "current": 0,
+      "longest": 0,
+      "last_active_date": null,
+      "updated_at": null
+    },
+    "user_id": "69fd7a12b5117bb3e704d4ad"
+  }
+]
