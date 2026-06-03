@@ -89,9 +89,8 @@ export default function NewTaskPage() {
         difficulty: advanced.difficulty || undefined,
         deadline,
         goal_check: goal.trim() ? { goal_text: goal.trim() } : undefined,
-        checklists:
-          advanced.checklists.length > 0 ? advanced.checklists : undefined,
-        links: advanced.links.length > 0 ? advanced.links : undefined,
+        checklists: advanced.checklists,
+        links: advanced.links,
         pre_test_grade: advanced.preTestGrade,
       });
 

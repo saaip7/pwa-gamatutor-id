@@ -169,8 +169,8 @@ export default function EditTaskPage() {
         goal_check: goal.trim()
           ? { goal_text: goal.trim(), ...(card.goal_check?.helpful !== undefined ? { helpful: card.goal_check.helpful } : {}) }
           : undefined,
-        checklists: advanced.checklists.length > 0 ? advanced.checklists : undefined,
-        links: advanced.links.length > 0 ? advanced.links : undefined,
+        checklists: advanced.checklists,
+        links: advanced.links,
         pre_test_grade: advanced.preTestGrade,
         post_test_grade: advanced.postTestGrade,
       });
