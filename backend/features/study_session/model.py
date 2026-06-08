@@ -20,6 +20,7 @@ class StudySession:
             "card_id": card_id,
             "start_time": datetime.utcnow(),
             "end_time": None,
+            "status": "active",
         }
         result = mongo.db.study_sessions.insert_one(doc)
         doc["_id"] = str(result.inserted_id)
@@ -31,7 +32,7 @@ class StudySession:
         now = datetime.utcnow()
         result = mongo.db.study_sessions.update_one(
             {"_id": ObjectId(session_id)},
-            {"$set": {"end_time": now, "hidden_ms": hidden_ms}},
+            {"$set": {"end_time": now, "hidden_ms": hidden_ms, "status": "completed"}},
         )
         if result.modified_count == 0:
             return None
@@ -60,7 +61,7 @@ class StudySession:
             cutoff = datetime.utcnow() - timedelta(hours=max_age_hours)
         result = mongo.db.study_sessions.update_many(
             {"end_time": None, "start_time": {"$lt": cutoff}},
-            {"$set": {"end_time": cutoff, "orphan": True, "hidden_ms": int(max_age_hours * 3600000) if max_age_minutes is None else int(max_age_minutes * 60000)}},
+            {"$set": {"end_time": cutoff, "orphan": True, "hidden_ms": int(max_age_hours * 3600000) if max_age_minutes is None else int(max_age_minutes * 60000), "status": "orphan"}},
         )
         return result.modified_count
 
@@ -111,7 +112,7 @@ class StudySession:
             hidden_ms = max(0, idle_ms - active_ms)
             result = mongo.db.study_sessions.update_one(
                 {"_id": session["_id"], "end_time": None},
-                {"$set": {"end_time": grace_end, "auto_ended": True, "hidden_ms": hidden_ms}},
+                {"$set": {"end_time": grace_end, "auto_ended": True, "hidden_ms": hidden_ms, "status": "auto_ended"}},
             )
             logger.info(f"[AutoEndStale] session {session['_id']}: matched={result.matched_count}, modified={result.modified_count}")
             ended.append({
