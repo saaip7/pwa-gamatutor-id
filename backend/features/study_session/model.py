@@ -52,15 +52,30 @@ class StudySession:
         return sessions
 
     @staticmethod
-    def cleanup_orphan_sessions(max_age_hours=24, max_age_minutes=None):
-        """End orphan sessions that have been running longer than max_age_hours."""
+    def cleanup_orphan_sessions(max_age_hours=24, max_age_minutes=None, heartbeat_max_minutes=None):
+        """End orphan sessions that have been running longer than max_age_hours.
+
+        When heartbeat_max_minutes is set, only sessions whose last_heartbeat
+        is older than that threshold (or missing entirely) are considered orphan.
+        This prevents falsely ending long but still-active study sessions.
+        """
         from datetime import timedelta
         if max_age_minutes is not None:
             cutoff = datetime.utcnow() - timedelta(minutes=max_age_minutes)
         else:
             cutoff = datetime.utcnow() - timedelta(hours=max_age_hours)
+
+        query = {"end_time": None, "start_time": {"$lt": cutoff}}
+
+        if heartbeat_max_minutes is not None:
+            hb_cutoff = datetime.utcnow() - timedelta(minutes=heartbeat_max_minutes)
+            query["$or"] = [
+                {"last_heartbeat": {"$lt": hb_cutoff}},
+                {"last_heartbeat": {"$exists": False}},
+            ]
+
         result = mongo.db.study_sessions.update_many(
-            {"end_time": None, "start_time": {"$lt": cutoff}},
+            query,
             {"$set": {"end_time": cutoff, "orphan": True, "hidden_ms": int(max_age_hours * 3600000) if max_age_minutes is None else int(max_age_minutes * 60000), "status": "orphan"}},
         )
         return result.modified_count

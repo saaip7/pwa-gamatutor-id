@@ -955,7 +955,10 @@ def job_cleanup_orphan_sessions():
         logger.info("[Scheduler] orphan_cleanup is paused — skipping")
         return
     from features.study_session.model import StudySession
-    cleaned = StudySession.cleanup_orphan_sessions(max_age_hours=3)  # [FLAG STUDY] prod: 3h, test: 10min
+    cleaned = StudySession.cleanup_orphan_sessions(
+        max_age_hours=3,
+        heartbeat_max_minutes=90,
+    )  # [FLAG STUDY] prod: 3h+90min, test: 10min+2min
     if cleaned:
         logger.info(f"[Scheduler] Orphan session cleanup: {cleaned} sessions ended")
 
